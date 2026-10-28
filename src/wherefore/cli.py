@@ -1,14 +1,7 @@
 """wherefore - the command line.
 
-  wherefore init [DIR]            write a wherefore.json that declares nothing yet
-  wherefore list                  run every generator once; say what each wrote
-  wherefore build                 the roll: every generator, twice, compared with
-                                  what is committed, and the results LEFT in place
-  wherefore gate [--keep]         the coverage gate; puts the tree back unless --keep
-  wherefore gate --restamp GROUP  record a re-made capture against its sources
-  wherefore prove [SCRIPT ...]    run the proofs, one at a time, in place
-  wherefore check NAME            retired | reach | claims
-  wherefore hook install          a pre-push hook: no push leaves the corpus stale
+The commands, and what each does, are said once, in commands.json beside this
+file; `wherefore --help` prints them from there, and so does the README.
 
 Every command finds its client by looking for wherefore.json in the working
 directory and above it, or in WHEREFORE_ROOT.
@@ -115,9 +108,13 @@ def _prove(args):
     return 1 if failed else 0
 
 
+# The checks `wherefore check` runs, in the order commands.json lists them.
+CHECKS = ("retired", "reach", "claims")
+
+
 def _check(args):
     if not args:
-        print("::error::wherefore check NAME, where NAME is retired, reach or claims")
+        print(f"::error::wherefore check NAME, where NAME is {', '.join(CHECKS)}")
         return 1
     name, rest = args[0], args[1:]
     cfg = cfgmod.load()
@@ -134,7 +131,7 @@ def _check(args):
     if name == "claims":
         from . import claims
         return claims.main(cfg, rest)
-    print(f"::error::no check called {name!r}: retired, reach or claims")
+    print(f"::error::no check called {name!r}: {', '.join(CHECKS)}")
     return 1
 
 
@@ -147,10 +144,25 @@ COMMANDS = {"init": _init, "list": _list, "build": _build, "gate": _gate,
             "prove": _prove, "check": _check, "hook": _hook}
 
 
+def commands():
+    """The commands as commands.json says them: [{usage, does}]."""
+    import json
+    path = pathlib.Path(__file__).resolve().parent / "commands.json"
+    return json.loads(path.read_text(encoding="utf-8"))["commands"]
+
+
+def usage():
+    rows = commands()
+    width = max(len(c["usage"]) for c in rows) + 2
+    listing = "\n".join(f"  {c['usage']:<{width}}{c['does']}" for c in rows)
+    return __doc__.replace("\n\nThe commands, and what each does,",
+                           "\n\n" + listing + "\n\nThe commands, and what each does,", 1)
+
+
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     if not argv or argv[0] in ("-h", "--help", "help"):
-        print(__doc__)
+        print(usage())
         return 0
     if argv[0] == "--version":
         print(f"wherefore {__version__}")

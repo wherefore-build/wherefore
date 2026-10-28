@@ -3,3 +3,7 @@ __pycache__/
 build/
 dist/
 .venv/
+
+# The engine this repository judges its own corpus with, installed by CI at
+# the release requirements-engine.txt names. Never committed.
+/.wherefore-engine/

@@ -1,0 +1,55 @@
+# A RELEASE IS WHAT main SAYS, PUBLISHED - never typed. The version is
+# pyproject.toml's, the notes are its CHANGELOG.md entry, and the commit is the
+# one that declares it; this tags v<version> there and publishes the release,
+# once. A push that declares a version already tagged does nothing.
+#
+# It is the release derived from its source, which is the engine's own rule
+# applied to itself: nobody hand-writes a tag or release notes that could
+# disagree with what the repository says. corpus/version_moves.py is what makes
+# a new version arrive whenever the engine's code changes.
+#
+# workflow_dispatch with `ref` publishes an earlier commit's version that was
+# never tagged - how v0.1.0, merged before this file existed, gets its tag.
+name: release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: the commit whose declared version to tag and publish (default, the one pushed)
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Tag and publish the version this commit declares, once
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REF: ${{ inputs.ref || github.sha }}
+        run: |
+          SHA=$(git rev-parse --verify "$REF^{commit}")
+          V=$(git show "$SHA:pyproject.toml" | sed -n 's/^version = "\(.*\)"$/\1/p')
+          if [ -z "$V" ]; then
+            echo "::error::pyproject.toml at $SHA declares no version"
+            exit 1
+          fi
+          if git rev-parse -q --verify "refs/tags/v$V" >/dev/null; then
+            echo "v$V is already tagged - nothing to publish."
+            exit 0
+          fi
+          git show "$SHA:CHANGELOG.md" | awk -v h="## $V (" 'index($0, h) == 1 {on = 1; next} /^## / && on {exit} on' > notes.md
+          if ! grep -q '[^[:space:]]' notes.md; then
+            echo "::error::CHANGELOG.md at $SHA has no entry for $V - a release says what it is"
+            exit 1
+          fi
+          gh release create "v$V" --target "$SHA" --title "Wherefore $V" --notes-file notes.md

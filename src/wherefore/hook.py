@@ -93,10 +93,14 @@ def install(cfg):
     return 0
 
 
+# What `wherefore hook` takes: install writes the hook, and the hook runs pre-push.
+SUBCOMMANDS = ("install", "pre-push")
+
+
 def main(cfg, argv):
     if argv[:1] == ["install"]:
         return install(cfg)
     if argv[:1] == ["pre-push"]:
         return pre_push(cfg, sys.stdin.read().splitlines())
-    print("::error::wherefore hook install | pre-push")
+    print(f"::error::wherefore hook {' | '.join(SUBCOMMANDS)}")
     return 1

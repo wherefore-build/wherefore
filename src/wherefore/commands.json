@@ -1,0 +1,49 @@
+{
+ "note": "Every command the CLI has, said once. `wherefore --help` prints this list, the README's command list is generated from it (corpus/readme.py), tests/test_commands.py holds the CLI's own dispatch to it, and corpus/commands_named.py fails any document that names a command not listed here.",
+ "commands": [
+  {
+   "usage": "wherefore init [DIR]",
+   "does": "write a wherefore.json that declares nothing yet"
+  },
+  {
+   "usage": "wherefore gate [--keep]",
+   "does": "every tracked file classified, every generated one current; puts the tree back unless --keep"
+  },
+  {
+   "usage": "wherefore gate --restamp GROUP",
+   "does": "record a re-made capture against its sources"
+  },
+  {
+   "usage": "wherefore build",
+   "does": "the roll: every generator, twice, compared with what is committed, and the results left in place"
+  },
+  {
+   "usage": "wherefore list",
+   "does": "run every generator once and say what each wrote"
+  },
+  {
+   "usage": "wherefore prove [SCRIPT ...]",
+   "does": "run the client's proofs, one at a time, in place"
+  },
+  {
+   "usage": "wherefore check retired",
+   "does": "nothing a person reads still claims a retired value or phrase"
+  },
+  {
+   "usage": "wherefore check reach",
+   "does": "every fact, moved one at a time, reaches what it should"
+  },
+  {
+   "usage": "wherefore check claims",
+   "does": "every claim says only what its rule allows"
+  },
+  {
+   "usage": "wherefore hook install",
+   "does": "a pre-push hook: no push leaves the corpus stale"
+  },
+  {
+   "usage": "wherefore hook pre-push",
+   "does": "what the installed hook runs before a push; not for typing"
+  }
+ ]
+}
