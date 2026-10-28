@@ -60,6 +60,7 @@ one fact in two places. `chaotic-pendulums-co` is that kind of client; see
 | `integration/chaotic-pendulums-co/` | the pendulum as the first client: a patch series, what it waits on, and what was checked |
 | `ENGINE_INVENTORY.md` | what was moved from the pendulum repo, and how |
 | `ARCHITECTURE_REVIEW.md` | the review the extraction follows, and the decisions taken |
+| `VERSIONING_SHAPE.md` | the next extraction's questions, with recommendations, waiting on the owner |
 
 ```
 python3 -m unittest discover tests
