@@ -8,6 +8,26 @@ The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact
 (DIRECTIONS.md §12, §13).
 
+## 0.1.1 (2026-10-28)
+
+Wherefore on Wherefore: this repository becomes a client of its own engine.
+
+- **The commands are said once,** in `src/wherefore/commands.json`:
+  - `wherefore --help` prints them from there;
+  - the README's list is generated from them (`corpus/readme.py`);
+  - `tests/test_commands.py` holds the CLI's own dispatch to them.
+
+  The three hand-typed lists had already drifted: the README's was missing
+  both `hook` commands.
+- **This repository's own corpus is gated** (`wherefore.json`), by the
+  previous release (`requirements-engine.txt`), never by the code being
+  edited, the way a compiler builds itself. `corpus/commands_named.py` fails
+  any user-facing document that tells a person to type a command the CLI does
+  not have.
+- **The version moves whenever the engine does** (`corpus/version_moves.py`,
+  #32), and a release is tagged and published from `CHANGELOG.md` by
+  `.github/workflows/release.yml`, never by hand.
+
 ## 0.1.0 (2026-10-28)
 
 The first release: the machinery extracted from chaotic-pendulums-co, moved

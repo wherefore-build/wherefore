@@ -1,0 +1,75 @@
+{
+ "wherefore": 1,
+ "name": "wherefore",
+ "note": "This repository as a client of the engine it holds. Its README is generated from a template and the commands, said once in src/wherefore/commands.json; everything else is authored or test data. It is judged by the previous release (requirements-engine.txt), never by the code being edited.",
+ "sources": {
+  "commands": {
+   "path": "src/wherefore/commands.json",
+   "adapter": "leaves",
+   "why": "every command the CLI has, and what each does: the CLI's help prints it and the README is generated from it"
+  }
+ },
+ "generators": [
+  {
+   "script": "readme.py",
+   "cwd": "corpus",
+   "makes": "README.md, from docs/README.template.md and the commands"
+  }
+ ],
+ "inventory": {
+  "note": "Every tracked file is generated, authored or captured. GENERATED is derived by running the generators - README.md, here - and never declared; this declares the rest.",
+  "authored": {
+   "rules": [
+    [
+     "*.py",
+     "code: the engine, its tests and proofs, the recorded moves, and this corpus's generator and checks. A person writes it; nothing generates it"
+    ],
+    [
+     "*.md",
+     "the design records, the changelog, the skill and the README's template - written by a person. Not README.md, which corpus/readme.py writes",
+     [
+      "README.md"
+     ]
+    ],
+    [
+     "src/wherefore/commands.json",
+     "the commands, said once: the source the CLI's help and the README are made from"
+    ],
+    [
+     "tests/fixture/**",
+     "the fixture company's corpus - the engine's test data. It is a corpus of its own, held by its own wherefore.json and gate in tests/test_phase5.py, not by this one"
+    ],
+    [
+     "integration/**",
+     "the pendulum integration's patch series, as exported, and its record"
+    ],
+    [
+     ".github/**",
+     "the workflows"
+    ],
+    [
+     "pyproject.toml",
+     "the package: its name, version and dependencies"
+    ],
+    [
+     ".gitignore",
+     "what is never committed"
+    ],
+    [
+     "wherefore.json",
+     "this file: what this repository is to the engine"
+    ],
+    [
+     "requirements-engine.txt",
+     "the release that judges this corpus - the previous one, never the tree being edited"
+    ]
+   ]
+  },
+  "captured": {
+   "groups": {}
+  }
+ },
+ "proofs": {
+  "glob": "corpus/*_proof.py"
+ }
+}

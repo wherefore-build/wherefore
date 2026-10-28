@@ -1,0 +1,9 @@
+# The engine that judges THIS repository's own corpus: its README, its
+# documents, the commands they name. It is the PREVIOUS release, never the tree
+# being edited - a compiler builds itself with its last release - so a change
+# that broke the gate cannot also pass its own documents. CI installs it into
+# .wherefore-engine/ and runs the gate with that engine alone.
+#
+# Move it with each release, by hand, once that release is tagged and its own
+# CI is green.
+wherefore @ git+https://github.com/zakholdsworth/wherefore@e973525be05e7ce0a1ce2263792f5919099c5316

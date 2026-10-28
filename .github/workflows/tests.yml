@@ -26,3 +26,33 @@ jobs:
             echo "== $p"
             python "$p"
           done
+
+  # THIS REPOSITORY AS A CLIENT OF ITSELF. Its README is generated, the
+  # commands its documents name must exist, and the version must move with
+  # the code - judged by the PREVIOUS release, installed from
+  # requirements-engine.txt, never by this tree: a compiler builds itself with
+  # its last release, so a change that broke the gate cannot pass its own
+  # documents. Nothing here installs the tree being tested.
+  corpus:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/.wherefore-engine
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0      # corpus/version_moves.py compares with the last tag
+      - name: Install the previous release, to judge this tree with
+        env:
+          GIT_CONFIG_COUNT: "1"
+          GIT_CONFIG_KEY_0: url.https://x-access-token:${{ github.token }}@github.com/zakholdsworth/wherefore.insteadOf
+          GIT_CONFIG_VALUE_0: https://github.com/zakholdsworth/wherefore
+        run: python3 -m pip install --quiet --no-deps --target .wherefore-engine -r requirements-engine.txt
+      - name: Every file is accounted for, and the README is what its sources make
+        run: python3 -m wherefore gate
+      - name: Every command a document names is one the CLI has
+        run: python3 corpus/commands_named.py
+      - name: The version moved if the engine did
+        run: python3 corpus/version_moves.py
+      - name: And each of those fails when it should
+        run: python3 -m wherefore prove
+
