@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wherefore"
-version = "0.1.0.dev0"
+version = "0.1.0"
 description = "A company that compiles: every asset generated from one source of truth, every change proven."
 readme = "README.md"
 requires-python = ">=3.10"
