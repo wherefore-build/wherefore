@@ -232,7 +232,7 @@ def excuse(exemptions, kind):
 
 
 def sweep(root, register, include, skip, archive, patterns, numbers_excused,
-          phrases_excused, read=None):
+          phrases_excused, read=None, register_name="the register", item="value"):
     """Every retired value and phrase, against every file a person reads.
 
     Returns the number of places still claiming one. Prints as it goes, in the
@@ -244,7 +244,7 @@ def sweep(root, register, include, skip, archive, patterns, numbers_excused,
     if not retired:
         # Armed, and nothing superseded yet. That is the right order: the harness
         # lands before the change it exists to catch.
-        print("the register is empty - no value has been superseded yet\n")
+        print(f"{register_name} is empty - no {item} has been superseded yet\n")
     if retired and not patterns:
         sys.exit("::error::the register retires values, and wherefore.json `retired` "
                  "declares no assertion_patterns - nothing says what a value being "
@@ -288,7 +288,7 @@ def sweep(root, register, include, skip, archive, patterns, numbers_excused,
         if twice:
             for k, v in twice.items():
                 nexts = sorted({str(x.get("superseded_by")) for x in v})
-                print(f"::error::the register lists the {what} {k!r} {len(v)} times, "
+                print(f"::error::{register_name} lists the {what} {k!r} {len(v)} times, "
                       f"superseded by {' and '.join(nexts)}")
             sys.exit("a retired register with a repeated row has been applied twice; "
                      "each supersession is one row")
