@@ -1,0 +1,28 @@
+{
+ "company": {
+  "name": "Fernhollow Kettles",
+  "city": "Porto",
+  "country": "Portugal"
+ },
+ "product": {
+  "name": "Fernhollow One",
+  "kind": "electric kettle",
+  "capacity_l": 1.5,
+  "price_usd": 89,
+  "boil_minutes": 3,
+  "warranty_years": 2
+ },
+ "origin": {
+  "note": "The kettles are assembled and tested in Porto. The heating element is bought in, which is why nothing may say the kettle is made in Portugal.",
+  "activities": ["assembled", "tested"]
+ },
+ "retired": {
+  "note": "What the product used to be. Nothing a person reads may still say it.",
+  "values": [
+   {"value": 79, "superseded_by": 89, "was": "the price, in dollars, before the steel lid"}
+  ],
+  "phrases": [
+   {"phrase": "stovetop kettle", "superseded_by": "electric kettle", "was": "what the first Fernhollow was"}
+  ]
+ }
+}

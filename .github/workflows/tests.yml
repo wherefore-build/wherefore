@@ -1,0 +1,28 @@
+# The engine, on its own: installed from this tree into a clean environment,
+# its unit tests, and every proof - each of which breaks the fixture company one
+# way and requires the right failure in the right words. Hosted, and short: a
+# minute or two a run, on every push.
+name: tests
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install, test and prove
+        run: |
+          python3 -m venv .venv
+          . .venv/bin/activate
+          pip install --quiet -e '.[pictures,xlsx]'
+          python -m unittest discover -s tests
+          for p in proofs/*_proof.py; do
+            echo "== $p"
+            python "$p"
+          done

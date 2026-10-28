@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <!-- Drawn by hand from the 1.5 litre kettle on the bench. Nothing generates it. -->
+  <rect width="400" height="300" fill="#e9e2d4"/>
+  <path d="M120 240 L140 110 Q200 80 260 110 L280 240 Z" fill="#3b3b3b"/>
+  <path d="M260 140 Q320 150 300 220" stroke="#3b3b3b" stroke-width="14" fill="none"/>
+</svg>
