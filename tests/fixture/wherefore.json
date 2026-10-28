@@ -1,0 +1,79 @@
+{
+ "wherefore": 1,
+ "name": "fernhollow-kettles",
+ "sources": {
+  "facts": {
+   "path": "facts.json",
+   "adapter": "leaves",
+   "why": "THE SOURCE: every fact the corpus states is here once"
+  }
+ },
+ "generators": [
+  {
+   "script": "landing.py",
+   "cwd": "gen",
+   "makes": "site/index.html, the landing page"
+  },
+  {
+   "script": "deck.py",
+   "cwd": "gen",
+   "makes": "deck/one-pager.svg, the one-page deck"
+  },
+  {
+   "script": "notes.py",
+   "cwd": "gen",
+   "makes": "the speaker notes",
+   "stdout_to": "deck/speaker-notes.txt"
+  },
+  {
+   "script": "ledger.py",
+   "cwd": "gen",
+   "makes": "ledger.json, each document's edition"
+  }
+ ],
+ "not_a_generator": {},
+ "inventory": {
+  "note": "Every tracked file is generated, authored or captured. GENERATED is derived by running the generators; this declares the rest.",
+  "authored": {
+   "rules": [
+    [
+     "*.py",
+     "code: the generators and the library they share"
+    ],
+    [
+     "facts.json",
+     "THE SOURCE"
+    ],
+    [
+     "wherefore.json",
+     "what the corpus is, and why each exemption exists"
+    ],
+    [
+     "README.md",
+     "prose a person writes"
+    ],
+    [
+     ".gitignore",
+     "what is never tracked: bytecode a generator's import leaves behind"
+    ]
+   ]
+  },
+  "captured": {
+   "groups": {
+    "the product photograph": {
+     "files": [
+      "photos/hero.svg"
+     ],
+     "why": "drawn by hand from the kettle on the bench; if the kettle's size moves, it has to be drawn again",
+     "spec_values": [
+      "product.capacity_l"
+     ],
+     "stamp": "b7725982e1a370ff"
+    }
+   }
+  }
+ },
+ "proofs": {
+  "glob": "proofs/*_proof.py"
+ }
+}
