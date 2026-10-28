@@ -19,6 +19,10 @@ Wherefore on Wherefore: this repository becomes a client of its own engine.
 
   The three hand-typed lists had already drifted: the README's was missing
   both `hook` commands.
+- **So are the principles,** in `src/wherefore/principles.json`. The README
+  states them from there, and so can a client: both files ship in the
+  package, so the company's site reads them from the release it pins.
+  `tests/test_package_data.py` fails a data file the wheel would leave out.
 - **This repository's own corpus is gated** (`wherefore.json`), by the
   previous release (`requirements-engine.txt`), never by the code being
   edited, the way a compiler builds itself. `corpus/commands_named.py` fails

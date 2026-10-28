@@ -10,13 +10,7 @@ its first client.
 
 ## The principles it enforces
 
-1. **A fact exists in exactly one place.** Everything else is generated from it or checked against it.
-2. **The build is deterministic.** Nothing in the build path calls a model.
-3. **Fail loudly.** A change the build cannot handle stops it; nothing improvises.
-4. **A check is not trusted until it has been shown to fail.**
-5. **Sources versus outputs.** Every tracked file is *generated*, *authored* or
-   *captured*. Generated files are never hand-edited, and a capture is stamped
-   with what it was made from.
+{{principles}}
 
 ## Use
 
@@ -55,7 +49,7 @@ one fact in two places. `chaotic-pendulums-co` is that kind of client; see
 | `VERSIONING_SHAPE.md` | the next extraction's questions, with recommendations, waiting on the owner |
 | `CHANGELOG.md` | every release, newest first; a client upgrades only by moving its pin |
 | `corpus/`, `wherefore.json` | this repository as a client of its own engine: the README's generator, the corpus's checks and their proofs |
-| `docs/README.template.md` | the README's text; the README is generated from it and `src/wherefore/commands.json` |
+| `docs/README.template.md` | the README's text; the README is generated from it, `src/wherefore/commands.json` and `src/wherefore/principles.json` |
 | `requirements-engine.txt` | the previous release, which judges this repository's own corpus |
 | `DIRECTIONS.md` | where it could go: obligations, sign-off, agents in the loop, onboarding; none of it built |
 

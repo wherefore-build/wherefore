@@ -1,19 +1,24 @@
 {
  "wherefore": 1,
  "name": "wherefore",
- "note": "This repository as a client of the engine it holds. Its README is generated from a template and the commands, said once in src/wherefore/commands.json; everything else is authored or test data. It is judged by the previous release (requirements-engine.txt), never by the code being edited.",
+ "note": "This repository as a client of the engine it holds. Its README is generated from a template, the commands and the principles, each said once in src/wherefore/; everything else is authored or test data. It is judged by the previous release (requirements-engine.txt), never by the code being edited.",
  "sources": {
   "commands": {
    "path": "src/wherefore/commands.json",
    "adapter": "leaves",
    "why": "every command the CLI has, and what each does: the CLI's help prints it and the README is generated from it"
+  },
+  "principles": {
+   "path": "src/wherefore/principles.json",
+   "adapter": "leaves",
+   "why": "the principles the engine enforces: the README is generated from it, and the company's site reads it from the release it pins"
   }
  },
  "generators": [
   {
    "script": "readme.py",
    "cwd": "corpus",
-   "makes": "README.md, from docs/README.template.md and the commands"
+   "makes": "README.md, from docs/README.template.md, the commands and the principles"
   }
  ],
  "inventory": {
@@ -34,6 +39,10 @@
     [
      "src/wherefore/commands.json",
      "the commands, said once: the source the CLI's help and the README are made from"
+    ],
+    [
+     "src/wherefore/principles.json",
+     "the principles, said once: the source the README and the company's site state them from"
     ],
     [
      "tests/fixture/**",

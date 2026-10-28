@@ -25,4 +25,6 @@ where = ["src"]
 [tool.setuptools.package-data]
 # The observer is a module called sitecustomize in a directory that holds
 # nothing else, put on PYTHONPATH - not a package, so it is shipped as data.
-wherefore = ["_observe/sitecustomize.py", "commands.json"]
+# The commands and the principles are said once each, here, and a client that
+# states them - the company's site - reads them from the release it pins.
+wherefore = ["_observe/sitecustomize.py", "commands.json", "principles.json"]
