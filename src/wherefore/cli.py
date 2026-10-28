@@ -12,6 +12,10 @@
 
 Every command finds its client by looking for wherefore.json in the working
 directory and above it, or in WHEREFORE_ROOT.
+
+A client that configures the engine in Python names the script that runs each
+command in `entry`, and the command runs that script, with what was typed after
+it, exactly as the client's own CI runs it.
 """
 import os
 import pathlib
@@ -40,6 +44,15 @@ def _init(args):
     return 0
 
 
+def _handed_over(cfg, command, args):
+    """Run the client's own script for `command`, if `entry` names one; else None."""
+    argv = cfg.entry(command)
+    if argv is None:
+        return None
+    env = dict(os.environ, WHEREFORE_ROOT=str(cfg.root))
+    return subprocess.run([sys.executable, *argv, *args], cwd=cfg.root, env=env).returncode
+
+
 def _configured():
     cfg = cfgmod.load()
     from . import gate, generators
@@ -48,6 +61,9 @@ def _configured():
 
 
 def _list(args):
+    r = _handed_over(cfgmod.load(), "list", args)
+    if r is not None:
+        return r
     _cfg, G, _gate = _configured()
     saved = sys.argv
     try:
@@ -58,11 +74,17 @@ def _list(args):
 
 
 def _build(args):
+    r = _handed_over(cfgmod.load(), "build", args)
+    if r is not None:
+        return r
     _cfg, G, _gate = _configured()
     return G.roll()
 
 
 def _gate(args):
+    r = _handed_over(cfgmod.load(), "gate", args)
+    if r is not None:
+        return r
     _cfg, _G, gate = _configured()
     return gate.main(["wherefore", *args])
 
@@ -99,6 +121,9 @@ def _check(args):
         return 1
     name, rest = args[0], args[1:]
     cfg = cfgmod.load()
+    r = _handed_over(cfg, f"check {name}", rest)
+    if r is not None:
+        return r
     if name == "retired":
         from . import retired
         return retired.main(cfg, rest)

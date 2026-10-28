@@ -39,6 +39,12 @@ wherefore gate              # is every tracked file classified and current?
 lives, and **every exemption carries a `why`**. The engine refuses an entry
 without one. Read the reasons before changing anything near them.
 
+If `wherefore.json` declares `entry`, the corpus configures the engine in
+Python: each command runs the script named there, and **that script** is where
+the generator list, the comparators and the exemptions live, with their
+reasons. Edit them there. Do not copy them into `wherefore.json`, which refuses
+them anyway, because that would be one fact in two places.
+
 ## Changing a fact
 
 1. Edit the source named in `sources`, and only the source.

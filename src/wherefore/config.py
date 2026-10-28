@@ -18,6 +18,16 @@ path, relative to the root, and the section is read from there - and written
 back there, with that file's own formatting, by the one command that writes
 configuration (`wherefore gate --restamp`). So a client that already keeps its
 inventory in checks/inventory.json points at it, and nothing moves.
+
+OR THE CLIENT CONFIGURES THE ENGINE IN PYTHON, AND SAYS WHERE. A corpus that
+was a corpus before it was a client - the one this was extracted from - keeps
+its generator list, its comparators and its exemptions in the scripts its
+proofs plant faults into, by path, and each script hands them to the engine
+itself. Copying those lists in here would be the same fact in two places, which
+is the first thing this engine exists to refuse. So `entry` names, for each
+command, the client's own script that runs it, and the command runs that script
+exactly as the client's CI does: the same verdict, in the same words. A command
+handed over may not ALSO be configured here; that is the same thing said twice.
 """
 import json
 import os
@@ -30,6 +40,18 @@ SCHEMA = 1
 INCLUDABLE = ("inventory", "surfaces", "retired", "reach", "claims", "compare")
 
 GEN_FIELDS = ("script", "cwd", "makes", "stdout_to", "probe", "resettle", "why")
+
+# The commands `entry` may hand to a client's script, and the sections each one
+# would otherwise be configured from. A command handed over and configured here
+# as well is refused: it would say one thing twice, and the two would drift.
+ENTRY = {
+    "list": ("generators", "not_a_generator"),
+    "build": ("generators", "not_a_generator"),
+    "gate": ("generators", "not_a_generator", "inventory", "compare"),
+    "check retired": ("retired",),
+    "check reach": ("reach",),
+    "check claims": ("claims",),
+}
 
 
 class ConfigError(SystemExit):
@@ -105,6 +127,13 @@ class Config:
     def where(self, section):
         """The file a section lives in, as a reader would name it."""
         return self.included.get(section, NAME)
+
+    def entry(self, command):
+        """[script, args...] the client runs `command` with, or None for the engine's own."""
+        target = self.doc.get("entry", {}).get(command)
+        if target is None:
+            return None
+        return [target] if isinstance(target, str) else list(target)
 
     def source(self, name=None):
         """(name, declaration) of a source; the first declared is the primary."""
@@ -199,6 +228,31 @@ def validate(cfg):
             _why(rule[1], f"authored rule {rule[0]!r} in {cfg.where('inventory')}")
         for name, grp in inv.get("captured", {}).get("groups", {}).items():
             _why(grp.get("why"), f"captured group {name!r} in {cfg.where('inventory')}")
+    entry = d.get("entry")
+    if entry is not None:
+        if not isinstance(entry, dict):
+            raise ConfigError("`entry` must be an object: each command, and the script "
+                              "that runs it")
+        _why(entry.get("why"), "`entry`, which hands commands to the client's own scripts,")
+        for cmd, target in entry.items():
+            if cmd == "why":
+                continue
+            if cmd not in ENTRY:
+                raise ConfigError(f"`entry` names {cmd!r}, which is not a command it can "
+                                  f"hand over: {', '.join(ENTRY)}")
+            argv = [target] if isinstance(target, str) else target
+            if not (isinstance(argv, list) and argv
+                    and all(isinstance(a, str) and a for a in argv)):
+                raise ConfigError(f"entry {cmd!r} must be a script, or a list of a script "
+                                  f"and the arguments it always takes")
+            if not (cfg.root / argv[0]).is_file():
+                raise ConfigError(f"entry {cmd!r} names {argv[0]}, which does not exist")
+            for section in ENTRY[cmd]:
+                if d.get(section):
+                    raise ConfigError(
+                        f"entry {cmd!r} hands the command to {argv[0]}, and `{section}` "
+                        f"is declared here too. That is the same thing said in two "
+                        f"places, and they will drift: say it in one")
 
 
 def starter(name):

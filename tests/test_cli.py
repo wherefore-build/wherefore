@@ -29,5 +29,26 @@ class Init(unittest.TestCase):
         self.assertIn("already exists", out)
 
 
+class HandedOver(unittest.TestCase):
+    def test_a_command_runs_the_clients_own_script_with_what_was_typed(self):
+        script = ("import os, sys\n"
+                  "print('client gate', sys.argv[1:], os.getcwd() == os.environ['WHEREFORE_ROOT'])\n"
+                  "sys.exit(3)\n")
+        root = repo({"wherefore.json": {"wherefore": 1, "name": "t", "entry": {
+                         "why": "its lists live in the scripts its proofs plant into",
+                         "gate": "checks/gate.py",
+                         "check retired": ["checks/gate.py", "--retired"]}},
+                     "checks/gate.py": script})
+        code, out = wherefore(root, "gate", "--keep")
+        self.assertEqual(code, 3, out)
+        self.assertIn("client gate ['--keep'] True", out)
+        code, out = wherefore(root, "check", "retired")
+        self.assertEqual(code, 3, out)
+        self.assertIn("client gate ['--retired'] True", out)
+        # a command not handed over is still the engine's, and says what it lacks
+        code, out = wherefore(root, "check", "claims")
+        self.assertNotIn("client gate", out)
+
+
 if __name__ == "__main__":
     unittest.main()

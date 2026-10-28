@@ -40,6 +40,13 @@ in order, its inventory of authored and captured files, and every exception to
 byte-identity. Every exemption carries a `why`, and the engine refuses an entry
 that has none. `tests/fixture/` is a complete, fictional example.
 
+A client that configures the engine in Python instead, in the scripts its
+proofs plant faults into, names those scripts in `entry`, and each command runs
+the client's own script exactly as its CI does. The engine refuses a command
+that is handed over and configured in `wherefore.json` as well, because that is
+one fact in two places. `chaotic-pendulums-co` is that kind of client; see
+`integration/chaotic-pendulums-co/`.
+
 ## This repository
 
 | path | what |
