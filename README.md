@@ -61,6 +61,7 @@ one fact in two places. `chaotic-pendulums-co` is that kind of client; see
 | `ENGINE_INVENTORY.md` | what was moved from the pendulum repo, and how |
 | `ARCHITECTURE_REVIEW.md` | the review the extraction follows, and the decisions taken |
 | `VERSIONING_SHAPE.md` | the next extraction's questions, with recommendations, waiting on the owner |
+| `DIRECTIONS.md` | where it could go: obligations, sign-off, agents in the loop, onboarding; none of it built |
 
 ```
 python3 -m unittest discover tests
