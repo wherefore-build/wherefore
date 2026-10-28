@@ -30,6 +30,9 @@ wherefore build                  # regenerate everything, twice, and keep the re
 wherefore gate --restamp GROUP   # after re-making a capture
 wherefore prove                  # run the client's proofs, one at a time, in place
 wherefore list                   # run every generator once and say what each wrote
+wherefore check retired         # nothing a person reads still claims a retired value or phrase
+wherefore check reach           # every fact, moved one at a time, reaches what it should
+wherefore check claims          # every claim says only what its rule allows
 ```
 
 A client describes its corpus in `wherefore.json`: its sources, its generators
@@ -44,7 +47,8 @@ that has none. `tests/fixture/` is a complete, fictional example.
 | `src/wherefore/` | the engine |
 | `tests/fixture/` | Fernhollow Kettles, a fictional company the engine proves itself against |
 | `proofs/` | the engine's proofs: each breaks the fixture one way and requires the right failure, in the right words |
-| `tests/` | unit tests |
+| `tests/` | unit tests, and `test_phase5.py`: the fixture compiled from its sources alone |
+| `tools/moved/` | the exact edits that turned each pendulum original into an engine module; `verify.py` re-runs them |
 | `ENGINE_INVENTORY.md` | what was moved from the pendulum repo, and how |
 | `ARCHITECTURE_REVIEW.md` | the review the extraction follows, and the decisions taken |
 

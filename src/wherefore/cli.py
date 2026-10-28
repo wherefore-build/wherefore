@@ -103,7 +103,8 @@ def _check(args):
         return retired.main(cfg, rest)
     if name == "reach":
         from . import reach
-        return reach.main(cfg, rest)
+        reach.configure_from(cfg)
+        return reach.main(["wherefore", *rest]) or 0
     if name == "claims":
         from . import claims
         return claims.main(cfg, rest)

@@ -75,5 +75,95 @@
  },
  "proofs": {
   "glob": "proofs/*_proof.py"
- }
+ },
+ "surfaces": {
+  "read": {
+   "include": [
+    [
+     "site",
+     "*.html"
+    ],
+    [
+     "deck",
+     "*.svg"
+    ],
+    [
+     "deck",
+     "*.txt"
+    ],
+    [
+     ".",
+     "*.md"
+    ]
+   ],
+   "skip": [],
+   "archive": [
+    "CHANGELOG"
+   ],
+   "why": "everything a customer or a buyer reads; code is not here - a literal in a generator is the reach probe's problem"
+  }
+ },
+ "retired": {
+  "register": {
+   "source": "facts",
+   "at": "retired"
+  },
+  "surface": "read",
+  "assertion_patterns": [
+   "\\$\\s*{v}(?![\\d.,])",
+   "^\\s*{v}\\s*$"
+  ],
+  "exemptions": [],
+  "why": "a fact goes stale as a number and a description goes stale as a sentence; both are read by the same person"
+ },
+ "reach": {
+  "facts": {
+   "source": "facts",
+   "include": [
+    "company.*",
+    "product.*",
+    "origin.activities.*"
+   ],
+   "exclude": [],
+   "why": "every fact the corpus states; the origin note and the retired register are prose about the facts, read by people and by the retired check, never by a generator"
+  },
+  "watched": [
+   "site",
+   "deck"
+  ],
+  "exclude": [],
+  "exempt": {},
+  "unconsumed": {},
+  "probes": [
+   {
+    "name": "the price",
+    "fact": "product.price_usd",
+    "reaches": "the page, the deck and the notes",
+    "files": [
+     "site/index.html",
+     "deck/one-pager.svg",
+     "deck/speaker-notes.txt"
+    ]
+   }
+  ],
+  "audience": "a customer"
+ },
+ "claims": [
+  {
+   "name": "the origin",
+   "trigger": "in Portugal",
+   "surface": "read",
+   "may_say": {
+    "assembled": "every kettle is assembled at the bench in Porto",
+    "tested": "every kettle is boil-tested in Porto before it is boxed"
+   },
+   "never": {
+    "made": "the heating element is bought in, so the kettle is not made in Portugal",
+    "manufactured": "the same: the element is bought in",
+    "produced": "the same: the element is bought in",
+    "built": "the same: the element is bought in"
+   },
+   "why": "an origin claim has a regulated meaning; copy may name only what happens there"
+  }
+ ]
 }
