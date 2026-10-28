@@ -3,6 +3,8 @@
 require `wherefore check retired` to say where - and not to cry wolf.
 
   1. "$79" in the landing page's prose                 the price, retired
+  1b. "$79." ending a sentence                          a full stop is not a decimal
+  1c. "$79.50"                                          another price: not a hit
   2. "79" alone in a deck label                         a whole label is a claim
   3. "79 degrees" in the speaker notes                  ANOTHER quantity: not a hit
   4. "Stovetop  Kettle" in the README                   case and spacing are no disguise
@@ -73,6 +75,14 @@ PAGE, PRICE = "site/index.html", "for $89.</p>"
 with plant(PAGE, PRICE, "for $89 (was $79).</p>"):
     check("1. $79 in the page's prose -> named", True,
           ["FAIL", "79 -> 89", "site/index.html   says"])
+
+with plant(PAGE, PRICE, "for $79.</p>"):
+    check("1b. $79 at the end of a sentence -> named, the full stop is not a decimal", True,
+          ["79 -> 89", "site/index.html   says"])
+
+with plant(PAGE, PRICE, "for $89, or $79.50 with the old lid.</p>"):
+    check("1c. $79.50 is another price -> not a hit", False, ["ok       79 -> 89"],
+          forbid=["says"])
 
 with plant("deck/one-pager.svg", ">Fernhollow Kettles</text>", ">79</text>"):
     check("2. a deck label that says only 79 -> named", True,

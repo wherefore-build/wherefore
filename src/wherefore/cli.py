@@ -8,6 +8,7 @@
   wherefore gate --restamp GROUP  record a re-made capture against its sources
   wherefore prove [SCRIPT ...]    run the proofs, one at a time, in place
   wherefore check NAME            retired | reach | claims
+  wherefore hook install          a pre-push hook: no push leaves the corpus stale
 
 Every command finds its client by looking for wherefore.json in the working
 directory and above it, or in WHEREFORE_ROOT.
@@ -112,8 +113,13 @@ def _check(args):
     return 1
 
 
+def _hook(args):
+    from . import hook
+    return hook.main(cfgmod.load(), args)
+
+
 COMMANDS = {"init": _init, "list": _list, "build": _build, "gate": _gate,
-            "prove": _prove, "check": _check}
+            "prove": _prove, "check": _check, "hook": _hook}
 
 
 def main(argv=None):

@@ -110,7 +110,7 @@
   },
   "surface": "read",
   "assertion_patterns": [
-   "\\$\\s*{v}(?![\\d.,])",
+   "\\$\\s*{v}(?!\\d|[.,]\\d)",
    "^\\s*{v}\\s*$"
   ],
   "exemptions": [],
