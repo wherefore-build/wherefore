@@ -3,12 +3,23 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "wherefore"
+# The distribution is wherefore-build: `wherefore` on PyPI is another project's
+# (DECISIONS.md in wherefore-co, section 2). What is imported and what is typed
+# are still `wherefore`.
+name = "wherefore-build"
 version = "0.2.0"
 description = "A company that compiles: every asset generated from one source of truth, every change proven."
 readme = "README.md"
+license = {text = "Apache-2.0"}
 requires-python = ">=3.10"
 dependencies = []
+keywords = ["build", "documentation", "single source of truth", "ci", "agents"]
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Environment :: Console",
+    "Topic :: Software Development :: Build Tools",
+]
 
 [project.optional-dependencies]
 # The comparators that are not bytes. The core is the standard library only,

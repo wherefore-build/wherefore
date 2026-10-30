@@ -8,6 +8,22 @@ The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact
 (DIRECTIONS.md §12, §13).
 
+## Unreleased
+
+Ready to be published, not published. The owner decided on 2026-10-30 that the
+engine is open source.
+
+- **Apache-2.0** (`LICENSE`), and the distribution is renamed
+  **`wherefore-build`**: `wherefore` on PyPI is another project's. The import
+  name and the command are still `wherefore`. A pin that names a commit after
+  this one must say `wherefore-build @ git+...`.
+- **`release.yml` can publish to PyPI** by trusted publishing, with no token
+  stored - but only while the repository variable `PUBLISH_TO_PYPI` is `true`,
+  which the owner sets when it is time.
+- **`PUBLISHING.md`:** what the public repository leaves out (the pendulum's
+  patch series and the design records about its internals), and the steps.
+  **`CONTRIBUTING.md`** and **`SECURITY.md`**.
+
 ## 0.2.0 (2026-10-30)
 
 The skill ships with the engine, and starts a corpus as well as working in one.

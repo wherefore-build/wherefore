@@ -10,6 +10,12 @@
 #
 # workflow_dispatch with `ref` publishes an earlier commit's version that was
 # never tagged - how v0.1.0, merged before this file existed, gets its tag.
+#
+# AND TO PyPI, ONLY WHEN THE OWNER HAS SWITCHED IT ON. The `pypi` job runs for a
+# version this run newly tagged, and only while the repository variable
+# PUBLISH_TO_PYPI is "true" - publishing is the owner's decision, made once,
+# by setting it (PUBLISHING.md). It uploads by PyPI's trusted publishing: PyPI
+# trusts this workflow in this repository, so no PyPI token is stored anywhere.
 name: release
 
 on:
@@ -28,11 +34,15 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    outputs:
+      tagged: ${{ steps.tag.outputs.tagged }}
+      sha: ${{ steps.tag.outputs.sha }}
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Tag and publish the version this commit declares, once
+        id: tag
         env:
           GH_TOKEN: ${{ github.token }}
           REF: ${{ inputs.ref || github.sha }}
@@ -43,8 +53,10 @@ jobs:
             echo "::error::pyproject.toml at $SHA declares no version"
             exit 1
           fi
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
           if git rev-parse -q --verify "refs/tags/v$V" >/dev/null; then
             echo "v$V is already tagged - nothing to publish."
+            echo "tagged=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git show "$SHA:CHANGELOG.md" | awk -v h="## $V (" 'index($0, h) == 1 {on = 1; next} /^## / && on {exit} on' > notes.md
@@ -53,3 +65,23 @@ jobs:
             exit 1
           fi
           gh release create "v$V" --target "$SHA" --title "Wherefore $V" --notes-file notes.md
+          echo "tagged=true" >> "$GITHUB_OUTPUT"
+
+  pypi:
+    needs: publish
+    if: needs.publish.outputs.tagged == 'true' && vars.PUBLISH_TO_PYPI == 'true'
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.publish.outputs.sha }}
+      - name: Build the release that was just tagged
+        run: |
+          python3 -m pip install --quiet build
+          python3 -m build
+      - name: Upload it to PyPI, by trusted publishing
+        uses: pypa/gh-action-pypi-publish@release/v1

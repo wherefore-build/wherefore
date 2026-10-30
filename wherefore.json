@@ -61,6 +61,10 @@
      "the package: its name, version and dependencies"
     ],
     [
+     "LICENSE",
+     "the licence, Apache-2.0, exactly as the Apache Software Foundation publishes it"
+    ],
+    [
      ".gitignore",
      "what is never committed"
     ],
