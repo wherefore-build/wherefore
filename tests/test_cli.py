@@ -11,9 +11,8 @@ class Init(unittest.TestCase):
         root = repo({"README.md": "# a company\n", "facts.json": "{}\n"})
         code, out = wherefore(root, "init", str(root))
         self.assertEqual(code, 0, out)
-        cfg = json.loads((root / "wherefore.json").read_text())
-        cfg["sources"] = {"facts": {"path": "facts.json", "why": "the source"}}
-        (root / "wherefore.json").write_text(json.dumps(cfg, indent=1))
+        # exactly what init wrote, with no source declared yet: init says the
+        # gate names every undecided file, and the gate must do it
         git(root, "add", "-A")
         code, out = wherefore(root, "gate")
         self.assertEqual(code, 1, out)

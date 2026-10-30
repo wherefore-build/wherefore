@@ -8,7 +8,56 @@ The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact
 (DIRECTIONS.md §12, §13).
 
-## Unreleased
+## 0.2.1 (2026-10-30)
+
+What a fresh review found, fixed, and ready to be published. Every fault
+below was reproduced on the fixture company first, and each now has a test
+that plants it (`tests/test_false_passes.py`, `tests/test_hook.py`).
+
+**The gate no longer passes when it should fail:**
+- a generator that succeeds on the first pass and throws on the second is a
+  failure, not "the corpus settles";
+- a tracked file missing from the working tree is said, not compared with
+  nothing - the pre-push hook passed a stale tree that way - and the gate
+  leaves it missing, as it found it;
+- `--restamp` takes exactly one group: re-stamping every group at once would
+  certify captures nobody re-made;
+- a captured group must say what it was made from (`shot_from`,
+  `spec_values`) or why there is nothing (`no_stamp`, with the reason), and
+  must name its `files`. A group with neither stamped the hash of nothing and
+  passed for ever.
+
+**`check retired` and `check claims` read what they missed:**
+- a page whose name is not plain ASCII (`précis.html`) was never read: git
+  quoted the name and it matched no file;
+- a retired number is searched for written out in full - a million was
+  searched for as `1e+06` - with a thousands comma and trailing zeros allowed,
+  so 12.5 finds "$12.50" and 1000000 finds "1,000,000".
+
+**The pre-push hook:**
+- when git cannot say what a push changes - the first push of a new
+  repository, or a remote tip this clone has not fetched - it rolls the corpus
+  rather than assume nothing moved;
+- nothing is skipped unless `hook.skip` says so. Prose was skipped by default,
+  which excused a Markdown template a generator reads;
+- it runs with the interpreter the engine is installed in, not whatever
+  `python3` is on PATH, which blocked every push from a virtual environment.
+
+**Commands:**
+- it runs on Python 3.10 and 3.11, as it says: a backslash inside an
+  f-string made `generators.py` a syntax error before 3.12, and CI now tests
+  3.10 to 3.13;
+- `wherefore init` and then `wherefore gate` does what init says - names every
+  file nobody has accounted for - instead of refusing a corpus with no source
+  yet;
+- `wherefore prove` with a `proofs` glob that matches nothing fails: "0/0
+  proofs held" passed;
+- a flag a command does not take is refused, not ignored (`gate --kep` ran
+  the whole gate), and `--help` prints the usage and runs nothing;
+- a generator `cwd` that does not exist, a directory that is not a git
+  repository, an inventory with no `captured` section, and a capture reading
+  `spec_values` from an untracked source each say so, instead of a traceback;
+- `wherefore list` says that what it wrote is left in the working tree.
 
 Ready to be published, not published. The owner decided on 2026-10-30 that the
 engine is open source.

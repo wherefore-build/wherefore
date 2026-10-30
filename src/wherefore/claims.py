@@ -88,15 +88,12 @@ def faults(claim, text):
 
 def main(cfg, argv=()):
     """`wherefore check claims`: every declared claim, against its surface."""
-    import subprocess
-    from .retired import files
+    from .retired import files, tracked_files
     claims = cfg.doc.get("claims", [])
     if not claims:
         print("no claims are declared - nothing here may only be said with a reason")
         return 0
-    tracked = {cfg.root / line for line in subprocess.run(
-        ["git", "-C", str(cfg.root), "ls-files"], capture_output=True, text=True,
-        check=True).stdout.splitlines() if line}
+    tracked = tracked_files(cfg.root)
     total = 0
     for c in claims:
         for key in ("name", "trigger", "surface", "why"):

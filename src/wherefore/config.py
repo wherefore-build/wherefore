@@ -227,7 +227,28 @@ def validate(cfg):
                                   f"[pattern, why] or [pattern, why, [exceptions]]")
             _why(rule[1], f"authored rule {rule[0]!r} in {cfg.where('inventory')}")
         for name, grp in inv.get("captured", {}).get("groups", {}).items():
-            _why(grp.get("why"), f"captured group {name!r} in {cfg.where('inventory')}")
+            where = f"captured group {name!r} in {cfg.where('inventory')}"
+            _why(grp.get("why"), where)
+            files = grp.get("files")
+            if not (isinstance(files, list) and files and all(isinstance(f, str) and f for f in files)):
+                raise ConfigError(f"{where} needs `files`: the globs of what it captured")
+            # WHAT IT WAS MADE FROM, OR WHY NOTHING. A group with neither stamped
+            # to the hash of nothing and passed for ever - a third answer beside
+            # the two the gate means to accept.
+            made_from = grp.get("shot_from") or grp.get("spec_values")
+            if grp.get("no_stamp"):
+                if made_from:
+                    raise ConfigError(f"{where} says what it was made from and `no_stamp` "
+                                      f"too: it is one or the other")
+                _why(grp["no_stamp"], f"{where} says `no_stamp`, and")
+            elif not made_from:
+                raise ConfigError(f"{where} says neither what it was made from "
+                                  f"(`shot_from`, `spec_values`) nor why there is nothing "
+                                  f"(`no_stamp`, with the reason). A stamp over nothing "
+                                  f"would pass for ever")
+            if grp.get("spec_values") and not d.get("sources"):
+                raise ConfigError(f"{where} reads `spec_values`, and no source is declared "
+                                  f"to read them from")
     entry = d.get("entry")
     if entry is not None:
         if not isinstance(entry, dict):

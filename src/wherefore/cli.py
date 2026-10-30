@@ -20,6 +20,12 @@ from . import config as cfgmod
 
 
 def _init(args):
+    if len(args) > 1 or (args and args[0].startswith("-")):
+        if args[0] in ("-h", "--help"):
+            print("usage: wherefore init [DIR]")
+            return 0
+        print(f"::error::wherefore init takes one directory, at most: {' '.join(args)}")
+        return 2
     target = pathlib.Path(args[0] if args else ".").resolve()
     path = target / cfgmod.NAME
     if path.exists():
@@ -57,8 +63,27 @@ def _configured():
     return cfg, generators, gate
 
 
+def _takes_nothing(name, args):
+    """An exit code for arguments a command does not take, or None.
+
+    Refused rather than ignored: a flag nobody reads is a flag somebody thinks
+    did something.
+    """
+    if not args:
+        return None
+    rows = [c["usage"] for c in commands() if c["usage"].split()[1:2] == [name]]
+    if any(a in ("-h", "--help") for a in args):
+        print("usage: " + "\n       ".join(rows))
+        return 0
+    print(f"::error::wherefore {name} takes no arguments: {' '.join(args)}")
+    return 2
+
+
 def _list(args):
     r = _handed_over(cfgmod.load(), "list", args)
+    if r is not None:
+        return r
+    r = _takes_nothing("list", args)
     if r is not None:
         return r
     _cfg, G, _gate = _configured()
@@ -72,6 +97,9 @@ def _list(args):
 
 def _build(args):
     r = _handed_over(cfgmod.load(), "build", args)
+    if r is not None:
+        return r
+    r = _takes_nothing("build", args)
     if r is not None:
         return r
     _cfg, G, _gate = _configured()
@@ -96,6 +124,11 @@ def _prove(args):
             print("::error::wherefore.json declares no `proofs` glob, and none were named")
             return 1
         scripts = sorted(p.relative_to(cfg.root) for p in cfg.root.glob(pattern))
+        if not scripts:
+            # "0/0 proofs held" passed, so a mistyped glob turned a CI step green.
+            print(f"::error::the `proofs` glob {pattern!r} matches no file. A proof step "
+                  f"that runs nothing proves nothing")
+            return 1
     env = dict(os.environ, WHEREFORE_ROOT=str(cfg.root))
     # ONE AT A TIME, IN PLACE. A proof plants its fault in the working tree and
     # puts it back; two at once in one checkout plant into each other's tree.

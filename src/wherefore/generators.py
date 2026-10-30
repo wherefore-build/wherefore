@@ -158,8 +158,17 @@ def run_all(quiet=True, only_resettle=False):
         for i, g in enumerate(GENERATORS):
             if only_resettle and not g.resettle:
                 continue
-            log = tmp / f"{i:02d}-{re.sub(r'[^\w.-]+', '_', g.script)}.log"
+            # Named outside the f-string: a backslash inside one is a syntax
+            # error before Python 3.12, and the engine runs on 3.10.
+            safe = re.sub(r"[^\w.-]+", "_", g.script)
+            log = tmp / f"{i:02d}-{safe}.log"
             env[f"{ENV_PREFIX}WRITE_LOG"] = str(log)
+            if not (ROOT / g.cwd).is_dir():
+                failures.append((g.script, f"its cwd, {g.cwd!r}, is not a directory in "
+                                           f"{ROOT}: nothing ran"))
+                if not quiet:
+                    print(f"  FAIL {g.script}")
+                continue
             r = subprocess.run(argv(g), cwd=ROOT / g.cwd,
                                capture_output=True, text=True, env=env)
             if r.returncode:
@@ -184,9 +193,12 @@ def run_all(quiet=True, only_resettle=False):
 
 def tracked():
     """Every tracked file, as an absolute realpath -> repo-relative name."""
-    out = subprocess.run(["git", "ls-files", "-z"], cwd=ROOT,
-                         capture_output=True, text=True, check=True).stdout
-    return {os.path.realpath(ROOT / f): f for f in out.split("\0") if f}
+    r = subprocess.run(["git", "ls-files", "-z"], cwd=ROOT, capture_output=True, text=True)
+    if r.returncode:
+        raise SystemExit(f"::error::{ROOT} is not a git repository, or git cannot read it "
+                         f"({r.stderr.strip()}). Every judgement here is over what git "
+                         f"tracks, so there is nothing to judge until it is one.")
+    return {os.path.realpath(ROOT / f): f for f in r.stdout.split("\0") if f}
 
 
 def roll():
@@ -258,6 +270,7 @@ def main():
           f"{untracked} writes to paths git does not track")
     for script, err in failures:
         print(f"\n::error::{script} failed:\n{err}")
+    print("\nWhat they wrote is left in the working tree: `git status` shows what moved.")
     return 1 if failures else 0
 
 

@@ -27,6 +27,35 @@ jobs:
             python "$p"
           done
 
+  # EVERY OTHER PYTHON pyproject.toml CLAIMS. 0.2.0 said 3.10 and did not even
+  # import below 3.12 - a backslash inside an f-string - because CI only ever
+  # ran the runner's own Python, which `engine` above still does. uv fetches
+  # each interpreter, so no action has to be trusted for it.
+  pythons:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v7
+      - name: Python ${{ matrix.python }}, by uv
+        env:
+          PY: ${{ matrix.python }}
+        run: |
+          python3 -m venv "$RUNNER_TEMP/uv"
+          "$RUNNER_TEMP/uv/bin/pip" install --quiet uv
+          "$RUNNER_TEMP/uv/bin/uv" venv --quiet --python "$PY" .venv
+          "$RUNNER_TEMP/uv/bin/uv" pip install --quiet --python .venv/bin/python -e '.[pictures,xlsx]'
+          .venv/bin/python --version
+      - name: Test and prove
+        run: |
+          .venv/bin/python -m unittest discover -s tests
+          for p in proofs/*_proof.py; do
+            echo "== $p"
+            .venv/bin/python "$p"
+          done
+
   # THIS REPOSITORY AS A CLIENT OF ITSELF. Its README is generated, the
   # commands its documents name must exist, and the version must move with
   # the code - judged by the PREVIOUS release, installed from
