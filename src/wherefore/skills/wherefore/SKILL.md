@@ -1,9 +1,14 @@
 ---
 name: wherefore
-description: Work in a repository whose documents are compiled from one source of truth by Wherefore - a wherefore.json at the root, generators that write every asset, a coverage gate that proves every tracked file is generated, authored or captured. Use when changing a fact, adding a generator, adding or fixing a check, or when the gate, a retired-facts sweep, the source-reach probe or a claim rule fails.
+description: Set up or work in a repository whose documents are compiled from one source of truth by Wherefore - a wherefore.json at the root, generators that write every asset, a coverage gate that proves every tracked file is generated, authored or captured. Use when starting Wherefore in a repository (read start.md), changing a fact, adding a generator, adding or fixing a check, or when the gate, a retired-facts sweep, the source-reach probe or a claim rule fails.
 ---
 
 # Working in a corpus that compiles
+
+**Starting from nothing?** If there is no `wherefore.json`, or it declares
+nothing but the generator that writes this skill, read `start.md` beside this
+file first: it takes a repository from its first interview with the owner to
+one fact compiled and held.
 
 A Wherefore repository has one source of truth and generates everything else
 from it. Your job is never to make a document say the right thing. It is to

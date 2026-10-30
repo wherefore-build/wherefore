@@ -255,18 +255,29 @@ def validate(cfg):
                         f"places, and they will drift: say it in one")
 
 
+SKILL_GENERATOR = {
+    "script": "-m wherefore.skill",
+    "cwd": ".",
+    "makes": ".claude/skills/wherefore/, the skill the pinned release ships, for every "
+             "coding agent that works here",
+}
+
+
 def starter(name):
-    """What `wherefore init` writes: a corpus that declares nothing yet.
+    """What `wherefore init` writes: a corpus that declares nothing yet but the
+    skill its agents read.
 
     Run the gate on it and every tracked file but this one fails as
     unclassified, which is the right first instruction: decide what each file
-    is, and write the reason down.
+    is, and write the reason down. The one generator writes the skill from the
+    installed engine (wherefore.skill), so the skill an agent reads here is
+    always the release's, and the gate says when it is not.
     """
     return {
         "wherefore": SCHEMA,
         "name": name,
         "sources": {},
-        "generators": [],
+        "generators": [dict(SKILL_GENERATOR)],
         "not_a_generator": {},
         "inventory": {
             "note": "Every tracked file is generated, authored or captured. GENERATED is "

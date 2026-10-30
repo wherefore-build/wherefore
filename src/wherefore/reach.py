@@ -268,7 +268,7 @@ def regenerate(strict=True, wrote=None):
         for g in G.GENERATORS:
             if not g.probe:
                 continue        # see checks/generators.py: nothing watched moves
-            r = subprocess.run([sys.executable, g.script], cwd=ROOT / g.cwd,
+            r = subprocess.run(G.argv(g), cwd=ROOT / g.cwd,
                                capture_output=True, text=True, env=env)
             if r.returncode:
                 if strict:
