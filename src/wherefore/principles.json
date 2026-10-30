@@ -1,5 +1,5 @@
 {
- "note": "The principles the engine enforces, said once. The README is generated from this (corpus/readme.py), and so is anything else that states them - the company's site reads it from the release it pins. `*word*` is emphasis, in every place this is rendered. skills/wherefore/SKILL.md says how to work by each one, which is guidance about these and not a second copy of them.",
+ "note": "The principles the engine enforces, said once. The README is generated from this (corpus/readme.py), and so is anything else that states them - the company's site reads it from the release it pins. `*word*` is emphasis, in every place this is rendered. The skill (src/wherefore/skills/wherefore/) says how to work by each one, which is guidance about these and not a second copy of them.",
  "principles": [
   {
    "rule": "A fact exists in exactly one place.",

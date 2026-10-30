@@ -8,6 +8,28 @@ The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact
 (DIRECTIONS.md §12, §13).
 
+## 0.2.0 (2026-10-30)
+
+The skill ships with the engine, and starts a corpus as well as working in one.
+
+- **A second half of the skill, `start.md`:** the first session in a
+  repository with no corpus yet, for a coding agent. It interviews the owner
+  (what the company says in more than one place, where, and which systems
+  already own a fact), counts every copy before changing anything, and takes
+  one fact end to end - source, generator, reach, the hook and CI - before a
+  second asset is touched. `SKILL.md` sends an agent there when there is
+  nothing to work in yet.
+- **The skill is in the package** (`src/wherefore/skills/wherefore/`), so each
+  release carries the skill that matches its commands, and
+  `corpus/commands_named.py` reads both files.
+- **A corpus's copy is generated, not kept.** `wherefore init` now declares one
+  generator, `python -m wherefore.skill`, which writes the release's skill into
+  `.claude/skills/wherefore/` on every build. The gate holds that copy to the
+  pinned release: move the pin and the skill moves with it, or the gate names
+  the file that did not.
+- **A generator's `script` may be `-m MODULE`,** run as `python -m` runs it, so
+  a corpus can declare a module of an installed package without a copy of it.
+
 ## 0.1.1 (2026-10-28)
 
 Wherefore on Wherefore: this repository becomes a client of its own engine.

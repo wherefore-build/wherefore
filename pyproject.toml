@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wherefore"
-version = "0.1.1"
+version = "0.2.0"
 description = "A company that compiles: every asset generated from one source of truth, every change proven."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -26,5 +26,8 @@ where = ["src"]
 # The observer is a module called sitecustomize in a directory that holds
 # nothing else, put on PYTHONPATH - not a package, so it is shipped as data.
 # The commands and the principles are said once each, here, and a client that
-# states them - the company's site - reads them from the release it pins.
-wherefore = ["_observe/sitecustomize.py", "commands.json", "principles.json"]
+# states them - the company's site - reads them from the release it pins. The
+# skill ships too: a corpus's agents read the release's own, written by the
+# wherefore.skill generator, never a copy kept by hand.
+wherefore = ["_observe/sitecustomize.py", "commands.json", "principles.json",
+             "skills/wherefore/SKILL.md", "skills/wherefore/start.md"]

@@ -10,7 +10,8 @@ be one src/wherefore/commands.json lists, subcommand and all. A command renamed
 in the CLI and not in the skill fails here, naming the file and the line.
 
 WHAT IT READS: the documents a person reads to USE Wherefore - the README, the
-changelog, the skill and docs/. Not the design records (ARCHITECTURE_REVIEW,
+changelog, the skill (both its files: working in a corpus, and starting one)
+and docs/. Not the design records (ARCHITECTURE_REVIEW,
 ENGINE_INVENTORY, VERSIONING_SHAPE, DIRECTIONS), which discuss commands that
 were proposed and may never be built; they are a record, not instructions.
 
@@ -28,7 +29,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 COMMANDS = ROOT / "src/wherefore/commands.json"
-READ = ("README.md", "CHANGELOG.md", "skills/*/SKILL.md", "docs/*.md")
+READ = ("README.md", "CHANGELOG.md", "src/wherefore/skills/*/*.md", "docs/*.md")
 
 FENCED = re.compile(r"```.*?```", re.S)
 INLINE = re.compile(r"`[^`\n]+`")

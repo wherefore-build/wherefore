@@ -32,15 +32,15 @@ def planted(p, line):
 
 def main():
     r = []
-    with Edit("skills/wherefore/SKILL.md") as p:
+    with Edit("src/wherefore/skills/wherefore/SKILL.md") as p:
         planted(p, "Then run `wherefore frobnicate` to finish.")
         check(r, "a command that does not exist, in the skill", CHECK, True,
-              ["skills/wherefore/SKILL.md:", "`wherefore frobnicate` - there is no such command"])
+              ["src/wherefore/skills/wherefore/SKILL.md:", "`wherefore frobnicate` - there is no such command"])
     with Edit("docs/README.template.md") as p:
         planted(p, "```\nwherefore check spelling\n```")
         check(r, "a check that does not exist, in the README's template", CHECK, True,
               ["docs/README.template.md:", "`wherefore check spelling` - check takes claims, reach, retired"])
-    with Edit("skills/wherefore/SKILL.md") as p:
+    with Edit("src/wherefore/skills/wherefore/SKILL.md") as p:
         planted(p, "`from wherefore import prove` gives a proof its harness.")
         check(r, "a module named, not a command - must not fire", CHECK, False, [PASS])
     with Edit("DIRECTIONS.md") as p:

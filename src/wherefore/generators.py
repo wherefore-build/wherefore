@@ -49,6 +49,7 @@ import collections
 import hashlib
 import os
 import pathlib
+import re
 import shutil
 import subprocess
 import sys
@@ -62,7 +63,9 @@ TEMP_PREFIX = "wherefore-"
 GATE_ARGV = [sys.executable, "-m", "wherefore", "gate", "--keep"]
 GATE_NAME = "`wherefore gate`"
 
-# script    the file to run
+# script    the file to run - or `-m MODULE`, a module of an installed package,
+#           run as `python -m` runs it: how a corpus declares the engine's own
+#           skill writer, wherefore.skill, without a copy of it
 # cwd       the directory it must run in. This matters: the brand generators
 #           are written for `cd code && python3 buildpack.py`, so the pack can
 #           be rebuilt from inside the pack, and running them from the repo
@@ -123,6 +126,13 @@ def configure_from(cfg):
               cfg.env_prefix, cfg.temp_prefix)
 
 
+def argv(g):
+    """The command that runs generator `g`: `python SCRIPT`, or `python -m MODULE`."""
+    if g.script.startswith("-m "):
+        return [sys.executable, "-m", g.script[3:].strip()]
+    return [sys.executable, g.script]
+
+
 def run_all(quiet=True, only_resettle=False):
     """Run every generator in order, watching what each one writes.
 
@@ -148,9 +158,9 @@ def run_all(quiet=True, only_resettle=False):
         for i, g in enumerate(GENERATORS):
             if only_resettle and not g.resettle:
                 continue
-            log = tmp / f"{i:02d}-{g.script}.log"
+            log = tmp / f"{i:02d}-{re.sub(r'[^\w.-]+', '_', g.script)}.log"
             env[f"{ENV_PREFIX}WRITE_LOG"] = str(log)
-            r = subprocess.run([sys.executable, g.script], cwd=ROOT / g.cwd,
+            r = subprocess.run(argv(g), cwd=ROOT / g.cwd,
                                capture_output=True, text=True, env=env)
             if r.returncode:
                 failures.append((g.script, (r.stderr or r.stdout)[-1800:]))
