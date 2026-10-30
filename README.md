@@ -67,8 +67,16 @@ one fact in two places. `chaotic-pendulums-co` is that kind of client; see
 | `docs/README.template.md` | the README's text; the README is generated from it, `src/wherefore/commands.json` and `src/wherefore/principles.json` |
 | `requirements-engine.txt` | the previous release, which judges this repository's own corpus |
 | `DIRECTIONS.md` | where it could go: obligations, sign-off, agents in the loop, onboarding; none of it built |
+| `LICENSE` | Apache-2.0 |
+| `CONTRIBUTING.md`, `SECURITY.md` | how to work on the engine, and how to report a vulnerability |
+| `PUBLISHING.md` | going public: what the public repository leaves out, and the switch that publishes to PyPI |
 
 ```
 python3 -m unittest discover tests
 for p in proofs/*_proof.py; do python3 "$p" || exit 1; done
 ```
+
+## Licence
+
+Apache-2.0 (`LICENSE`). The package is published as `wherefore-build`; what you
+import and what you type are `wherefore`.
