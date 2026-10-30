@@ -52,6 +52,7 @@ for what it will and will not swear to.
 
 Usage:  wherefore check retired
 """
+from decimal import Decimal
 import json
 import io
 import re
@@ -188,6 +189,37 @@ def phrase_hits(phrase, chunks):
 
 
 
+def needle(value):
+    """A retired number as a pattern that finds it however a page writes it.
+
+    Not `f"{value:g}"`, which keeps six significant digits and writes a million
+    as 1e+06: a retired 1000000 was searched for as `1e\\+06`, and 1234567 as
+    `1.23457e\\+06`, and neither was ever found. Written out in full instead,
+    with a thousands comma allowed and trailing zeros allowed, so 12.5 finds
+    "$12.50", 79 finds "$79.00", and 1000000 finds "1,000,000".
+    """
+    if isinstance(value, str):
+        try:
+            value = int(value)
+        except ValueError:
+            try:
+                value = float(value)
+            except ValueError:
+                return re.escape(value)
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return re.escape(str(value))
+    text = str(value) if isinstance(value, int) else format(Decimal(repr(value)), "f")
+    sign, text = ("-", text[1:]) if text.startswith("-") else ("", text)
+    whole, _, frac = text.partition(".")
+    frac = frac.rstrip("0")
+    groups = []
+    while len(whole) > 3:
+        groups.insert(0, whole[-3:])
+        whole = whole[:-3]
+    groups.insert(0, whole)
+    return re.escape(sign) + ",?".join(groups) + (rf"\.{frac}0*" if frac else r"(?:\.0+)?")
+
+
 def hits(value, chunks, patterns):
     """A retired value, claimed. Bare in a drawing's text, or with a unit in prose.
 
@@ -196,10 +228,22 @@ def hits(value, chunks, patterns):
     ASSERTED - standing alone in a label, or carrying mm, or inside an
     `a x b x c` envelope.
     """
-    v = re.escape(f"{value:g}")
+    v = needle(value)
     pats = [re.compile(p.replace("{v}", v)) for p in patterns]
     return [c.strip() for c in chunks
             if c.strip() and any(p.search(c) for p in pats)]
+
+
+def tracked_files(root):
+    """Every file git tracks, as absolute paths.
+
+    -z, because without it git quotes any path that is not plain ASCII -
+    "site/pr\\303\\251cis.html" - and the quoted name matches no file on disk,
+    so a page called précis.html was silently never read.
+    """
+    out = subprocess.run(["git", "-C", str(root), "ls-files", "-z"],
+                         capture_output=True, text=True, check=True).stdout
+    return {root / line for line in out.split("\0") if line}
 
 
 def files(root, include, skip, tracked):
@@ -254,12 +298,7 @@ def sweep(root, register, include, skip, archive, patterns, numbers_excused,
     # ONLY WHAT GIT TRACKS. A document a person reads is one this repository
     # keeps; a build artefact is a copy of one, and fixing the copy is not a
     # thing anybody can do.
-    tracked = {
-        (root / line) for line in subprocess.run(
-            ["git", "-C", str(root), "ls-files"],
-            capture_output=True, text=True, check=True,
-        ).stdout.splitlines() if line
-    }
+    tracked = tracked_files(root)
     found_files = files(root, include, skip, tracked)
 
     def is_archive(rel):

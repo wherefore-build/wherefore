@@ -167,7 +167,13 @@ def configure_from(cfg):
     """configure() this module and the runner from a loaded wherefore.json."""
     import json as _json
     G.configure_from(cfg)
-    _name, src = cfg.source()
+    # A corpus with no source yet - what `wherefore init` writes - can still be
+    # classified, and that is the first thing it needs. Only spec_values reads
+    # the source, and stamp_for says so if one asks for it with none declared.
+    if cfg.doc.get("sources"):
+        _name, src = cfg.source()
+    else:
+        src = {"path": None, "adapter": None}
     msg = cfg.doc.get("messages", {})
     if "inventory" in cfg.included:
         path = cfg.root / cfg.included["inventory"]
@@ -268,7 +274,7 @@ def captured_files(decl):
     """rel path -> (group name, the group), for every file a group claims."""
     out = {}
     for name, grp in decl["captured"]["groups"].items():
-        for pattern in grp["files"]:
+        for pattern in grp.get("files", []):
             for f in sorted(ROOT.glob(pattern)):
                 out[str(f.relative_to(ROOT))] = (name, grp)
     return out
@@ -325,6 +331,13 @@ def stamp_for(grp, snap):
         parts.append(f"{rel}={digest(f.read_bytes()) if f else 'MISSING'}")
     wanted = grp.get("spec_values", [])
     if wanted:
+        if SPEC is None:
+            raise SystemExit("::error::a captured group reads spec_values, and no source is "
+                             "declared to read them from: declare one in `sources`")
+        if SPEC not in snap:
+            raise SystemExit(f"::error::a captured group reads spec_values from {SPEC}, "
+                             f"which git does not track or the working tree does not have. "
+                             f"A stamp is over what is committed: add it")
         spec = json.loads(snap[SPEC].read_text(encoding="utf-8"))
         for dotted in wanted:
             parts.append(f"{dotted}={spec_value(spec, dotted)!r}")
@@ -392,24 +405,59 @@ def restamp(decl, snap, only=None):
           f"move together.")
 
 
+USAGE = ("usage: wherefore gate [--keep]\n"
+         "       wherefore gate --restamp GROUP")
+
+
+def parse(argv):
+    """(keep, restamp group or None), or an exit code for a line that means nothing.
+
+    A flag the gate does not know is refused rather than ignored: `--kep` used to
+    run the whole gate without --keep and pass, and `--help` ran it too.
+    """
+    args = list(argv[1:])
+    if any(a in ("-h", "--help") for a in args):
+        print(USAGE)
+        return 0
+    if "--restamp" in args:
+        i = args.index("--restamp")
+        rest = args[:i] + args[i + 2:]
+        group = args[i + 1] if len(args) > i + 1 and not args[i + 1].startswith("-") else None
+        if group is None or rest:
+            print("::error::--restamp takes exactly one GROUP, and nothing else. Re-stamping "
+                  "every group at once would certify captures nobody re-made.\n" + USAGE)
+            return 2
+        return False, group
+    unknown = [a for a in args if a != "--keep"]
+    if unknown:
+        print(f"::error::the gate does not take {' '.join(unknown)}\n{USAGE}")
+        return 2
+    return "--keep" in args, None
+
+
 def main(argv=None):
     argv = sys.argv if argv is None else argv
-    keep = "--keep" in argv
-    doing_restamp = "--restamp" in argv
+    parsed = parse(argv)
+    if isinstance(parsed, int):
+        return parsed
+    keep, only = parsed
+    doing_restamp = only is not None
 
     decl = DECL()
+    decl.setdefault("authored", {}).setdefault("rules", [])
+    decl.setdefault("captured", {}).setdefault("groups", {})
     names = sorted(G.tracked().values())
+    # TRACKED, AND NOT IN THE WORKING TREE. The snapshot cannot hold what is not
+    # there, so a generator that recreates it would be compared with nothing and
+    # pass - while what is committed may be stale. Said, not skipped.
+    missing = [rel for rel in names if not (ROOT / rel).is_file()]
     tmp = pathlib.Path(tempfile.mkdtemp(prefix=f"{G.TEMP_PREFIX}gate-"))
     try:
         with copying():
             snap = snapshot(names, tmp / "before")
 
         if doing_restamp:
-            i = argv.index("--restamp")
-            only = argv[i + 1] if len(argv) > i + 1 else None
-            print(f"Re-stamping {only!r}" if only
-                  else "Re-stamping EVERY captured group against its sources")
-            print()
+            print(f"Re-stamping {only!r}\n")
             restamp(decl, snap, only)
             return 0
 
@@ -448,6 +496,12 @@ def main(argv=None):
         print(f"  UNTRACKED   {len(loose):4}   written by a generator, and neither tracked nor ignored\n")
 
         fails = []
+        for rel in missing:
+            fails.append(
+                f"{rel} is tracked and is not in the working tree, so what is committed "
+                f"cannot be\n           compared with what the sources make now. Restore "
+                f"it (git checkout -- {rel}),\n           or remove it from git (git rm) if "
+                f"it is meant to go.")
         for rel, by in sorted(loose.items()):
             fails.append(
                 f"{rel} is a generated file git doesn't track (written by "
@@ -490,7 +544,16 @@ def main(argv=None):
         # each answerable: does it SETTLE, and does the settled corpus match.
         after_one = {rel: (ROOT / rel).read_bytes() for rel in generated
                      if (ROOT / rel).is_file()}
-        G.run_all(only_resettle=True)
+        # ITS FAILURES COUNT. A generator that succeeds once and throws on the
+        # second pass - choking on something the first pass wrote, which is
+        # what this pass exists to expose - wrote nothing, and "nothing moved"
+        # would read its crash as settled.
+        _again, failed_again = G.run_all(only_resettle=True)
+        failed_once = {script for script, _err in failures}
+        for script, err in failed_again:
+            if script not in failed_once:
+                fails.append(f"{script} failed on the second pass, after the first "
+                             f"succeeded. A generator that throws covers nothing:\n{err}")
         unsettled = sorted(rel for rel, b in after_one.items()
                            if (ROOT / rel).is_file()
                            and (ROOT / rel).read_bytes() != b
@@ -630,6 +693,10 @@ def main(argv=None):
     finally:
         if not doing_restamp and not keep:
             with copying():
+                for rel in missing:
+                    # It was not there when the gate began; it is not there after.
+                    if (ROOT / rel).is_file():
+                        (ROOT / rel).unlink()
                 for rel in names:
                     was = tmp / "before" / rel
                     now = ROOT / rel
