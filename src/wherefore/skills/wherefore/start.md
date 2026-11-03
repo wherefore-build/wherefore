@@ -26,9 +26,15 @@ they become the `why` beside each source and each rule.
 
 ## Count before you change anything
 
-For each fact the owner named, search the repository for every place it is
-stated - every spelling, and every old value they remember. Report it plainly,
-before proposing anything:
+Start with **`wherefore scan`** over what the company publishes - the built
+site, the docs folder, exported notes, or a live site's address. It needs no
+setup, and it reports every statement whose copies disagree ("start your {}
+day free trial": 14 in three places, 30 in one), which is the count in its
+plainest form.
+
+Then, for each fact the owner named, search the repository for every place it
+is stated - every spelling, and every old value they remember. Report it
+plainly, before proposing anything:
 
 > The product name appears in 41 files, spelled three ways. Two pages still
 > give the old upload limit.

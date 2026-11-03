@@ -23,6 +23,7 @@ its first client.
 pip install -e .                 # Python 3.10+, standard library only
 pip install -e '.[pictures,xlsx]' # for picture and workbook comparison
 
+wherefore scan PATH|URL ...     # where each stated value appears, and where the copies disagree; needs no setup
 wherefore init [DIR]            # write a wherefore.json that declares nothing yet
 wherefore gate [--keep]         # every tracked file classified, every generated one current; puts the tree back unless --keep
 wherefore gate --restamp GROUP  # record a re-made capture against its sources
@@ -35,6 +36,12 @@ wherefore check claims          # every claim says only what its rule allows
 wherefore hook install          # a pre-push hook: no push leaves the corpus stale
 wherefore hook pre-push         # what the installed hook runs before a push; not for typing
 ```
+
+**Start with a scan.** `wherefore scan` needs no setup and no `wherefore.json`:
+point it at a built site, a docs folder or a live address, and it reports every
+value the company states more than one way - "start your {} day free trial", 14
+in three places and 30 in one. Each is a fact to say once, in a source, and
+build every copy from; the rest of Wherefore is how.
 
 A client describes its corpus in `wherefore.json`: its sources, its generators
 in order, its inventory of authored and captured files, and every exception to

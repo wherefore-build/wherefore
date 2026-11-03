@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 # (DECISIONS.md in wherefore-co, section 2). What is imported and what is typed
 # are still `wherefore`.
 name = "wherefore-build"
-version = "0.2.1"
+version = "0.3.0"
 description = "A company that compiles: every asset generated from one source of truth, every change proven."
 readme = "README.md"
 license = {text = "Apache-2.0"}
