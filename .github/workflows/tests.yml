@@ -73,8 +73,8 @@ jobs:
       - name: Install the previous release, to judge this tree with
         env:
           GIT_CONFIG_COUNT: "1"
-          GIT_CONFIG_KEY_0: url.https://x-access-token:${{ github.token }}@github.com/zakholdsworth/wherefore.insteadOf
-          GIT_CONFIG_VALUE_0: https://github.com/zakholdsworth/wherefore
+          GIT_CONFIG_KEY_0: url.https://x-access-token:${{ github.token }}@github.com/wherefore-build/wherefore.insteadOf
+          GIT_CONFIG_VALUE_0: https://github.com/wherefore-build/wherefore
         run: python3 -m pip install --quiet --no-deps --target .wherefore-engine -r requirements-engine.txt
       - name: Every file is accounted for, and the README is what its sources make
         run: python3 -m wherefore gate

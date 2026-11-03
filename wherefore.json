@@ -57,10 +57,6 @@
      "the fixture company's corpus - the engine's test data. It is a corpus of its own, held by its own wherefore.json and gate in tests/test_phase5.py, not by this one"
     ],
     [
-     "integration/**",
-     "the pendulum integration's patch series, as exported, and its record"
-    ],
-    [
      ".github/**",
      "the workflows"
     ],

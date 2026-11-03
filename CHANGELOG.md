@@ -5,8 +5,7 @@ Every release of the engine, newest first. A client pins one commit (its
 suite judges, so a release reaches no client by itself.
 
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
-and `tests/test_version.py` holds the three together until they are one fact
-(DIRECTIONS.md §12, §13).
+and `tests/test_version.py` holds the three together until they are one fact.
 
 ## 0.5.0 (2026-11-03)
 

@@ -11,9 +11,7 @@ in the CLI and not in the skill fails here, naming the file and the line.
 
 WHAT IT READS: the documents a person reads to USE Wherefore - the README, the
 changelog, the skill (both its files: working in a corpus, and starting one)
-and docs/. Not the design records (ARCHITECTURE_REVIEW,
-ENGINE_INVENTORY, VERSIONING_SHAPE, DIRECTIONS), which discuss commands that
-were proposed and may never be built; they are a record, not instructions.
+and docs/.
 
 WHAT IT CANNOT SEE: a command named in prose outside a code span, and a flag
 that does not exist - `wherefore gate --kepe` names the command `gate`, which

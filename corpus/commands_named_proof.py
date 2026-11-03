@@ -8,7 +8,7 @@ fire - to pass.
   fails   a command that does not exist, in the skill
           a check `wherefore check` does not have, in the README's template
   passes  `from wherefore import prove`, which names a module, not a command
-          a proposed command in DIRECTIONS.md, a design record it does not read
+          a proposed command in CONTRIBUTING.md, a document it does not read
           the documents as they are
 
 Usage:  python3 corpus/commands_named_proof.py
@@ -43,9 +43,9 @@ def main():
     with Edit("src/wherefore/skills/wherefore/SKILL.md") as p:
         planted(p, "`from wherefore import prove` gives a proof its harness.")
         check(r, "a module named, not a command - must not fire", CHECK, False, [PASS])
-    with Edit("DIRECTIONS.md") as p:
+    with Edit("CONTRIBUTING.md") as p:
         planted(p, "A later `wherefore describe` would print the engine's facts.")
-        check(r, "a proposed command in a design record - must not fire", CHECK, False, [PASS])
+        check(r, "a proposed command in a document it does not read - must not fire", CHECK, False, [PASS])
     check(r, "the documents as they are", CHECK, False, [PASS])
     return report(r)
 

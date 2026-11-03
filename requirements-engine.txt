@@ -6,6 +6,6 @@
 #
 # Move it with each release, by hand, once that release is tagged and its own
 # CI is green.
-# Wherefore 0.2.1 (v0.2.1), the merge of #37. The distribution is wherefore-build
-# since #36, and pip refuses a pin whose name does not match it.
-wherefore-build @ git+https://github.com/zakholdsworth/wherefore@3c90622ba473f987e30a6672a6b8f2c2614d6cb4
+# Wherefore 0.2.1 (v0.2.1). The distribution is wherefore-build, and pip
+# refuses a pin whose name does not match it.
+wherefore-build @ git+https://github.com/wherefore-build/wherefore@04cc4f882d4d6fa9b00a817575825859fe8b752d
