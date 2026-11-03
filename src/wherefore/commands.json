@@ -42,6 +42,10 @@
    "does": "every claim says only what its rule allows"
   },
   {
+   "usage": "wherefore check upstream",
+   "does": "every copy taken from elsewhere still matches where it was taken from, read there now"
+  },
+  {
    "usage": "wherefore hook install",
    "does": "a pre-push hook: no push leaves the corpus stale"
   },

@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 # (DECISIONS.md in wherefore-co, section 2). What is imported and what is typed
 # are still `wherefore`.
 name = "wherefore-build"
-version = "0.4.0"
+version = "0.5.0"
 description = "A company that compiles: every asset generated from one source of truth, every change proven."
 readme = "README.md"
 license = {text = "Apache-2.0"}
@@ -36,9 +36,10 @@ where = ["src"]
 [tool.setuptools.package-data]
 # The observer is a module called sitecustomize in a directory that holds
 # nothing else, put on PYTHONPATH - not a package, so it is shipped as data.
-# The commands and the principles are said once each, here, and a client that
-# states them - the company's site - reads them from the release it pins. The
-# skill ships too: a corpus's agents read the release's own, written by the
-# wherefore.skill generator, never a copy kept by hand.
+# The commands, the principles, the features and the releases are said once
+# each, here, and a client that states them - the company's site - reads them
+# from the release it pins. The skill ships too: a corpus's agents read the
+# release's own, written by the wherefore.skill generator, never a copy kept by
+# hand.
 wherefore = ["_observe/sitecustomize.py", "commands.json", "features.json", "principles.json",
-             "skills/wherefore/SKILL.md", "skills/wherefore/start.md"]
+             "releases.json", "skills/wherefore/SKILL.md", "skills/wherefore/start.md"]

@@ -19,9 +19,9 @@ its first client.
 - **Retired facts** (since 0.1.0): nothing a person reads still claims a retired value or phrase. `wherefore check retired`
 - **Reach** (since 0.1.0): every fact, moved one at a time, reaches what it should. `wherefore check reach`
 - **Claims** (since 0.1.0): every claim says only what its rule allows. `wherefore check claims`
+- **Derived from elsewhere** (since 0.5.0): every copy taken from elsewhere still matches where it was taken from, read there now. `wherefore check upstream`
 - **The pre-push hook** (since 0.1.0): a pre-push hook: no push leaves the corpus stale. `wherefore hook install`, `wherefore hook pre-push`
-- **The skill, for Claude Code** (since 0.2.0): teaches a coding agent the rules, and starts a corpus with you: one fact, end to end
-- **The skill, for Codex** (since 0.4.0): the same skill, written where Codex reads it, and held to the release like the first
+- **The skill, for Claude Code and Codex** (since 0.2.0): teaches your coding agent the rules, and starts a corpus with you: one fact, end to end. One skill, written where each agent reads it, and held to the release
 
 ## The principles it enforces
 
@@ -47,6 +47,7 @@ wherefore prove [SCRIPT ...]    # run the client's proofs, one at a time, in pla
 wherefore check retired         # nothing a person reads still claims a retired value or phrase
 wherefore check reach           # every fact, moved one at a time, reaches what it should
 wherefore check claims          # every claim says only what its rule allows
+wherefore check upstream        # every copy taken from elsewhere still matches where it was taken from, read there now
 wherefore hook install          # a pre-push hook: no push leaves the corpus stale
 wherefore hook pre-push         # what the installed hook runs before a push; not for typing
 ```
@@ -84,6 +85,7 @@ one fact in two places. `chaotic-pendulums-co` is that kind of client; see
 | `ARCHITECTURE_REVIEW.md` | the review the extraction follows, and the decisions taken |
 | `VERSIONING_SHAPE.md` | the next extraction's questions, with recommendations, waiting on the owner |
 | `CHANGELOG.md` | every release, newest first; a client upgrades only by moving its pin |
+| `src/wherefore/releases.json` | every release again, as data - version, date, a title, a sentence and a picture of it working - for the company's changelog page; `tests/test_releases.py` holds it to `CHANGELOG.md` and runs the newest picture again |
 | `corpus/`, `wherefore.json` | this repository as a client of its own engine: the README's generator, the corpus's checks and their proofs |
 | `docs/README.template.md` | the README's text; the README is generated from it, `src/wherefore/commands.json` and `src/wherefore/principles.json` |
 | `requirements-engine.txt` | the previous release, which judges this repository's own corpus |

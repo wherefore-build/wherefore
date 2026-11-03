@@ -153,6 +153,48 @@ Then the next asset, and the next, one at a time, with the gate green after
 each. Never convert a repository in one change: a corpus that is half compiled
 and green is worth more than one that is fully compiled and failing.
 
+## Every surface that describes the product
+
+Once one fact compiles, ask the owner where else the product is described:
+the marketing site, the docs, the app's own strings, a changelog, a deck.
+Often each lives in its own repository. Write the answers down:
+
+1. **Which repository decides each fact?** The product's own repository
+   decides what the product does - its features, its commands, its releases.
+   The company's repository decides its name, its prices, its brand. Each fact
+   has exactly one home, and the others read it from there.
+2. **Which may read from which?** A public repository can read from a private
+   one only what it is willing to publish. Say which facts cross, and keep
+   everything else where it was decided.
+
+Then set up every other surface the same way:
+
+- **It pins the source** - a release, a commit, or a captured snapshot with
+  its stamp - and never copies it by hand. Moving the pin is a pull request,
+  judged by that surface's own gate.
+- **It reads what the source ships as data** - the list of features, the
+  releases, the commands - rather than typing its own list. If the source has
+  no such list yet, that list is the first thing to add to it.
+- **Its build fails on what it does not say.** A feature the source ships and
+  the page has no words for stops the generator, naming the feature. So does a
+  release missing from the changelog. A deliberate omission is written down
+  with its reason, like any exemption, and words for a feature the source no
+  longer has fail too.
+
+Some surfaces copy what they cannot pin: another company's published file, or
+counts taken from another product's public site, at one of its versions. Make
+that a captured group, and give it an `upstream` - the address it was taken
+from, what to read there, and what must still match: its bytes, or a version
+the corpus records once. `wherefore check upstream` reads it whenever the
+corpus is compiled for a deploy, and fails when the source has moved, until the copy is taken
+again. The gate never reads it: the gate stays offline, so the same tree always
+gives the same answer.
+
+So a feature that ships reaches every page that tells people about the
+product, or that page's build stops, and the pull request that moves the pin
+is where the page catches up. Prove it the way every check is proved: remove
+one feature's words and require the build to fail, naming it.
+
 ## What stays written by hand
 
 Some assets are better written by a person: a help article, an essay, the

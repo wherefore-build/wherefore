@@ -135,6 +135,9 @@ raise SystemExit(report(results))
 | `NOTHING ... changed` (reach) | a fact reaches no output | a generator holds its own copy; make it read the source. Or the fact is dead; remove it. Exempt it only with a reason that survives review |
 | `says ...` (retired) | a retired value or phrase is still claimed | fix the source or generator that writes it, never the output |
 | a claim rule fails | copy says what nobody justified | change the copy at its source. Add to `may_say` only with a true, written reason |
+| `MOVED` (upstream) | something this corpus copied from elsewhere has changed where it was taken from | take the copy again from the source as it is now - re-copy the file, re-count the numbers - and record the new version or commit and the day in the same change; then `wherefore gate`. Never move the recorded value alone |
+| `no longer says` (upstream) | the source answered, but not in the shape `read` expects | look at the source. If it moved, take the copy again; if only its shape changed, change `read` - and say which in the commit |
+| `did not answer` (upstream) | the source is down, or the address is wrong | check the address. Add `unreachable` only with the reason a source being down should not stop this corpus |
 
 **Never** fix a failure by:
 
@@ -142,7 +145,8 @@ raise SystemExit(report(results))
 - loosening a tolerance;
 - exempting without a reason someone else would accept;
 - deleting a test, or skipping or disabling one;
-- restamping a capture nobody re-made.
+- restamping a capture nobody re-made;
+- moving the version an upstream copy records without taking the copy again.
 
 The cheap direction and the expensive one are not symmetric here, and the
 check is usually right.

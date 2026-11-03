@@ -246,6 +246,9 @@ def validate(cfg):
                                   f"(`shot_from`, `spec_values`) nor why there is nothing "
                                   f"(`no_stamp`, with the reason). A stamp over nothing "
                                   f"would pass for ever")
+            if "upstream" in grp:
+                from .upstream import validate as upstream_valid
+                upstream_valid(where, grp["upstream"], files)
             if grp.get("spec_values") and not d.get("sources"):
                 raise ConfigError(f"{where} reads `spec_values`, and no source is declared "
                                   f"to read them from")
