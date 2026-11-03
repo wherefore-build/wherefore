@@ -185,8 +185,8 @@ Some surfaces copy what they cannot pin: another company's published file, or
 counts taken from another product's public site, at one of its versions. Make
 that a captured group, and give it an `upstream` - the address it was taken
 from, what to read there, and what must still match: its bytes, or a version
-the corpus records once. `wherefore check upstream` reads it, before a deploy
-and on a schedule, and fails when the source has moved, until the copy is taken
+the corpus records once. `wherefore check upstream` reads it whenever the
+corpus is compiled for a deploy, and fails when the source has moved, until the copy is taken
 again. The gate never reads it: the gate stays offline, so the same tree always
 gives the same answer.
 

@@ -36,8 +36,14 @@ JSON file. `wherefore check upstream` reads each one now, and fails:
 
 It is the one command that goes to the network, so it is never part of the
 gate, the build or the pre-push hook: the gate stays offline, and the same
-tree always gives the same answer. Run it before a deploy and on a schedule.
-The skill says what to do when it fails.
+tree always gives the same answer. Run it where the corpus is compiled for a
+deploy. The skill says what to do when it fails.
+
+**One skill, one feature.** "The skill, for Claude Code" and "The skill, for
+Codex" were two features in 0.4.0, for one skill written in two places. They
+are one now - "The skill, for Claude Code and Codex", since 0.2.0 - so a page
+that lists what the engine does says it once. A client with words for `codex`
+is told the release no longer ships it, and drops them.
 
 **Every release, said once as data: `releases.json`.** Each release's version,
 date, title, one sentence, and a picture of it working - the command it is

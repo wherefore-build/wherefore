@@ -63,15 +63,9 @@
   },
   {
    "id": "skill",
-   "name": "The skill, for Claude Code",
+   "name": "The skill, for Claude Code and Codex",
    "since": "0.2.0",
-   "says": "teaches a coding agent the rules, and starts a corpus with you: one fact, end to end"
-  },
-  {
-   "id": "codex",
-   "name": "The skill, for Codex",
-   "since": "0.4.0",
-   "says": "the same skill, written where Codex reads it, and held to the release like the first"
+   "says": "teaches your coding agent the rules, and starts a corpus with you: one fact, end to end. One skill, written where each agent reads it, and held to the release"
   }
  ]
 }

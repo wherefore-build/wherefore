@@ -36,8 +36,8 @@ the corpus records, said once, in a tracked JSON file.
 
 It is never part of the gate, the build or the pre-push hook: it is the one
 command that goes to the network, and is run where that is the point - before
-a deploy, and on a schedule, so a source that moves is noticed whether or not
-anyone pushed here.
+a deploy, so nothing ships with a copy of something that has since changed;
+and on a schedule as well, if a source moving between deploys matters.
 """
 import base64
 import hashlib
