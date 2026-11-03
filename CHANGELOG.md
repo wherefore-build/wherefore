@@ -21,6 +21,15 @@ the one skill the release ships to both places:
   holds each copy to the release: an edit by hand to either is named;
 - `start.md` says where both live.
 
+**What the engine does, as data: `features.json`.** Each feature, the release
+it arrived in, and its commands - whose words stay in `commands.json` - or its
+own words if it has none. It ships in the package, so a client that describes
+the product (the company's site) reads it from the release it pins and must
+say something about every feature, or its build stops: a release that adds a
+feature fails every page that does not yet tell people about it. Every command
+belongs to exactly one feature, and a test fails a command that belongs to
+none. The README's "What it does" is generated from it.
+
 A corpus that already declares the generator writes the Codex copy at its next
 build after moving its pin. That copy is generated, so a rule that claims
 `*.md` as authored needs `.agents/skills/wherefore/*` excepted, as it already

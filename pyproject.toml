@@ -40,5 +40,5 @@ where = ["src"]
 # states them - the company's site - reads them from the release it pins. The
 # skill ships too: a corpus's agents read the release's own, written by the
 # wherefore.skill generator, never a copy kept by hand.
-wherefore = ["_observe/sitecustomize.py", "commands.json", "principles.json",
+wherefore = ["_observe/sitecustomize.py", "commands.json", "features.json", "principles.json",
              "skills/wherefore/SKILL.md", "skills/wherefore/start.md"]

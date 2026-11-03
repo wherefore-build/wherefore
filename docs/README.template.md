@@ -8,6 +8,10 @@ It was extracted from `zakholdsworth/chaotic-pendulums-co`, whose every drawing,
 solid, page and parts list is generated from one spec file. That repository is
 its first client.
 
+## What it does
+
+{{features}}
+
 ## The principles it enforces
 
 {{principles}}

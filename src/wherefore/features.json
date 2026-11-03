@@ -1,0 +1,71 @@
+{
+ "note": "What the engine does, as features, said once, with the release each arrived in. A client that describes the product - the company's site - reads this from the release it pins and must say something about every feature here, or the build stops: so a release that adds a feature fails every page that does not yet tell people about it. The README's list is generated from it (corpus/readme.py). A feature with commands takes its words from commands.json, the one place a command is described; a feature without one says its own. Every command in commands.json belongs to exactly one feature, and tests/test_features.py fails a command that belongs to none.",
+ "features": [
+  {
+   "id": "scan",
+   "name": "Scan",
+   "since": "0.3.0",
+   "commands": ["wherefore scan PATH|URL ..."]
+  },
+  {
+   "id": "start",
+   "name": "Start a corpus",
+   "since": "0.1.0",
+   "commands": ["wherefore init [DIR]"]
+  },
+  {
+   "id": "gate",
+   "name": "The gate",
+   "since": "0.1.0",
+   "commands": ["wherefore gate [--keep]", "wherefore gate --restamp GROUP"]
+  },
+  {
+   "id": "build",
+   "name": "The build",
+   "since": "0.1.0",
+   "commands": ["wherefore build", "wherefore list"]
+  },
+  {
+   "id": "proofs",
+   "name": "Proofs",
+   "since": "0.1.0",
+   "commands": ["wherefore prove [SCRIPT ...]"]
+  },
+  {
+   "id": "retired",
+   "name": "Retired facts",
+   "since": "0.1.0",
+   "commands": ["wherefore check retired"]
+  },
+  {
+   "id": "reach",
+   "name": "Reach",
+   "since": "0.1.0",
+   "commands": ["wherefore check reach"]
+  },
+  {
+   "id": "claims",
+   "name": "Claims",
+   "since": "0.1.0",
+   "commands": ["wherefore check claims"]
+  },
+  {
+   "id": "hook",
+   "name": "The pre-push hook",
+   "since": "0.1.0",
+   "commands": ["wherefore hook install", "wherefore hook pre-push"]
+  },
+  {
+   "id": "skill",
+   "name": "The skill, for Claude Code",
+   "since": "0.2.0",
+   "says": "teaches a coding agent the rules, and starts a corpus with you: one fact, end to end"
+  },
+  {
+   "id": "codex",
+   "name": "The skill, for Codex",
+   "since": "0.4.0",
+   "says": "the same skill, written where Codex reads it, and held to the release like the first"
+  }
+ ]
+}
