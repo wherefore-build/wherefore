@@ -37,9 +37,10 @@ def _init(args):
     path.write_text(json.dumps(cfgmod.starter(target.name), indent=1,
                                ensure_ascii=False) + "\n", encoding="utf-8")
     from . import skill
-    wrote = skill.write(target)
-    print(f"wrote {path}\nwrote {wrote[0].parent}/, the skill every coding agent here "
-          f"reads\n\nCommit both. Then ask your agent to set up Wherefore: the skill's "
+    skill.write(target)
+    places = " and ".join(f"{p}/ ({agent})" for agent, p in skill.INTO.items())
+    print(f"wrote {path}\nwrote {places}: the skill a coding agent here "
+          f"reads\n\nCommit them. Then ask your agent to set up Wherefore: the skill's "
           f"start.md is how.\nFrom the first build on, the skill is regenerated from the "
           f"release this repository pins.\n\n`wherefore gate` names every tracked file "
           f"nobody has accounted for, and each one is a decision:\ngenerated, authored or "

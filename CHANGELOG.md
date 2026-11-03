@@ -8,6 +8,24 @@ The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact
 (DIRECTIONS.md §12, §13).
 
+## 0.4.0 (2026-11-03)
+
+**The skill reaches Codex.** Codex reads a repository's skills from
+`.agents/skills/<name>/SKILL.md` - the open Agent Skills format, the same one
+Claude Code reads from `.claude/skills/` - so the skill generator now writes
+the one skill the release ships to both places:
+
+- `wherefore init` writes `.claude/skills/wherefore/` and
+  `.agents/skills/wherefore/`, and says which agent reads which;
+- the `wherefore.skill` generator writes both on every build, and the gate
+  holds each copy to the release: an edit by hand to either is named;
+- `start.md` says where both live.
+
+A corpus that already declares the generator writes the Codex copy at its next
+build after moving its pin. That copy is generated, so a rule that claims
+`*.md` as authored needs `.agents/skills/wherefore/*` excepted, as it already
+excepts the Claude Code copy.
+
 ## 0.3.0 (2026-11-03)
 
 **`wherefore scan`, the first win with no setup.** Point it at what a company
