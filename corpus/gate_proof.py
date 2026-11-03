@@ -37,8 +37,8 @@ def main():
     r = []
     with Edit("README.md") as p:
         p.write_text(p.read_text(encoding="utf-8").replace(
-            "is the machinery of a company that compiles",
-            "is the machinery of a company that ships", 1), encoding="utf-8")
+            "**Your company, compiled.**",
+            "**Your company, shipped.**", 1), encoding="utf-8")
         gate(r, "the README edited by hand, instead of its template", True, [DIFFERENT])
 
     with Edit("src/wherefore/commands.json") as p:

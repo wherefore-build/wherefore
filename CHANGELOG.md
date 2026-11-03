@@ -34,6 +34,15 @@ what it reads is not what it expected.
   install`) in the README; the licence as an SPDX expression; the project's
   addresses and author; and an sdist that carries its tests' helpers, fixture
   and changelog, so its tests run.
+- The README opens with what Wherefore is for - your company, compiled - and
+  the hardware company it was built alongside, and the install section says
+  what it needs: Python 3.10 or later, and nothing else.
+- Contributions from outside are welcome: `CONTRIBUTING.md` says how (an issue
+  first for anything bigger than a fix; Apache-2.0, section 5; each commit
+  signed off under the Developer Certificate of Origin), and
+  `CODE_OF_CONDUCT.md` adopts the Contributor Covenant 2.1. CI runs on every
+  pull request, a fork's included, and on pushes to `main`; a new `sign-off`
+  job checks each commit of a fork's pull request is signed off by its author.
 
 ## 0.5.0 (2026-11-03)
 

@@ -1,11 +1,14 @@
 # The engine, on its own: installed from this tree into a clean environment,
 # its unit tests, and every proof - each of which breaks the fixture company one
 # way and requires the right failure in the right words. Hosted, and short: a
-# minute or two a run, on every push.
+# minute or two a run, on every pull request - a fork's included - and every
+# push to main.
 name: tests
 
 on:
+  pull_request:
   push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -85,3 +88,34 @@ jobs:
       - name: And each of those fails when it should
         run: python3 -m wherefore prove
 
+  # EVERY COMMIT FROM OUTSIDE IS SIGNED OFF. A pull request from a fork comes
+  # in under Apache-2.0 with each commit certifying the Developer Certificate
+  # of Origin (CONTRIBUTING.md): a `Signed-off-by:` line naming the commit's
+  # author, as `git commit -s` writes it. A branch of this repository is the
+  # project's own, and is not asked.
+  sign-off:
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Every commit in the pull request is signed off by its author
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          missing=0
+          for c in $(git rev-list --no-merges "$BASE..$HEAD"); do
+            author="$(git show -s --format='%an <%ae>' "$c")"
+            if ! git show -s --format='%(trailers:key=Signed-off-by,valueonly)' "$c" | grep -qxF "$author"; then
+              echo "::error::$(git show -s --format='%h %s' "$c") is not signed off by its author, $author"
+              missing=1
+            fi
+          done
+          if [ "$missing" = 1 ]; then
+            echo "Sign off each commit with git commit -s (CONTRIBUTING.md); git rebase --signoff $BASE adds it to commits already made."
+            exit 1
+          fi
+          echo "every commit is signed off by its author"

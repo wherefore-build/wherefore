@@ -28,5 +28,14 @@ for p in proofs/*_proof.py; do python "$p" || exit 1; done
 
 ## Contributions from outside
 
-Not accepted yet. Issues are welcome once the repository is public; pull
-requests will be, once the project has a contributor agreement in place.
+Welcome. For anything bigger than a fix, open an issue first, so the shape of
+the change is agreed before the work is done.
+
+- **Licence:** a contribution comes in under Apache-2.0, as section 5 of
+  `LICENSE` says, the terms the project is published under.
+- **Sign-off:** sign off each commit (`git commit -s`), certifying the
+  [Developer Certificate of Origin](https://developercertificate.org/): that
+  you wrote it, or otherwise have the right to submit it under the project's
+  licence. CI checks every commit of a pull request from a fork for its
+  `Signed-off-by` line.
+- **Conduct:** everyone taking part follows `CODE_OF_CONDUCT.md`.
