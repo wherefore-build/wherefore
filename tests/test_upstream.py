@@ -112,6 +112,8 @@ class TheCopyIsHeldToItsSource(unittest.TestCase):
         code, out = self.check(upstream)
         self.assertEqual(code, 0, out)
         self.assertIn("Passed, because a host being down is not the source moving", out)
+        self.assertIn("0 of 1 copies taken from elsewhere still match", out)
+        self.assertIn("not checked is not matching", out)
 
 
 class AnUpstreamThatCannotBeCheckedIsRefused(unittest.TestCase):

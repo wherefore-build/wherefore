@@ -226,6 +226,13 @@ def main(cfg, args):
         print(f"::error::{len(bad)} of {len(watched)} copies taken from elsewhere no longer match where "
               f"they were taken from, or cannot be checked")
         return 1
-    print(f"every copy taken from elsewhere still matches where it was taken from "
-          f"({len(watched)} watched" + (f", {unwatched} captured groups name no upstream)" if unwatched else ")"))
+    ok = sum(1 for st, _ in results if st == "ok")
+    excused = len(results) - ok
+    said = (f"{ok} of {len(watched)} copies taken from elsewhere still match where they were taken from"
+            if excused else f"every copy taken from elsewhere still matches where it was taken from ({ok})")
+    if excused:
+        said += f"; {excused} could not be checked, and passed for the reason each gives - not checked is not matching"
+    if unwatched:
+        said += f". {unwatched} captured groups name no upstream"
+    print(said)
     return 0
