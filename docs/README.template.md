@@ -58,6 +58,7 @@ one fact in two places. `chaotic-pendulums-co` is that kind of client; see
 | `ARCHITECTURE_REVIEW.md` | the review the extraction follows, and the decisions taken |
 | `VERSIONING_SHAPE.md` | the next extraction's questions, with recommendations, waiting on the owner |
 | `CHANGELOG.md` | every release, newest first; a client upgrades only by moving its pin |
+| `src/wherefore/releases.json` | every release again, as data - version, date, a title, a sentence and a picture of it working - for the company's changelog page; `tests/test_releases.py` holds it to `CHANGELOG.md` and runs the newest picture again |
 | `corpus/`, `wherefore.json` | this repository as a client of its own engine: the README's generator, the corpus's checks and their proofs |
 | `docs/README.template.md` | the README's text; the README is generated from it, `src/wherefore/commands.json` and `src/wherefore/principles.json` |
 | `requirements-engine.txt` | the previous release, which judges this repository's own corpus |

@@ -49,6 +49,10 @@
      "what the engine does, as features, said once: the source the README lists and the company's site must say each of"
     ],
     [
+     "src/wherefore/releases.json",
+     "every release, said once as data, with a picture of it working: the source the company's changelog page is built from; tests/test_releases.py holds it to CHANGELOG.md and runs the newest picture again"
+    ],
+    [
      "tests/fixture/**",
      "the fixture company's corpus - the engine's test data. It is a corpus of its own, held by its own wherefore.json and gate in tests/test_phase5.py, not by this one"
     ],

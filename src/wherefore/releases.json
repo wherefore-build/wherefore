@@ -1,0 +1,128 @@
+{
+ "note": "Every release of the engine, newest first, said once as data: its version, its date, a title and a sentence, and a picture of it working. A client that tells people about the product - the company's changelog page - reads this from the release it pins, so the page lists every release and cannot list one that was never cut. CHANGELOG.md is the long account of each release; tests/test_releases.py holds its headings to the versions and dates here, every feature's `since` (features.json) to a release here, and the newest release to the version pyproject.toml states. `shows` is what the release printed when it was run: `run` is typed in a fresh git repository named fernhollow (shown as ~/fernhollow), holding `files` if any, or a copy of the fixture company if `fixture` is true; `output` is what it printed, in order, with a line of just … where lines are left out. The test runs the newest release's again, on every change, so the picture of the current release cannot drift from what it does; an older one's is history, true of the release that printed it.",
+ "releases": [
+  {
+   "version": "0.5.0",
+   "date": "2026-11-03",
+   "title": "Every surface, held to the source",
+   "says": "The skill now asks where else the product is described - a site, the docs, another repository - and sets each one up to pin the source and fail its build on a feature it does not say. Every release is said once, as data, so a changelog is built rather than kept.",
+   "shows": {
+    "run": "wherefore init",
+    "output": [
+     "wrote ~/fernhollow/wherefore.json",
+     "wrote .claude/skills/wherefore/ (Claude Code) and .agents/skills/wherefore/ (Codex): the skill a coding agent here reads",
+     "…",
+     "Then every place the product is described - a site, the docs, another repository - pins",
+     "the one that decides it, and fails its build on a feature it does not say: start.md, \"Every surface\"."
+    ]
+   }
+  },
+  {
+   "version": "0.4.0",
+   "date": "2026-11-03",
+   "title": "The skill reaches Codex",
+   "says": "The skill is written where Codex reads it as well as Claude Code, and held to the release in both places. What the engine does is said once, as data, so a page that describes the product keeps up or its build stops.",
+   "shows": {
+    "run": "wherefore init",
+    "output": [
+     "wrote ~/fernhollow/wherefore.json",
+     "wrote .claude/skills/wherefore/ (Claude Code) and .agents/skills/wherefore/ (Codex): the skill a coding agent here reads",
+     "",
+     "Commit them. Then ask your agent to set up Wherefore: the skill's start.md is how.",
+     "From the first build on, the skill is regenerated from the release this repository pins."
+    ]
+   }
+  },
+  {
+   "version": "0.3.0",
+   "date": "2026-11-03",
+   "title": "Scan: the first win, with no setup",
+   "says": "Point wherefore scan at a built site, a docs folder or a live address, and it reports every value stated more than one way. It needs no configuration, and it would rather miss a disagreement than invent one.",
+   "shows": {
+    "files": {
+     "site/index.html": "<p>Start your 14 day free trial today.</p>\n",
+     "site/pricing.html": "<p>Every plan: start your 14 day free trial.</p>\n",
+     "docs/start.md": "To begin, start your 14 day free trial from the site.\n",
+     "help/billing.md": "Billing begins after you start your 30 day free trial.\n"
+    },
+    "run": "wherefore scan .",
+    "output": [
+     "4 stated values in 4 files or pages; 1 statement whose copies disagree",
+     "",
+     "  \"start your {} day free\"  - said 4 times, 2 ways",
+     "     14           3x   docs/start.md:1, site/index.html:1, site/pricing.html:1",
+     "     30           1x   help/billing.md:1"
+    ]
+   }
+  },
+  {
+   "version": "0.2.1",
+   "date": "2026-10-30",
+   "title": "What a fresh review found",
+   "says": "Every way a fresh review found for the gate to pass when it should fail, reproduced, fixed, and held by a test that plants it. A flag a command does not take is refused, not ignored. Ready to be published as open source, under Apache-2.0.",
+   "shows": {
+    "fixture": true,
+    "run": "wherefore gate --kep",
+    "output": [
+     "::error::the gate does not take --kep",
+     "usage: wherefore gate [--keep]",
+     "       wherefore gate --restamp GROUP"
+    ]
+   }
+  },
+  {
+   "version": "0.2.0",
+   "date": "2026-10-30",
+   "title": "The skill ships with the engine",
+   "says": "A coding agent learns the rules from the release itself, and starts a corpus with you: one fact, end to end. The copy in a repository is generated, so it moves with the pin.",
+   "shows": {
+    "run": "wherefore init",
+    "output": [
+     "wrote ~/fernhollow/wherefore.json",
+     "wrote ~/fernhollow/.claude/skills/wherefore/, the skill every coding agent here reads",
+     "",
+     "Commit both. Then ask your agent to set up Wherefore: the skill's start.md is how.",
+     "From the first build on, the skill is regenerated from the release this repository pins."
+    ]
+   }
+  },
+  {
+   "version": "0.1.1",
+   "date": "2026-10-28",
+   "title": "Wherefore on Wherefore",
+   "says": "The engine became a client of itself. Its commands and its principles are said once, its own README is built from them, and it is judged by the release before it, the way a compiler builds itself.",
+   "shows": {
+    "run": "wherefore --help",
+    "output": [
+     "wherefore - the command line.",
+     "",
+     "  wherefore init [DIR]            write a wherefore.json that declares nothing yet",
+     "  wherefore gate [--keep]         every tracked file classified, every generated one current; puts the tree back unless --keep",
+     "…",
+     "The commands, and what each does, are said once, in commands.json beside this",
+     "file; `wherefore --help` prints them from there, and so does the README."
+    ]
+   }
+  },
+  {
+   "version": "0.1.0",
+   "date": "2026-10-28",
+   "title": "The first release",
+   "says": "The machinery that keeps a hardware company's documents true, moved out of the pendulum it was built for: generators, the coverage gate, proofs, retired facts and reach, proved against a fictional company.",
+   "shows": {
+    "fixture": true,
+    "run": "wherefore gate",
+    "output": [
+     "15 tracked files; 4 generators",
+     "",
+     "  generated      4   written by a generator during this run",
+     "  authored      10   declared a source in wherefore.json",
+     "  captured       1   declared hand-made, and stamped",
+     "…",
+     "every tracked file is classified, and every generated one was written",
+     "during this run and matches what is committed"
+    ]
+   }
+  }
+ ]
+}

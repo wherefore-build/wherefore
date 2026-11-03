@@ -8,6 +8,28 @@ The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact
 (DIRECTIONS.md §12, §13).
 
+## 0.5.0 (2026-11-03)
+
+**Every surface, held to the source.** The skill's `start.md` gains a step for
+after the first fact compiles: ask where else the product is described - the
+site, the docs, the app's strings, a changelog, often each in its own
+repository - which repository decides each fact, and which may read from
+which. Then set every other surface up the same way: it pins the source, reads
+what the source ships as data instead of typing its own list, and fails its
+build on a feature it does not say, with a deliberate omission written down
+like any exemption. `wherefore init` ends by pointing there.
+
+**Every release, said once as data: `releases.json`.** Each release's version,
+date, title, one sentence, and a picture of it working - the command it is
+best shown by and what it printed. It ships in the package, so the company's
+changelog page is built from the release it pins: it lists every release, and
+cannot list one that was never cut. `tests/test_releases.py` holds it to this
+file's headings, every feature to a release that was cut, and the newest
+release to the version `pyproject.toml` states, so a version cannot move
+without its entry. The newest release's picture is run again on every change,
+so it cannot drift from what the engine prints. The pictures of earlier
+releases were made by running each tagged release.
+
 ## 0.4.0 (2026-11-03)
 
 **The skill reaches Codex.** Codex reads a repository's skills from

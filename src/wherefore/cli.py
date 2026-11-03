@@ -44,7 +44,9 @@ def _init(args):
           f"start.md is how.\nFrom the first build on, the skill is regenerated from the "
           f"release this repository pins.\n\n`wherefore gate` names every tracked file "
           f"nobody has accounted for, and each one is a decision:\ngenerated, authored or "
-          f"captured - with the reason written down.")
+          f"captured - with the reason written down.\n\nThen every place the product is "
+          f"described - a site, the docs, another repository - pins\nthe one that decides "
+          f"it, and fails its build on a feature it does not say: start.md, \"Every surface\".")
     return 0
 
 
