@@ -8,6 +8,10 @@ It was extracted from `zakholdsworth/chaotic-pendulums-co`, whose every drawing,
 solid, page and parts list is generated from one spec file. That repository is
 its first client.
 
+## What it does
+
+{{features}}
+
 ## The principles it enforces
 
 {{principles}}
@@ -48,7 +52,7 @@ one fact in two places. `chaotic-pendulums-co` is that kind of client; see
 | `proofs/` | the engine's proofs: each breaks the fixture one way and requires the right failure, in the right words |
 | `tests/` | unit tests, and `test_phase5.py`: the fixture compiled from its sources alone |
 | `tools/moved/` | the exact edits that turned each pendulum original into an engine module; `verify.py` re-runs them |
-| `src/wherefore/skills/wherefore/` | the skill, shipped in the package: how a coding agent works in a corpus (`SKILL.md`) and starts one (`start.md`). A corpus's own copy is generated from the release it pins, by the `wherefore.skill` generator `wherefore init` declares |
+| `src/wherefore/skills/wherefore/` | the skill, shipped in the package: how a coding agent works in a corpus (`SKILL.md`) and starts one (`start.md`). A corpus's own copies are generated from the release it pins, by the `wherefore.skill` generator `wherefore init` declares: `.claude/skills/wherefore/` for Claude Code and `.agents/skills/wherefore/` for Codex, the same files in the open Agent Skills format |
 | `integration/chaotic-pendulums-co/` | the pendulum as the first client: a patch series, what it waits on, and what was checked |
 | `ENGINE_INVENTORY.md` | what was moved from the pendulum repo, and how |
 | `ARCHITECTURE_REVIEW.md` | the review the extraction follows, and the decisions taken |

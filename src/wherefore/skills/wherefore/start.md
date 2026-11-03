@@ -46,8 +46,9 @@ to start: **the fact with the most copies, in the asset people read most.**
 
 Get one asset compiling before you touch a second.
 
-1. **`wherefore init`** writes `wherefore.json`, and this skill into
-   `.claude/skills/wherefore/`. Commit both. `wherefore.json` declares one
+1. **`wherefore init`** writes `wherefore.json`, and this skill where Claude
+   Code and Codex read it - `.claude/skills/wherefore/` and
+   `.agents/skills/wherefore/`. Commit them. `wherefore.json` declares one
    generator already, the one that writes the skill: from the first build on,
    the skill is the one the pinned release ships, and the gate says so when it
    is not.

@@ -279,8 +279,8 @@ def validate(cfg):
 SKILL_GENERATOR = {
     "script": "-m wherefore.skill",
     "cwd": ".",
-    "makes": ".claude/skills/wherefore/, the skill the pinned release ships, for every "
-             "coding agent that works here",
+    "makes": ".claude/skills/wherefore/ and .agents/skills/wherefore/, the skill the pinned "
+             "release ships, where Claude Code and Codex read it",
 }
 
 

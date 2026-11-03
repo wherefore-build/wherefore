@@ -18,7 +18,7 @@
   {
    "script": "readme.py",
    "cwd": "corpus",
-   "makes": "README.md, from docs/README.template.md, the commands and the principles"
+   "makes": "README.md, from docs/README.template.md, the commands, the features and the principles"
   }
  ],
  "inventory": {
@@ -43,6 +43,10 @@
     [
      "src/wherefore/principles.json",
      "the principles, said once: the source the README and the company's site state them from"
+    ],
+    [
+     "src/wherefore/features.json",
+     "what the engine does, as features, said once: the source the README lists and the company's site must say each of"
     ],
     [
      "tests/fixture/**",

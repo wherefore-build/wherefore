@@ -1,7 +1,11 @@
 """python -m wherefore.skill - the skill, written where a corpus's agents read it.
 
-A coding agent working in a corpus reads .claude/skills/wherefore/: how to work
-in a corpus that compiles (SKILL.md), and how to start one (start.md). The
+A coding agent working in a corpus reads the skill: how to work in a corpus
+that compiles (SKILL.md), and how to start one (start.md). Claude Code reads it
+from .claude/skills/wherefore/ and Codex from .agents/skills/wherefore/. Both
+take the same files - the open Agent Skills format, a folder per skill with a
+`name` and a `description` at the top of its SKILL.md - so the one skill the
+release ships is written to each place, and neither copy can drift from it. The
 skill is the release's. It ships in the package beside the commands it names,
 and corpus/commands_named.py fails it if it names one the CLI does not have.
 
@@ -19,7 +23,11 @@ Run from the corpus's root, as the generator's `cwd` says.
 import pathlib
 from importlib.resources import files
 
-INTO = pathlib.Path(".claude/skills/wherefore")
+# Where each coding agent reads a repository's skills.
+INTO = {
+    "Claude Code": pathlib.Path(".claude/skills/wherefore"),
+    "Codex": pathlib.Path(".agents/skills/wherefore"),
+}
 
 
 def shipped():
@@ -30,13 +38,14 @@ def shipped():
 
 
 def write(root="."):
-    """Write the release's skill under `root`; return the paths written."""
-    into = pathlib.Path(root) / INTO
-    into.mkdir(parents=True, exist_ok=True)
+    """Write the release's skill under `root`, once for every agent; return the paths written."""
     out = []
-    for name, text in shipped().items():
-        (into / name).write_text(text, encoding="utf-8")
-        out.append(into / name)
+    for place in INTO.values():
+        into = pathlib.Path(root) / place
+        into.mkdir(parents=True, exist_ok=True)
+        for name, text in shipped().items():
+            (into / name).write_text(text, encoding="utf-8")
+            out.append(into / name)
     return out
 
 
