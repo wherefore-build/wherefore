@@ -65,6 +65,10 @@
      "the package: its name, version and dependencies"
     ],
     [
+     "MANIFEST.in",
+     "what the sdist carries besides the package: the tests' helpers and fixture, so its tests run"
+    ],
+    [
      "LICENSE",
      "the licence, Apache-2.0, exactly as the Apache Software Foundation publishes it"
     ],

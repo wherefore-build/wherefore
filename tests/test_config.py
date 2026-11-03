@@ -99,6 +99,14 @@ class Includes(unittest.TestCase):
         self.assertEqual(json.loads((root / "wherefore.json").read_text())["inventory"],
                          "checks/inventory.json")
 
+    def test_an_included_file_that_is_not_json_is_refused_naming_it(self):
+        root = repo({"wherefore.json": base(inventory="checks/inventory.json"),
+                     "checks/inventory.json": '{"authored": {"rules": [["*", "everything"]],}\n',
+                     "facts.json": {}})
+        with self.assertRaises(config.ConfigError) as e:
+            config.load(root)
+        self.assertIn("`inventory` names checks/inventory.json, which is not JSON", str(e.exception.code))
+
     def test_root_is_found_upward(self):
         root = repo({"wherefore.json": base(), "facts.json": {}, "deep/er/x.txt": "x"})
         self.assertEqual(config.find_root(root / "deep/er"), root.resolve())

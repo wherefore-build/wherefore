@@ -1,0 +1,6 @@
+# The sdist carries what its tests need to run: the shared helpers, the
+# fictional company they prove the engine against, and the changelog the
+# version and release tests hold the package to.
+include CHANGELOG.md
+include tests/_util.py
+recursive-include tests/fixture *

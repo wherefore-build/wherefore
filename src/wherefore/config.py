@@ -90,7 +90,10 @@ class Config:
                 if not path.is_file():
                     raise ConfigError(f"`{key}` names {v}, which does not exist")
                 self.included[key] = v
-                doc[key] = json.loads(path.read_text(encoding="utf-8"))
+                try:
+                    doc[key] = json.loads(path.read_text(encoding="utf-8"))
+                except json.JSONDecodeError as e:
+                    raise ConfigError(f"`{key}` names {v}, which is not JSON: {e}")
         validate(self)
 
     # ── the parts every module needs ────────────────────────────────────────

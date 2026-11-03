@@ -7,6 +7,43 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.5.1 (2026-11-03)
+
+**What a pre-publication review found.** The first release meant for PyPI.
+Nothing a corpus declares changes; what changes is how the engine behaves when
+what it reads is not what it expected.
+
+- `wherefore check upstream`:
+  - a server that closes before the body it promised now "did not answer",
+    instead of a traceback - and is never read as a shorter body;
+  - `true`, `false` and `null` read from a source and recorded in the corpus are
+    compared as the same JSON, so equal values no longer report MOVED;
+  - a `json` pointer must be `""` or start with `/` (RFC 6901), and anything
+    else is refused in words;
+  - it reads at most 10 MB of an answer, and refuses one past that in words;
+  - a MOVED line prints at most 80 characters of each value;
+  - a recorded-values file that is not JSON is refused naming it.
+- A section included from its own file (`"inventory": "checks/inventory.json"`)
+  that is not JSON is refused naming the file, instead of a traceback.
+- `wherefore scan` on a live address:
+  - `--max-pages` caps every address fetched, not only the HTML pages, so a page
+    linking to hundreds of downloads costs no more than the limit;
+  - an answer that is not HTML is not read past its headers;
+  - a redirect to another host is refused, and reported as not read.
+- The package: `pip install wherefore-build` (or `uv tool install` / `pipx
+  install`) in the README; the licence as an SPDX expression; the project's
+  addresses and author; and an sdist that carries its tests' helpers, fixture
+  and changelog, so its tests run.
+- The README opens with what Wherefore is for - your company, compiled - and
+  the hardware company it was built alongside, and the install section says
+  what it needs: Python 3.10 or later, and nothing else.
+- Contributions from outside are welcome: `CONTRIBUTING.md` says how (an issue
+  first for anything bigger than a fix; Apache-2.0, section 5; each commit
+  signed off under the Developer Certificate of Origin), and
+  `CODE_OF_CONDUCT.md` adopts the Contributor Covenant 2.1. CI runs on every
+  pull request, a fork's included, and on pushes to `main`; a new `sign-off`
+  job checks each commit of a fork's pull request is signed off by its author.
+
 ## 0.5.0 (2026-11-03)
 
 **Every surface, held to the source.** The skill's `start.md` gains a step for

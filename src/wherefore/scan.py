@@ -186,26 +186,54 @@ def _files(root, everything):
             and (everything or not HISTORY_FILE.search(f.name))]
 
 
+HTML = ("text/html", "application/xhtml+xml")
+
+
+class OffHost(Exception):
+    """A redirect to another host, which a scan does not follow."""
+
+
+class _SameHost(urllib.request.HTTPRedirectHandler):
+    """Follow a redirect only on the host it started from; refuse any other."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        there = urllib.parse.urlsplit(urllib.parse.urljoin(req.full_url, newurl)).netloc
+        if there != urllib.parse.urlsplit(req.full_url).netloc:
+            raise OffHost(f"redirected to {there}, another host, which a scan does not read")
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+_OPENER = urllib.request.build_opener(_SameHost)
+
+
 def _fetch(url, timeout=15):
+    """(content type, text): text is None for an answer that is not HTML, which
+    is not read past its headers."""
     req = urllib.request.Request(url, headers={"User-Agent": "wherefore-scan"})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
+    with _OPENER.open(req, timeout=timeout) as r:
         kind = r.headers.get_content_type()
+        if kind not in HTML:
+            return kind, None
         return kind, r.read(2_000_000).decode(r.headers.get_content_charset() or "utf-8", "replace")
 
 
 def crawl(start, max_pages=50):
-    """[(url, lines)] for a site: the start page and the pages it links to on
-    the same host, breadth first, at most max_pages, HTML only."""
+    """[(url, lines, error)] for a site: the start page and the pages it links
+    to on the same host, breadth first, HTML only. At most max_pages addresses
+    are fetched, whatever they turn out to be - a page that links to hundreds
+    of downloads costs no more than max_pages requests - and a redirect to
+    another host is refused, and reported as not read."""
     host = urllib.parse.urlsplit(start).netloc
-    queue, seen, out = [start], {start}, []
-    while queue and len(out) < max_pages:
+    queue, seen, out, fetched = [start], {start}, [], 0
+    while queue and fetched < max_pages:
         url = queue.pop(0)
+        fetched += 1
         try:
             kind, body = _fetch(url)
         except Exception as e:                        # noqa: BLE001 - every failure is reported the same way
-            out.append((url, None, f"{type(e).__name__}: {e}"))
+            out.append((url, None, str(e) if isinstance(e, OffHost) else f"{type(e).__name__}: {e}"))
             continue
-        if kind not in ("text/html", "application/xhtml+xml"):
+        if body is None:
             continue
         lines, links = read_markup(body)
         out.append((url, lines, None))
