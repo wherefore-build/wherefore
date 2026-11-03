@@ -21,6 +21,12 @@ pip install -e '.[pictures,xlsx]' # for picture and workbook comparison
 {{commands}}
 ```
 
+**Start with a scan.** `wherefore scan` needs no setup and no `wherefore.json`:
+point it at a built site, a docs folder or a live address, and it reports every
+value the company states more than one way - "start your {} day free trial", 14
+in three places and 30 in one. Each is a fact to say once, in a source, and
+build every copy from; the rest of Wherefore is how.
+
 A client describes its corpus in `wherefore.json`: its sources, its generators
 in order, its inventory of authored and captured files, and every exception to
 byte-identity. Every exemption carries a `why`, and the engine refuses an entry

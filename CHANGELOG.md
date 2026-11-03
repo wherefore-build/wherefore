@@ -8,6 +8,37 @@ The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact
 (DIRECTIONS.md §12, §13).
 
+## 0.3.0 (2026-11-03)
+
+**`wherefore scan`, the first win with no setup.** Point it at what a company
+publishes - a built site, a docs folder, exported notes, or a live site's
+address - and it reports every value stated more than one way:
+
+    "start your {} day free trial"  - said 4 times, 2 ways
+       14   3x   site/index.html:2, docs/start.md:3, site/pricing.html:1
+       30   1x   help/billing.md:1
+
+- It needs no `wherefore.json`: the scan comes before there is a corpus.
+- A statement is a value with real words on both sides, keyed by the words
+  around it; a version is keyed by the name in front of it.
+- What it reports is a stale copy - the same statement in more than one file,
+  saying at most three things, the commonest at least as often as the rest.
+  It leaves alone identifiers (P-005, V83), dates, history ("since 2.1"),
+  tables of different things, numbered lists, code, and files that are history
+  by name unless `--all` asks for them. It would rather miss a disagreement
+  than invent one.
+- Pages are read the way a person reads them: sentences across inline tags,
+  a picture's alt text, a page's description; script, style and code are not.
+- A live address is read page by page on its own host, up to `--max-pages`
+  (50). `--json` lists every statement and every place.
+- Exit status 1 when copies disagree, so it can stand in CI before a corpus
+  does.
+- The skill's `start.md` begins the count with it.
+
+Run on `chaotic-pendulums-co`'s docs, pack and brand - 152 files - its one
+report was real: two brand documents give the swing's damping as viscous x60
+and x8.
+
 ## 0.2.1 (2026-10-30)
 
 What a fresh review found, fixed, and ready to be published. Every fault

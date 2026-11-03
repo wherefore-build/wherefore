@@ -2,6 +2,10 @@
  "note": "Every command the CLI has, said once. `wherefore --help` prints this list, the README's command list is generated from it (corpus/readme.py), tests/test_commands.py holds the CLI's own dispatch to it, and corpus/commands_named.py fails any document that names a command not listed here.",
  "commands": [
   {
+   "usage": "wherefore scan PATH|URL ...",
+   "does": "where each stated value appears, and where the copies disagree; needs no setup"
+  },
+  {
    "usage": "wherefore init [DIR]",
    "does": "write a wherefore.json that declares nothing yet"
   },
