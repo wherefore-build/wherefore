@@ -42,6 +42,7 @@ and on a schedule as well, if a source moving between deploys matters.
 import base64
 import hashlib
 import html.parser
+import http.client
 import json
 import re
 import urllib.error
@@ -52,6 +53,12 @@ from .config import ConfigError
 
 READERS = ("json", "meta", "pattern")
 TIMEOUT = 30
+LIMIT = 10 * 1024 * 1024   # the most of an answer this reads; past it, it refuses
+SHOWN = 80                 # the most of a value a MOVED line prints
+
+
+class TooLarge(Exception):
+    """The address answered with more than LIMIT bytes."""
 
 
 def declared(cfg):
@@ -73,6 +80,11 @@ def validate(where, up, files):
             set(read) - set(READERS) - {"decode"}:
         raise ConfigError(f"{where}: `upstream.read` takes one of {', '.join(READERS)}, "
                           f"and `decode` with a pattern; it says {read!r}")
+    if "json" in read and not (isinstance(read["json"], str) and
+                               (read["json"] == "" or read["json"].startswith("/"))):
+        raise ConfigError(f"{where}: `upstream.read.json` is a JSON pointer - \"\" for the whole "
+                          f"document, or a path that starts with \"/\", such as \"/version\"; "
+                          f"it says {read['json']!r}")
     if "decode" in read and (read["decode"] != "base64" or "pattern" not in read):
         raise ConfigError(f"{where}: `upstream.read.decode` is \"base64\", for what a pattern finds")
     if "pattern" in read:
@@ -109,8 +121,29 @@ class _Meta(html.parser.HTMLParser):
 
 def fetch(url):
     req = urllib.request.Request(url, headers={"User-Agent": f"wherefore/{__version__} (check upstream)"})
+    # Read a piece at a time, so an answer past LIMIT is refused before it is
+    # all in memory. A read of a given size does not raise when the server
+    # closes before the Content-Length it promised, so that is checked here:
+    # an answer cut short is not a shorter body, it is no answer.
+    body = bytearray()
     with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
-        return r.read()
+        while chunk := r.read(64 * 1024):
+            body += chunk
+            if len(body) > LIMIT:
+                raise TooLarge()
+        missing = getattr(r, "length", None)
+        if missing:
+            raise http.client.IncompleteRead(bytes(body), missing)
+    return bytes(body)
+
+
+def as_text(value):
+    """A value as a comparison sees it: a string as itself, anything else as JSON says it."""
+    return value if isinstance(value, str) else json.dumps(value)
+
+
+def shown(text):
+    return text if len(text) <= SHOWN else text[:SHOWN - 3] + "..."
 
 
 def read(body, how):
@@ -127,7 +160,7 @@ def read(body, how):
                 node = node[part]
             else:
                 return None
-        return (node if isinstance(node, str) else json.dumps(node)).encode()
+        return as_text(node).encode()
     text = body.decode("utf-8", errors="replace")
     if "meta" in how:
         p = _Meta(how["meta"])
@@ -153,12 +186,14 @@ def recorded(cfg, matches):
         node = json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError:
         raise ConfigError(f"`upstream.matches` names {matches['file']}, which is not there")
+    except ValueError as e:
+        raise ConfigError(f"`upstream.matches` names {matches['file']}, which is not JSON: {e}")
     for part in matches["at"].split("."):
         if not isinstance(node, dict) or part not in node:
             raise ConfigError(f"`upstream.matches` reads {matches['at']} from {matches['file']}, "
                               f"which does not say it")
         node = node[part]
-    return str(node), f"{matches['file']} {matches['at']}"
+    return as_text(node), f"{matches['file']} {matches['at']}"
 
 
 def short(data):
@@ -173,7 +208,11 @@ def judge(cfg, name, group, up):
     mine = recorded(cfg, up["matches"]) if up["matches"] != "bytes" else None
     try:
         body = fetch(url)
-    except (urllib.error.URLError, OSError, ValueError) as e:
+    except TooLarge:
+        return "unread", (f"FAIL {name}: {url} answered with more than {LIMIT // (1024 * 1024)} MB, "
+                          f"more than `check upstream` reads. Point `upstream.url` at the part "
+                          f"the copy was taken from")
+    except (urllib.error.URLError, OSError, ValueError, http.client.HTTPException) as e:
         why = getattr(e, "reason", None) or e
         if up.get("unreachable"):
             return "excused", (f"--   {name}: {url} did not answer ({why}). Passed, because "
@@ -198,8 +237,9 @@ def judge(cfg, name, group, up):
     if now == value:
         return "ok", f"ok   {name}: {url} says {now}, as {where} records"
     files = ", ".join(group["files"])
-    return "moved", (f"MOVED {name}: {url} says {now}, and {where} records {value}. Take {files} "
-                     f"again from the source as it is now, and record {now} in the same change - "
+    return "moved", (f"MOVED {name}: {url} says {shown(now)}, and {where} records {shown(value)}. "
+                     f"Take {files} again from the source as it is now, and record what it says "
+                     f"in the same change - "
                      f"never the number alone")
 
 

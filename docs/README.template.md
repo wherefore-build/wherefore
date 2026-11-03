@@ -16,11 +16,23 @@ company's repository is its first client.
 
 {{principles}}
 
+## Install
+
+```
+pip install wherefore-build       # Python 3.10+, standard library only
+uv tool install wherefore-build   # or, as a command of its own
+pipx install wherefore-build      # the same, with pipx
+pip install 'wherefore-build[pictures,xlsx]'  # for picture and workbook comparison
+```
+
+The distribution is `wherefore-build`, because `wherefore` on PyPI is another
+project's. What you import and what you type are `wherefore`.
+
 ## Use
 
 ```
-pip install -e .                 # Python 3.10+, standard library only
-pip install -e '.[pictures,xlsx]' # for picture and workbook comparison
+pip install -e .                 # from a checkout of this repository
+pip install -e '.[pictures,xlsx]' # with picture and workbook comparison
 
 {{commands}}
 ```

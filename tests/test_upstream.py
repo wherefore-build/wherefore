@@ -16,7 +16,11 @@ MODEL = "<p>the model, as it was copied</p>\n"
 
 
 class Site:
-    """A stand-in for another company's site: {path: (status, body)}."""
+    """A stand-in for another company's site: {path: (status, body)}.
+
+    A body that is a function answers the request itself, given the handler -
+    for an answer no well-behaved server would give.
+    """
 
     def __init__(self, pages):
         self.pages = pages
@@ -25,6 +29,8 @@ class Site:
         class Handler(http.server.BaseHTTPRequestHandler):
             def do_GET(self):
                 status, body = site.pages.get(self.path, (404, "not here"))
+                if callable(body):
+                    return body(self)
                 self.send_response(status)
                 self.end_headers()
                 self.wfile.write(body.encode() if isinstance(body, str) else body)
@@ -116,6 +122,57 @@ class TheCopyIsHeldToItsSource(unittest.TestCase):
         self.assertIn("not checked is not matching", out)
 
 
+def cut_short(handler):
+    """Promise a longer body than is sent, then close: the server went away mid-answer."""
+    handler.send_response(200)
+    handler.send_header("Content-Length", "1000")
+    handler.end_headers()
+    handler.wfile.write(b"<p>the model, as it")
+    handler.wfile.flush()
+    handler.close_connection = True
+
+
+class WhatTheSourceSaysIsReadCarefully(unittest.TestCase):
+    def setUp(self):
+        self.site = Site({})
+        self.addCleanup(self.site.close)
+
+    def check(self, upstream, facts=None):
+        files = {"facts.json": facts} if facts is not None else None
+        return wherefore(corpus(upstream, files), "check", "upstream")
+
+    def test_an_answer_cut_short_did_not_answer_and_is_no_traceback(self):
+        self.site.pages["/model.html"] = (200, cut_short)
+        code, out = self.check({"url": self.site.url + "/model.html", "matches": "bytes"})
+        self.assertEqual(code, 1, out)
+        self.assertIn("did not answer", out)
+        self.assertNotIn("Traceback", out)
+
+    def test_a_true_said_and_recorded_is_the_same_value(self):
+        self.site.pages["/release.json"] = (200, json.dumps({"beta": True}))
+        code, out = self.check({"url": self.site.url + "/release.json", "read": {"json": "/beta"},
+                                "matches": {"file": "facts.json", "at": "beta"}}, facts={"beta": True})
+        self.assertEqual(code, 0, out)
+        self.assertIn("says true, as facts.json beta records", out)
+
+    def test_an_answer_too_large_to_read_is_refused_in_words(self):
+        self.site.pages["/model.html"] = (200, b"x" * (10 * 1024 * 1024 + 1))
+        code, out = self.check({"url": self.site.url + "/model.html", "matches": "bytes"})
+        self.assertEqual(code, 1, out)
+        self.assertIn("more than 10 MB", out)
+        self.assertNotIn("Traceback", out)
+
+    def test_a_long_value_is_cut_short_in_a_moved_line(self):
+        long = "v" * 500
+        self.site.pages["/release.json"] = (200, json.dumps({"version": long}))
+        code, out = self.check({"url": self.site.url + "/release.json", "read": {"json": "/version"},
+                                "matches": {"file": "facts.json", "at": "version"}}, facts={"version": "83"})
+        self.assertEqual(code, 1, out)
+        self.assertIn("MOVED taken:", out)
+        self.assertNotIn(long, out)
+        self.assertIn("v" * 77 + "...", out)
+
+
 class AnUpstreamThatCannotBeCheckedIsRefused(unittest.TestCase):
     def refused(self, upstream, said):
         code, out = wherefore(corpus(upstream), "check", "upstream")
@@ -129,6 +186,11 @@ class AnUpstreamThatCannotBeCheckedIsRefused(unittest.TestCase):
     def test_two_ways_of_reading(self):
         self.refused({"url": "https://example.com/", "matches": "bytes", "read": {"json": "/a", "meta": "b"}},
                      "`upstream.read` takes one of")
+
+    def test_a_json_pointer_that_is_not_one(self):
+        self.refused({"url": "https://example.com/", "read": {"json": "release/version"},
+                      "matches": {"file": "facts.json", "at": "taken.version"}},
+                     "`upstream.read.json` is a JSON pointer")
 
     def test_nothing_to_match(self):
         self.refused({"url": "https://example.com/"}, "`upstream.matches` is \"bytes\"")

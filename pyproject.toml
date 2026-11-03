@@ -1,5 +1,6 @@
 [build-system]
-requires = ["setuptools>=61"]
+# 77 for the licence as an SPDX expression (PEP 639).
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,19 +8,24 @@ build-backend = "setuptools.build_meta"
 # (DECISIONS.md in wherefore-co, section 2). What is imported and what is typed
 # are still `wherefore`.
 name = "wherefore-build"
-version = "0.5.0"
+version = "0.5.1"
 description = "A company that compiles: every asset generated from one source of truth, every change proven."
 readme = "README.md"
-license = {text = "Apache-2.0"}
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{name = "Wherefore", email = "hello@wherefore.build"}]
 requires-python = ">=3.10"
 dependencies = []
 keywords = ["build", "documentation", "single source of truth", "ci", "agents"]
 classifiers = [
-    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
     "Environment :: Console",
     "Topic :: Software Development :: Build Tools",
 ]
+
+[project.urls]
+Homepage = "https://wherefore.build"
+Repository = "https://github.com/wherefore-build/wherefore"
 
 [project.optional-dependencies]
 # The comparators that are not bytes. The core is the standard library only,

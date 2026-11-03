@@ -164,6 +164,68 @@ class ALiveSite(unittest.TestCase):
         self.assertFalse(any("example.com" in u for u in result["unread"]))
 
 
+    def serve(self, pages):
+        """A site from {path: (status, headers, body)}, and the paths asked for, in order."""
+        asked = []
+
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):
+                asked.append(self.path)
+                status, headers, body = pages.get(self.path, (404, {}, "not here"))
+                self.send_response(status)
+                for k, v in headers.items():
+                    self.send_header(k, v)
+                self.end_headers()
+                self.wfile.write(body.encode())
+
+            def log_message(self, *args):
+                pass
+
+        server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        return f"http://127.0.0.1:{server.server_port}", asked
+
+    def test_every_fetch_counts_toward_the_limit_not_only_pages(self):
+        links = "".join(f'<a href="/file{i}.zip">file {i}</a>' for i in range(300))
+        pages = {"/": (200, {"Content-Type": "text/html"}, f"<p>Downloads.</p>{links}")}
+        pages.update({f"/file{i}.zip": (200, {"Content-Type": "application/zip"}, "PK")
+                      for i in range(300)})
+        base, asked = self.serve(pages)
+        result = scan.scan([base + "/"], max_pages=5)
+        self.assertEqual(len(asked), 5, asked)
+        self.assertEqual(result["sources"], 1)
+
+    def test_an_answer_that_is_not_html_is_not_read(self):
+        base, _ = self.serve({"/big.bin": (200, {"Content-Type": "application/octet-stream"}, "x" * 1000)})
+        self.assertEqual(scan._fetch(base + "/big.bin"), ("application/octet-stream", None))
+
+    def test_a_redirect_to_another_host_is_refused_and_said(self):
+        elsewhere, asked_there = self.serve({"/": (200, {"Content-Type": "text/html"},
+                                                   "<p>Start your 30-day free trial elsewhere.</p>")})
+        base, _ = self.serve({
+            "/": (200, {"Content-Type": "text/html"},
+                  '<p>Start your 14-day free trial today.</p><a href="/away">Away</a>'),
+            "/away": (302, {"Location": elsewhere + "/"}, ""),
+        })
+        result = scan.scan([base + "/"])
+        self.assertEqual(asked_there, [])
+        self.assertEqual(result["sources"], 1)
+        self.assertEqual([u for u in result["unread"] if "another host" in u],
+                         [f"{base}/away: redirected to {elsewhere[len('http://'):]}, another host, "
+                          f"which a scan does not read"])
+
+    def test_a_redirect_on_the_same_host_is_followed(self):
+        base, asked = self.serve({
+            "/": (302, {"Location": "/home"}, ""),
+            "/home": (200, {"Content-Type": "text/html"}, "<p>Start your 14-day free trial today.</p>"),
+        })
+        result = scan.scan([base + "/"])
+        self.assertEqual(asked, ["/", "/home"])
+        self.assertEqual((result["sources"], result["unread"]), (1, []))
+
+
 class _Quiet(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *args):
         pass

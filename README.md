@@ -31,11 +31,23 @@ company's repository is its first client.
 4. **A check is not trusted until it has been shown to fail.**
 5. **Sources versus outputs.** Every tracked file is *generated*, *authored* or *captured*. Generated files are never hand-edited, and a capture is stamped with what it was made from.
 
+## Install
+
+```
+pip install wherefore-build       # Python 3.10+, standard library only
+uv tool install wherefore-build   # or, as a command of its own
+pipx install wherefore-build      # the same, with pipx
+pip install 'wherefore-build[pictures,xlsx]'  # for picture and workbook comparison
+```
+
+The distribution is `wherefore-build`, because `wherefore` on PyPI is another
+project's. What you import and what you type are `wherefore`.
+
 ## Use
 
 ```
-pip install -e .                 # Python 3.10+, standard library only
-pip install -e '.[pictures,xlsx]' # for picture and workbook comparison
+pip install -e .                 # from a checkout of this repository
+pip install -e '.[pictures,xlsx]' # with picture and workbook comparison
 
 wherefore scan PATH|URL ...     # where each stated value appears, and where the copies disagree; needs no setup
 wherefore init [DIR]            # write a wherefore.json that declares nothing yet
