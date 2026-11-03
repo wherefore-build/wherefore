@@ -19,6 +19,26 @@ what the source ships as data instead of typing its own list, and fails its
 build on a feature it does not say, with a deliberate omission written down
 like any exemption. `wherefore init` ends by pointing there.
 
+**Derived from elsewhere: `wherefore check upstream`.** A captured group can
+say where it was taken from when that is outside the repository - another
+company's published file, counts taken from another product's public site - in
+an `upstream`: the address, what to read there (a JSON pointer, a meta tag, or
+a pattern, optionally base64-decoded), and what must still match - the group's
+one file byte for byte, or a version the corpus records once, in a tracked
+JSON file. `wherefore check upstream` reads each one now, and fails:
+
+- **MOVED** when the source says something else: take the copy again, and
+  record the new version in the same change - never the number alone;
+- **no longer says** when the source answered without what `read` looks for:
+  it changed shape, which is a change too;
+- **did not answer**, unless the upstream gives the reason a source being down
+  should not stop this corpus.
+
+It is the one command that goes to the network, so it is never part of the
+gate, the build or the pre-push hook: the gate stays offline, and the same
+tree always gives the same answer. Run it before a deploy and on a schedule.
+The skill says what to do when it fails.
+
 **Every release, said once as data: `releases.json`.** Each release's version,
 date, title, one sentence, and a picture of it working - the command it is
 best shown by and what it printed. It ships in the package, so the company's

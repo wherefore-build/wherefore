@@ -5,7 +5,7 @@
    "version": "0.5.0",
    "date": "2026-11-03",
    "title": "Every surface, held to the source",
-   "says": "The skill now asks where else the product is described - a site, the docs, another repository - and sets each one up to pin the source and fail its build on a feature it does not say. Every release is said once, as data, so a changelog is built rather than kept.",
+   "says": "The skill now asks where else the product is described and sets each surface up to pin the source and fail its build on a feature it does not say. A copy taken from somewhere that cannot be pinned - another site, another product - says where it came from, and wherefore check upstream fails when that source moves. Every release is said once, as data, so a changelog is built rather than kept.",
    "shows": {
     "run": "wherefore init",
     "output": [

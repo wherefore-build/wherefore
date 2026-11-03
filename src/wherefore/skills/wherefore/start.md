@@ -181,6 +181,15 @@ Then set up every other surface the same way:
   with its reason, like any exemption, and words for a feature the source no
   longer has fail too.
 
+Some surfaces copy what they cannot pin: another company's published file, or
+counts taken from another product's public site, at one of its versions. Make
+that a captured group, and give it an `upstream` - the address it was taken
+from, what to read there, and what must still match: its bytes, or a version
+the corpus records once. `wherefore check upstream` reads it, before a deploy
+and on a schedule, and fails when the source has moved, until the copy is taken
+again. The gate never reads it: the gate stays offline, so the same tree always
+gives the same answer.
+
 So a feature that ships reaches every page that tells people about the
 product, or that page's build stops, and the pull request that moves the pin
 is where the page catches up. Prove it the way every check is proved: remove
