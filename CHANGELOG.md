@@ -7,6 +7,38 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.6.0 (2026-11-04)
+
+**A generator can be any command.** Until now every generator was a Python
+script, because what the gate knows a generator wrote came from an observer
+that only Python loads. A team whose generators are Node, Go, a shell script
+or a CAD export had to wrap each one in Python to be covered.
+
+- A generator may say `run` instead of `script`: its command, as a list of
+  words - `["node", "gen/site.mjs"]`, `["sh", "fonts.sh"]` - run as given, with
+  no shell between, in its `cwd`, with the environment a generator always
+  has. `script` and `run` are one or the other, and `wherefore.json` refuses
+  both, neither, or a `run` that is not a list of words, in words. Everything
+  else about a generator - `makes`, `stdout_to`, `probe`, `resettle`, the two
+  passes, the gate - is as it was, and a Python script is still the default.
+- What a `run` generator wrote is seen by picturing the tree just before it
+  starts and just after it ends - every file's inode, size, mtime and ctime -
+  and naming what changed. Generators run one at a time, so the difference is
+  exactly theirs. It is ctime, which no process can set back, that makes it
+  as strict as the observer: a write that restores its mtime is still seen,
+  and a command that skips its write when nothing changed still leaves its
+  file unclassified. Before each picture is used it waits, if it must, until
+  the newest ctime in it is a filesystem tick in the past, so two writes in
+  one tick cannot look like none.
+- A command that cannot be started - a program that is not installed - fails
+  like a generator that throws, in words.
+- `proofs/run_proof.py` plants every fault the gate's own proof plants in a
+  Python generator in a shell one: never invoked, the write skipped when
+  unchanged, its output edited by hand, a file nobody tracks, a non-zero exit -
+  and the write that hides its mtime, and one made by its child, which pass.
+- The skill says when to use `run`, and the README's install section says a
+  generator is a Python script by default, or any command.
+
 ## 0.5.1 (2026-11-03)
 
 **What a pre-publication review found.** The first release meant for PyPI.

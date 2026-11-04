@@ -80,8 +80,9 @@ Get one asset compiling before you touch a second.
    is a reason; `**` is never one. A file you cannot classify is a question for
    the owner, not a guess.
 
-4. **Write the generator.** A Python script that reads the source and writes
-   the asset, every run, through `open()`. It holds no fact of its own:
+4. **Write the generator.** By default a Python script that reads the source
+   and writes the asset, every run, through `open()`. It holds no fact of its
+   own:
 
    ```python
    import json, pathlib
@@ -101,6 +102,12 @@ Get one asset compiling before you touch a second.
     {"script": "site.py", "cwd": "gen", "makes": "site/index.html, the landing page"}
    ]
    ```
+
+   If the repository's own tooling is another language, the generator can be
+   that instead: `{"run": ["node", "site.mjs"], "cwd": "gen", "makes": ...}`
+   runs the command as given, with no shell, and the gate sees what it wrote
+   by comparing the tree before and after. Use it where a Python wrapper
+   would only call the real tool.
 
    Run `wherefore build`. Read the asset's diff: every line that moved should
    be explained by the source. Commit the source, the generator and the asset

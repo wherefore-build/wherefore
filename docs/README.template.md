@@ -36,8 +36,9 @@ pip install 'wherefore-build[pictures,xlsx]'  # for picture and workbook compari
 
 It needs Python 3.10 or later and nothing else. Your project can be in any
 language: Wherefore reads and checks files, whatever made them. With no Python
-on the machine, `uv tool install` fetches one. Generators are Python scripts
-today, and one can call anything - a CAD export, a Node build, a shell command.
+on the machine, `uv tool install` fetches one. A generator is a Python script
+by default, or any command - a Node build, a shell script, a CAD export -
+declared with `run` and held exactly as strictly.
 
 The distribution is `wherefore-build`, because `wherefore` on PyPI is another
 project's. What you import and what you type are `wherefore`.

@@ -2,6 +2,30 @@
  "note": "Every release of the engine, newest first, said once as data: its version, its date, a title and a sentence, and a picture of it working. A client that tells people about the product - the company's changelog page - reads this from the release it pins, so the page lists every release and cannot list one that was never cut. CHANGELOG.md is the long account of each release; tests/test_releases.py holds its headings to the versions and dates here, every feature's `since` (features.json) to a release here, and the newest release to the version pyproject.toml states. `shows` is what the release printed when it was run: `run` is typed in a fresh git repository named fernhollow (shown as ~/fernhollow), holding `files` if any, or a copy of the fixture company if `fixture` is true; `output` is what it printed, in order, with a line of just … where lines are left out. The test runs the newest release's again, on every change, so the picture of the current release cannot drift from what it does; an older one's is history, true of the release that printed it.",
  "releases": [
   {
+   "version": "0.6.0",
+   "date": "2026-11-04",
+   "title": "A generator can be any command",
+   "says": "A generator can be any program - node, a shell script, a CAD export - declared by run, its command as a list of words, with no Python wrapper. What it writes is seen by comparing the tree before and after it runs, on the ctime no process can set back, so it is held exactly as strictly as a Python generator.",
+   "shows": {
+    "files": {
+     "wherefore.json": "{\n \"wherefore\": 1,\n \"name\": \"fernhollow\",\n \"generators\": [\n  {\n   \"run\": [\n    \"sh\",\n    \"site.sh\"\n   ],\n   \"cwd\": \"gen\",\n   \"makes\": \"site/index.html, the landing page\"\n  }\n ],\n \"inventory\": {\n  \"authored\": {\n   \"rules\": [\n    [\n     \"wherefore.json\",\n     \"what the corpus is\"\n    ],\n    [\n     \"facts.txt\",\n     \"THE SOURCE\"\n    ],\n    [\n     \"gen/*.sh\",\n     \"the generators\"\n    ]\n   ]\n  }\n }\n}\n",
+     "facts.txt": "14\n",
+     "gen/site.sh": "mkdir -p ../site\nprintf \"<p>Start your %s day free trial.</p>\\n\" \"$(cat ../facts.txt)\" > ../site/index.html\n",
+     "site/index.html": "<p>Start your 14 day free trial.</p>\n"
+    },
+    "run": "wherefore list",
+    "output": [
+     "1 generators, in order",
+     "",
+     "  ok   sh site.sh",
+     "",
+     "  sh site.sh             1 tracked files   site/index.html, the landing page",
+     "",
+     "1 tracked writes, 0 writes to paths git does not track"
+    ]
+   }
+  },
+  {
    "version": "0.5.1",
    "date": "2026-11-03",
    "title": "What a pre-publication review found",

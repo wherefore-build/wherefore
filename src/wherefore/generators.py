@@ -46,14 +46,18 @@ Usage:  python3 checks/generators.py        list them, and what each wrote
         python3 checks/generators.py --roll  run them twice, and say what moved
 """
 import collections
+import contextlib
 import hashlib
 import os
 import pathlib
 import re
+import shlex
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
+import time
 
 # The client's, set by configure(). See the module docstring.
 ROOT = None
@@ -66,6 +70,11 @@ GATE_NAME = "`wherefore gate`"
 # script    the file to run - or `-m MODULE`, a module of an installed package,
 #           run as `python -m` runs it: how a corpus declares the engine's own
 #           skill writer, wherefore.skill, without a copy of it
+# run       instead of `script`: a command, as its words - ["node", "gen/site.mjs"],
+#           ["sh", "fonts.sh"] - run as given, with no shell between. What it
+#           writes is seen by comparing the tree before and after it (see
+#           watching() below), because a process that is not Python never
+#           loads the observer.
 # cwd       the directory it must run in. This matters: the brand generators
 #           are written for `cd code && python3 buildpack.py`, so the pack can
 #           be rebuilt from inside the pack, and running them from the repo
@@ -92,8 +101,10 @@ GATE_NAME = "`wherefore gate`"
 #           not. It reads no manifest, so it is not in the cycle the second
 #           pass exists for. Leaving it in cost 49 seconds on every gate run
 #           and about twenty minutes across the nine runs the proof makes.
-Gen = collections.namedtuple("Gen", "script cwd makes stdout_to probe resettle")
-Gen.__new__.__defaults__ = (None, True, True)
+# `run` is last, with a default, so a client that builds its list in code with
+# six positional fields builds the same generators it always did.
+Gen = collections.namedtuple("Gen", "script cwd makes stdout_to probe resettle run")
+Gen.__new__.__defaults__ = (None, True, True, None)
 
 GENERATORS = []
 
@@ -126,11 +137,99 @@ def configure_from(cfg):
               cfg.env_prefix, cfg.temp_prefix)
 
 
+def name(g):
+    """What a generator is called wherever it is named: its script, or its command."""
+    return g.script if g.script else shlex.join(g.run)
+
+
 def argv(g):
-    """The command that runs generator `g`: `python SCRIPT`, or `python -m MODULE`."""
+    """The command that runs generator `g`: `python SCRIPT`, `python -m MODULE`,
+    or its `run`, as given."""
+    if g.run:
+        return list(g.run)
     if g.script.startswith("-m "):
         return [sys.executable, "-m", g.script[3:].strip()]
     return [sys.executable, g.script]
+
+
+# ── what a command wrote ────────────────────────────────────────────────────
+#
+# A `run` generator is node, or sh, or a CAD exporter: it never imports the
+# observer, so its writes are seen another way. Generators run one at a time,
+# so the tree just before one starts and just after it ends differ by exactly
+# what it did, and that difference is what it wrote.
+#
+# THE DIFFERENCE IS TAKEN ON ctime, NOT mtime - and that is the whole of why it
+# is sound. The observer's docstring explains why mtime is not good enough: a
+# writer can leave it alone, and `touch -r` or `cp -p` set it back on purpose.
+# ctime cannot be set by anybody: every write, truncate, chmod or utime moves
+# it to now, and a file replaced by rename is a new inode. So a file whose
+# (inode, size, mtime, ctime) is unchanged was not written, and one that
+# changed was. What stays exactly as strict as the observer is the trap the
+# observer was built for: a command that skips its write when nothing changed
+# leaves every one of the four alone, and its file goes UNKNOWN, as a Python
+# generator's does.
+#
+# A CLOCK TICK IS THE ONE WAY IT COULD MISS, and it is closed, not hoped about.
+# A filesystem keeps time in ticks - a few milliseconds on Linux, a whole
+# second on some - so a file written in the tick just before the "before"
+# picture, and again in that same tick, would keep its ctime. watching() waits,
+# after taking the picture, until the newest ctime in it is a tick in the past:
+# 50 ms where the tree's timestamps have a fraction of a second, 2 s where every
+# one is whole seconds. Usually it waits for nothing, because nothing was
+# written that recently.
+#
+# WHAT IT SEES THAT THE OBSERVER DOES NOT: anything the command's own children
+# write, in any language. What neither sees: a file written and deleted again
+# before the command ends - which leaves nothing for the gate to hold.
+
+FINE_TICK_NS, COARSE_TICK_NS = 50_000_000, 2_000_000_000
+
+
+def _picture():
+    """{path: (inode, size, mtime, ctime)} for every regular file under ROOT,
+    a .git directory aside. Symbolic links are not followed: a file reached
+    through one is pictured where it is, if that is inside ROOT."""
+    out = {}
+    for d, dirs, files in os.walk(ROOT):
+        dirs[:] = [x for x in dirs if x != ".git"]
+        for f in files:
+            p = os.path.join(d, f)
+            try:
+                s = os.lstat(p)
+            except FileNotFoundError:
+                continue
+            if stat.S_ISREG(s.st_mode):
+                out[p] = (s.st_ino, s.st_size, s.st_mtime_ns, s.st_ctime_ns)
+    return out
+
+
+def _past_a_tick(picture):
+    """Wait until any write from now on must move a ctime `picture` holds."""
+    if not picture:
+        return
+    ctimes = [s[3] for s in picture.values()]
+    tick = FINE_TICK_NS if any(c % 1_000_000_000 for c in ctimes) else COARSE_TICK_NS
+    wait = max(ctimes) + tick - time.time_ns()
+    if wait > 0:
+        time.sleep(wait / 1e9)
+
+
+@contextlib.contextmanager
+def watching(g):
+    """Around running generator `g`: yields a list, filled when the block ends
+    with every path under ROOT it wrote. Empty for a `script` generator, whose
+    writes the observer records instead."""
+    seen = []
+    if not g.run:
+        yield seen
+        return
+    before = _picture()
+    _past_a_tick(before)
+    try:
+        yield seen
+    finally:
+        seen.extend(sorted(p for p, s in _picture().items() if before.get(p) != s))
 
 
 def run_all(quiet=True, only_resettle=False):
@@ -160,35 +259,47 @@ def run_all(quiet=True, only_resettle=False):
                 continue
             # Named outside the f-string: a backslash inside one is a syntax
             # error before Python 3.12, and the engine runs on 3.10.
-            safe = re.sub(r"[^\w.-]+", "_", g.script)
+            who = name(g)
+            safe = re.sub(r"[^\w.-]+", "_", who)[:60]
             log = tmp / f"{i:02d}-{safe}.log"
             env[f"{ENV_PREFIX}WRITE_LOG"] = str(log)
             if not (ROOT / g.cwd).is_dir():
-                failures.append((g.script, f"its cwd, {g.cwd!r}, is not a directory in "
-                                           f"{ROOT}: nothing ran"))
+                failures.append((who, f"its cwd, {g.cwd!r}, is not a directory in "
+                                      f"{ROOT}: nothing ran"))
                 if not quiet:
-                    print(f"  FAIL {g.script}")
+                    print(f"  FAIL {who}")
                 continue
-            r = subprocess.run(argv(g), cwd=ROOT / g.cwd,
-                               capture_output=True, text=True, env=env)
+            with watching(g) as seen:
+                r = launch(g, env)
             if r.returncode:
-                failures.append((g.script, (r.stderr or r.stdout)[-1800:]))
+                failures.append((who, (r.stderr or r.stdout)[-1800:]))
             elif g.stdout_to:
                 # The redirect IS the write. Doing it here rather than in the
                 # workflow is what puts DERIVATIONS.txt in the inventory at
                 # all; a file made by a shell `>` is a file no gate can see.
                 out = ROOT / g.stdout_to
                 out.write_text(r.stdout, encoding="utf-8")
-                wrote.setdefault(os.path.realpath(out), []).append(g.script)
+                wrote.setdefault(os.path.realpath(out), []).append(who)
             if not quiet:
-                print(f"  {'FAIL' if r.returncode else 'ok  '} {g.script}")
+                print(f"  {'FAIL' if r.returncode else 'ok  '} {who}")
+            paths = set(seen)
             if log.exists():
-                for line in log.read_text(encoding="utf-8",
-                                          errors="replace").splitlines():
-                    wrote.setdefault(line, []).append(g.script)
+                paths.update(log.read_text(encoding="utf-8", errors="replace").splitlines())
+            for line in sorted(paths):
+                wrote.setdefault(line, []).append(who)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     return wrote, failures
+
+
+def launch(g, env):
+    """Run generator `g` in its cwd, its output captured. A command that cannot
+    be started at all - `run` names a program that is not installed - is a
+    failure like any other, said in words, not a traceback."""
+    try:
+        return subprocess.run(argv(g), cwd=ROOT / g.cwd, capture_output=True, text=True, env=env)
+    except OSError as e:
+        return subprocess.CompletedProcess(argv(g), 127, "", f"could not start {argv(g)[0]!r}: {e}")
 
 
 def tracked():
@@ -263,8 +374,8 @@ def main():
             if path in names:
                 by_gen.setdefault(g, []).append(names[path])
     for g in GENERATORS:
-        got = sorted(set(by_gen.get(g.script, [])))
-        print(f"  {g.script:20} {len(got):3} tracked files   {g.makes}")
+        got = sorted(set(by_gen.get(name(g), [])))
+        print(f"  {name(g):20} {len(got):3} tracked files   {g.makes}")
     untracked = len(wrote) - len([p for p in wrote if p in names])
     print(f"\n{sum(len(v) for v in by_gen.values())} tracked writes, "
           f"{untracked} writes to paths git does not track")

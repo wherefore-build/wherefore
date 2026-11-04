@@ -19,7 +19,7 @@
   },
   {
    "usage": "wherefore build",
-   "does": "the roll: every generator, twice, compared with what is committed, and the results left in place"
+   "does": "the roll: every generator - a Python script or any command - twice, compared with what is committed, and the results left in place"
   },
   {
    "usage": "wherefore list",
