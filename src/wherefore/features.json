@@ -5,61 +5,92 @@
    "id": "scan",
    "name": "Scan",
    "since": "0.3.0",
-   "commands": ["wherefore scan PATH|URL ..."]
+   "commands": [
+    "wherefore scan PATH|URL ..."
+   ]
   },
   {
    "id": "start",
    "name": "Start a corpus",
    "since": "0.1.0",
-   "commands": ["wherefore init [DIR]"]
+   "commands": [
+    "wherefore init [DIR]"
+   ]
   },
   {
    "id": "gate",
    "name": "The gate",
    "since": "0.1.0",
-   "commands": ["wherefore gate [--keep]", "wherefore gate --restamp GROUP"]
+   "commands": [
+    "wherefore gate [--keep]",
+    "wherefore gate --restamp GROUP"
+   ]
   },
   {
    "id": "build",
    "name": "The build",
    "since": "0.1.0",
-   "commands": ["wherefore build", "wherefore list"]
+   "commands": [
+    "wherefore build",
+    "wherefore list"
+   ]
+  },
+  {
+   "id": "graph",
+   "name": "What builds what",
+   "since": "0.7.0",
+   "commands": [
+    "wherefore graph [--html PATH] [--json PATH|-]"
+   ]
   },
   {
    "id": "proofs",
    "name": "Proofs",
    "since": "0.1.0",
-   "commands": ["wherefore prove [SCRIPT ...]"]
+   "commands": [
+    "wherefore prove [SCRIPT ...]"
+   ]
   },
   {
    "id": "retired",
    "name": "Retired facts",
    "since": "0.1.0",
-   "commands": ["wherefore check retired"]
+   "commands": [
+    "wherefore check retired"
+   ]
   },
   {
    "id": "reach",
    "name": "Reach",
    "since": "0.1.0",
-   "commands": ["wherefore check reach"]
+   "commands": [
+    "wherefore check reach"
+   ]
   },
   {
    "id": "claims",
    "name": "Claims",
    "since": "0.1.0",
-   "commands": ["wherefore check claims"]
+   "commands": [
+    "wherefore check claims"
+   ]
   },
   {
    "id": "upstream",
    "name": "Derived from elsewhere",
    "since": "0.5.0",
-   "commands": ["wherefore check upstream"]
+   "commands": [
+    "wherefore check upstream"
+   ]
   },
   {
    "id": "hook",
    "name": "The pre-push hook",
    "since": "0.1.0",
-   "commands": ["wherefore hook install", "wherefore hook pre-push"]
+   "commands": [
+    "wherefore hook install",
+    "wherefore hook pre-push"
+   ]
   },
   {
    "id": "skill",

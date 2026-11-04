@@ -52,6 +52,12 @@ pip install -e '.[pictures,xlsx]' # with picture and workbook comparison
 {{commands}}
 ```
 
+**See what builds what.** `wherefore graph` runs every generator once, records
+what each reads and writes, and draws the chain as one self-contained page:
+sources, the scripts that read them, and everything they make - choose any file
+to see where it comes from, or any source to see what changes with it. It puts
+the tree back as it found it.
+
 **Start with a scan.** `wherefore scan` needs no setup and no `wherefore.json`:
 point it at a built site, a docs folder or a live address, and it reports every
 value the company states more than one way - "start your {} day free trial", 14

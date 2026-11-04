@@ -178,6 +178,11 @@ def _check(args):
     return 1
 
 
+def _graph(args):
+    from . import graph
+    return graph.main(cfgmod.load(), args)
+
+
 def _hook(args):
     from . import hook
     return hook.main(cfgmod.load(), args)
@@ -190,7 +195,8 @@ def _scan(args):
 
 
 COMMANDS = {"init": _init, "list": _list, "build": _build, "gate": _gate,
-            "prove": _prove, "check": _check, "hook": _hook, "scan": _scan}
+            "graph": _graph, "prove": _prove, "check": _check, "hook": _hook,
+            "scan": _scan}
 
 
 def commands():
