@@ -268,14 +268,21 @@ def regenerate(strict=True, wrote=None):
         for g in G.GENERATORS:
             if not g.probe:
                 continue        # see checks/generators.py: nothing watched moves
-            r = subprocess.run(G.argv(g), cwd=ROOT / g.cwd,
-                               capture_output=True, text=True, env=env)
+            # A `run` generator's writes are seen by the before-and-after
+            # picture the gate takes, so "what the generators write" stays one
+            # meaning here too; there is nothing to picture when nobody asked.
+            if wrote is None:
+                r, seen = G.launch(g, env), []
+            else:
+                with G.watching(g) as seen:
+                    r = G.launch(g, env)
+                wrote.update(seen)
             if r.returncode:
                 if strict:
-                    sys.exit(f"::error::{g.script} failed on the committed spec:\n"
+                    sys.exit(f"::error::{G.name(g)} failed on the committed spec:\n"
                              f"{(r.stderr or r.stdout)[-1500:]}")
-                refused.append((g.script, (r.stderr or r.stdout).strip()
-                                .splitlines()[-1][:110]))
+                refused.append((G.name(g), ((r.stderr or r.stdout).strip()
+                                            .splitlines() or [""])[-1][:110]))
                 continue
             if g.stdout_to:
                 (ROOT / g.stdout_to).write_text(r.stdout, encoding="utf-8")

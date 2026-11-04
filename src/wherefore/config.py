@@ -39,7 +39,7 @@ SCHEMA = 1
 # The sections that may be includes. Others are always inline.
 INCLUDABLE = ("inventory", "surfaces", "retired", "reach", "claims", "compare")
 
-GEN_FIELDS = ("script", "cwd", "makes", "stdout_to", "probe", "resettle", "why")
+GEN_FIELDS = ("script", "run", "cwd", "makes", "stdout_to", "probe", "resettle", "why")
 
 # The commands `entry` may hand to a client's script, and the sections each one
 # would otherwise be configured from. A command handed over and configured here
@@ -120,7 +120,10 @@ class Config:
     @property
     def generators(self):
         from .generators import Gen
-        return [Gen(*(g.get(f, d) for f, d in zip(GEN_FIELDS[:6], (None, None, None, None, True, True))))
+        return [Gen(script=g.get("script"), cwd=g.get("cwd"), makes=g.get("makes"),
+                    stdout_to=g.get("stdout_to"), probe=g.get("probe", True),
+                    resettle=g.get("resettle", True),
+                    run=tuple(g["run"]) if g.get("run") else None)
                 for g in self.doc.get("generators", [])]
 
     @property
@@ -197,23 +200,40 @@ def validate(cfg):
     seen = set()
     for i, g in enumerate(d.get("generators", [])):
         where = f"generators[{i}]"
+        if not isinstance(g, dict):
+            raise ConfigError(f"{where} is an object: `script` or `run`, `cwd` and `makes`")
         if "command" in g:
-            raise ConfigError(f"{where} says `command`, which is reserved: v1 runs Python "
-                              f"generators only, by `script`, because what it observes is "
-                              f"Python's open(). A generator it cannot see would be a "
-                              f"generator whose files nobody covers")
+            raise ConfigError(f"{where} says `command`, which is reserved: a Python "
+                              f"script is `script`, and any other command is `run`, its "
+                              f"words as a list - [\"node\", \"gen/site.mjs\"]")
         unknown = set(g) - set(GEN_FIELDS)
         if unknown:
             raise ConfigError(f"{where} has {', '.join(sorted(unknown))}, which no generator has")
-        for f in ("script", "cwd", "makes"):
+        if "script" in g and "run" in g:
+            raise ConfigError(f"{where} says both `script` and `run`. It is one or the other: "
+                              f"`script` for a Python file, `run` for any other command")
+        if "script" not in g and "run" not in g:
+            raise ConfigError(f"{where} needs `script` - a Python file, run with the engine's "
+                              f"own Python - or `run`, any other command, as a list of its words")
+        if "run" in g:
+            run = g["run"]
+            if not (isinstance(run, list) and run and
+                    all(isinstance(w, str) and w for w in run)):
+                raise ConfigError(f"{where}: `run` is a command as a list of its words, "
+                                  f"[\"sh\", \"fonts.sh\"] - run as given, with no shell "
+                                  f"between - and not {run!r}")
+            named = " ".join(run)
+        else:
+            named = g.get("script")
+        for f in (("script",) if "script" in g else ()) + ("cwd", "makes"):
             if not isinstance(g.get(f), str) or not g[f]:
                 raise ConfigError(f"{where} needs `{f}`")
-        key = (g["cwd"], g["script"])
+        key = (g["cwd"], g.get("script") or tuple(g["run"]))
         if key in seen:
-            raise ConfigError(f"{where}: {g['cwd']}/{g['script']} is listed twice")
+            raise ConfigError(f"{where}: {g['cwd']}/{named} is listed twice")
         seen.add(key)
         if g.get("probe") is False or g.get("resettle") is False:
-            _why(g.get("why"), f"{where} ({g['script']}) is left out of the probe or the "
+            _why(g.get("why"), f"{where} ({named}) is left out of the probe or the "
                                f"second pass, and")
     for path, why in d.get("not_a_generator", {}).items():
         _why(why, f"not_a_generator {path!r}")

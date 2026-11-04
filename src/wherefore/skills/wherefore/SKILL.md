@@ -79,9 +79,15 @@ Never restamp a capture you did not re-make.
    the write when nothing changed looks exactly like one nobody called, and
    the gate will fail its files as unclassified. That is correct, and the fix
    goes in the generator.
-2. Write through Python's `open()`. The observer sees nothing else, so a shell
-   redirect or a subprocess that is not Python writes files nobody covers. A
-   generator that prints its product declares `stdout_to`.
+2. A Python generator is the default, declared by `script`, and writes through
+   Python's `open()`: the observer sees nothing else, so a shell redirect or a
+   subprocess that is not Python, started from a `script`, writes files nobody
+   covers. A generator that is another program - node, a shell script, a CAD
+   export - is declared by `run`, its command as a list of words
+   (`["node", "gen/site.mjs"]`), run as given with no shell between; what it
+   writes is seen by comparing the tree before and after it, so it may write
+   any way it likes and is held exactly as strictly. A generator that prints
+   its product declares `stdout_to`.
 3. Add it to `generators` in order: after everything it reads, before
    everything that reads it. Give it a `makes`. If it must skip the probe or
    the second pass, give a `why` that a skeptic would accept.

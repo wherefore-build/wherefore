@@ -23,7 +23,7 @@ hold your app, website and docs. [How it is built](https://wherefore.build/#case
 - **Scan** (since 0.3.0): where each stated value appears, and where the copies disagree; needs no setup. `wherefore scan PATH|URL ...`
 - **Start a corpus** (since 0.1.0): write a wherefore.json that declares nothing yet. `wherefore init [DIR]`
 - **The gate** (since 0.1.0): every tracked file classified, every generated one current; puts the tree back unless --keep. `wherefore gate [--keep]`, `wherefore gate --restamp GROUP`
-- **The build** (since 0.1.0): the roll: every generator, twice, compared with what is committed, and the results left in place. `wherefore build`, `wherefore list`
+- **The build** (since 0.1.0): the roll: every generator - a Python script or any command - twice, compared with what is committed, and the results left in place. `wherefore build`, `wherefore list`
 - **Proofs** (since 0.1.0): run the client's proofs, one at a time, in place. `wherefore prove [SCRIPT ...]`
 - **Retired facts** (since 0.1.0): nothing a person reads still claims a retired value or phrase. `wherefore check retired`
 - **Reach** (since 0.1.0): every fact, moved one at a time, reaches what it should. `wherefore check reach`
@@ -51,8 +51,9 @@ pip install 'wherefore-build[pictures,xlsx]'  # for picture and workbook compari
 
 It needs Python 3.10 or later and nothing else. Your project can be in any
 language: Wherefore reads and checks files, whatever made them. With no Python
-on the machine, `uv tool install` fetches one. Generators are Python scripts
-today, and one can call anything - a CAD export, a Node build, a shell command.
+on the machine, `uv tool install` fetches one. A generator is a Python script
+by default, or any command - a Node build, a shell script, a CAD export -
+declared with `run` and held exactly as strictly.
 
 The distribution is `wherefore-build`, because `wherefore` on PyPI is another
 project's. What you import and what you type are `wherefore`.
@@ -67,7 +68,7 @@ wherefore scan PATH|URL ...     # where each stated value appears, and where the
 wherefore init [DIR]            # write a wherefore.json that declares nothing yet
 wherefore gate [--keep]         # every tracked file classified, every generated one current; puts the tree back unless --keep
 wherefore gate --restamp GROUP  # record a re-made capture against its sources
-wherefore build                 # the roll: every generator, twice, compared with what is committed, and the results left in place
+wherefore build                 # the roll: every generator - a Python script or any command - twice, compared with what is committed, and the results left in place
 wherefore list                  # run every generator once and say what each wrote
 wherefore prove [SCRIPT ...]    # run the client's proofs, one at a time, in place
 wherefore check retired         # nothing a person reads still claims a retired value or phrase
