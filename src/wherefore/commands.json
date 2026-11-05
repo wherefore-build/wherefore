@@ -3,7 +3,7 @@
  "commands": [
   {
    "usage": "wherefore scan PATH|URL ...",
-   "does": "where each stated value appears, and where the copies disagree; needs no setup"
+   "does": "where each stated value appears, and where the copies disagree; needs no setup. Given two places - a site and an app - what both state, and where they differ"
   },
   {
    "usage": "wherefore init [DIR]",

@@ -20,7 +20,7 @@ hold your app, website and docs. [How it is built](https://wherefore.build/#case
 
 ## What it does
 
-- **Scan** (since 0.3.0): where each stated value appears, and where the copies disagree; needs no setup. `wherefore scan PATH|URL ...`
+- **Scan** (since 0.3.0): where each stated value appears, and where the copies disagree; needs no setup. Given two places - a site and an app - what both state, and where they differ. `wherefore scan PATH|URL ...`
 - **Start a corpus** (since 0.1.0): write a wherefore.json that declares nothing yet. `wherefore init [DIR]`
 - **The gate** (since 0.1.0): every tracked file classified, every generated one current; puts the tree back unless --keep. `wherefore gate [--keep]`, `wherefore gate --restamp GROUP`
 - **The build** (since 0.1.0): the roll: every generator - a Python script or any command - twice, compared with what is committed, and the results left in place. `wherefore build`, `wherefore list`
@@ -35,6 +35,7 @@ hold your app, website and docs. [How it is built](https://wherefore.build/#case
 - **The skill, for Claude Code and Codex** (since 0.2.0): teaches your coding agent the rules, and starts a corpus with you: one fact, end to end. One skill, written where each agent reads it, and held to the release
 - **Tell us** (since 0.12.0): something the engine did that it should not have, written for its makers - the release, the corpus's shape, the output given, your words, nothing private - and opened as an issue, or shown first. `wherefore report bug WORDS ... [--from FILE] [--show]`, `wherefore report ask WORDS ... [--from FILE] [--show]`, `wherefore report feature WORDS ... [--from FILE] [--show]`
 - **Releases that reach every client** (since 0.8.0): when the engine ships, every repository that pins it gets a pull request moving its pin, opened by the release itself, and the client's checks say what it still has to describe before it can build
+- **Scan two repositories at once** (since 0.13.0): point the scan at your site and your app together: every place is tagged with where it came from, and the scan says what both state and where the two disagree - the drift between teams, with nothing installed
 
 ## The principles it enforces
 
@@ -68,7 +69,7 @@ project's. What you import and what you type are `wherefore`.
 pip install -e .                 # from a checkout of this repository
 pip install -e '.[pictures,xlsx]' # with picture and workbook comparison
 
-wherefore scan PATH|URL ...                                                           # where each stated value appears, and where the copies disagree; needs no setup
+wherefore scan PATH|URL ...                                                           # where each stated value appears, and where the copies disagree; needs no setup. Given two places - a site and an app - what both state, and where they differ
 wherefore init [DIR]                                                                  # write a wherefore.json that declares nothing yet
 wherefore gate [--keep]                                                               # every tracked file classified, every generated one current; puts the tree back unless --keep
 wherefore gate --restamp GROUP                                                        # record a re-made capture against its sources

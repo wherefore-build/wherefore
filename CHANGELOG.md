@@ -7,6 +7,17 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.13.0 (2026-11-05)
+
+**Scan two repositories at once.** `wherefore scan` given more than one
+place - the site and the app, the docs and the deck - tags every place with
+the root it came from, and says what the roots state in common: every
+statement said in more than one root, and which of those the roots disagree
+on. "Both say 'start your {} day free trial': site 14, app 30" is the drift
+between two teams, which no one repository's own checks can see - the first
+thing the Team layer shows, with nothing installed. One place scans as
+before. Off the roadmap, where it was `scan2`.
+
 ## 0.12.1 (2026-11-05)
 
 **The roadmap says what shipped, and who asked.** Releases that reach every

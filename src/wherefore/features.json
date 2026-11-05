@@ -121,6 +121,12 @@
    "name": "Releases that reach every client",
    "since": "0.8.0",
    "says": "when the engine ships, every repository that pins it gets a pull request moving its pin, opened by the release itself, and the client's checks say what it still has to describe before it can build"
+  },
+  {
+   "id": "scan2",
+   "name": "Scan two repositories at once",
+   "since": "0.13.0",
+   "says": "point the scan at your site and your app together: every place is tagged with where it came from, and the scan says what both state and where the two disagree - the drift between teams, with nothing installed"
   }
  ]
 }
