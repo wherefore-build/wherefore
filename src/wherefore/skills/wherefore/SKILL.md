@@ -183,6 +183,25 @@ raise SystemExit(report(results))
 The cheap direction and the expensive one are not symmetric here, and the
 check is usually right.
 
+## Asking, reporting, requesting
+
+When a check fails and the reason is not in this file, when the engine refuses
+something it should take, or when the person wants something it does not do,
+there is a way to tell the people who make it:
+
+```
+wherefore report bug "what happened, in the person's words" --from gate.log --show
+wherefore report ask "the question" --show
+wherefore report feature "what it should do" --show
+```
+
+It writes the report - the release, the shape of the corpus in counts, the
+output in the file given, the words - and never a file's contents. `--show`
+prints it and sends nothing: run that first, show the person, and send only
+when they say, by running it again without `--show`. With `gh` signed in it
+opens the issue on wherefore-build/wherefore; without, it prints a link that
+opens the issue filled in. The words are the person's: ask, do not invent.
+
 ## Releases are a person's
 
 If the repository versions what it ships (drafts, releases, a write-once

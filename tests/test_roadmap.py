@@ -37,13 +37,19 @@ class TheRoadmapIsHonest(unittest.TestCase):
             for key in ("id", "state", "name", "words"):
                 self.assertTrue(it.get(key, "").strip(), f"roadmap item {it.get('id')!r} has no {key}")
             self.assertIn(it["state"], STATES, f"roadmap item {it['id']!r} is {it['state']!r}, not one of {STATES}")
-            self.assertEqual(set(it) - {"id", "state", "name", "words", "issue"}, set(),
+            self.assertEqual(set(it) - {"id", "state", "name", "words", "issue", "asked_by"}, set(),
                              f"roadmap item {it['id']!r} has a key this test does not know")
 
     def test_an_issue_is_one_of_this_repositorys(self):
         for it in roadmap()["items"]:
             if "issue" in it:
                 self.assertRegex(it["issue"], ISSUE, f"roadmap item {it['id']!r} links something that is not an issue here")
+
+    def test_who_asked_is_a_github_login_and_comes_with_the_issue(self):
+        for it in roadmap()["items"]:
+            if "asked_by" in it:
+                self.assertIn("issue", it, f"roadmap item {it['id']!r} says who asked but not where: `issue` names the issue")
+                self.assertRegex(it["asked_by"], r"^[A-Za-z0-9-]{1,39}$", f"roadmap item {it['id']!r}: asked_by is a GitHub login")
 
     def test_a_shipped_feature_has_left_the_roadmap(self):
         shipped = {f["id"]: f for f in features()}

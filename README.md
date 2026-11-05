@@ -33,6 +33,7 @@ hold your app, website and docs. [How it is built](https://wherefore.build/#case
 - **One palette** (since 0.10.0): every colour anywhere is one the brand's source holds, or the file says, with why, whose colours they are. `wherefore check palette`
 - **The pre-push hook** (since 0.1.0): a pre-push hook: no push leaves the corpus stale. `wherefore hook install`, `wherefore hook pre-push`
 - **The skill, for Claude Code and Codex** (since 0.2.0): teaches your coding agent the rules, and starts a corpus with you: one fact, end to end. One skill, written where each agent reads it, and held to the release
+- **Tell us** (since 0.12.0): something the engine did that it should not have, written for its makers - the release, the corpus's shape, the output given, your words, nothing private - and opened as an issue, or shown first. `wherefore report bug WORDS ... [--from FILE] [--show]`, `wherefore report ask WORDS ... [--from FILE] [--show]`, `wherefore report feature WORDS ... [--from FILE] [--show]`
 
 ## The principles it enforces
 
@@ -81,6 +82,9 @@ wherefore check upstream                                                        
 wherefore check palette                                                               # every colour anywhere is one the brand's source holds, or the file says, with why, whose colours they are
 wherefore hook install                                                                # a pre-push hook: no push leaves the corpus stale
 wherefore hook pre-push                                                               # what the installed hook runs before a push; not for typing
+wherefore report bug WORDS ... [--from FILE] [--show]                                 # something the engine did that it should not have, written for its makers - the release, the corpus's shape, the output given, your words, nothing private - and opened as an issue, or shown first
+wherefore report ask WORDS ... [--from FILE] [--show]                                 # a question for the engine's makers, written the same way and opened as an issue, or shown first
+wherefore report feature WORDS ... [--from FILE] [--show]                             # something you want the engine to do, written the same way and opened as an issue, or shown first
 ```
 
 **See what builds what.** `wherefore graph` runs every generator once, records
