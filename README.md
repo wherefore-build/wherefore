@@ -30,6 +30,7 @@ hold your app, website and docs. [How it is built](https://wherefore.build/#case
 - **Reach** (since 0.1.0): every fact, moved one at a time, reaches what it should. `wherefore check reach`
 - **Claims** (since 0.1.0): every claim says only what its rule allows. `wherefore check claims`
 - **Derived from elsewhere** (since 0.5.0): every copy taken from elsewhere still matches where it was taken from, read there now. `wherefore check upstream`
+- **One palette** (since 0.10.0): every colour anywhere is one the brand's source holds, or the file says, with why, whose colours they are. `wherefore check palette`
 - **The pre-push hook** (since 0.1.0): a pre-push hook: no push leaves the corpus stale. `wherefore hook install`, `wherefore hook pre-push`
 - **The skill, for Claude Code and Codex** (since 0.2.0): teaches your coding agent the rules, and starts a corpus with you: one fact, end to end. One skill, written where each agent reads it, and held to the release
 
@@ -77,6 +78,7 @@ wherefore check retired                                          # nothing a per
 wherefore check reach                                            # every fact, moved one at a time, reaches what it should
 wherefore check claims                                           # every claim says only what its rule allows
 wherefore check upstream                                         # every copy taken from elsewhere still matches where it was taken from, read there now
+wherefore check palette                                          # every colour anywhere is one the brand's source holds, or the file says, with why, whose colours they are
 wherefore hook install                                           # a pre-push hook: no push leaves the corpus stale
 wherefore hook pre-push                                          # what the installed hook runs before a push; not for typing
 ```

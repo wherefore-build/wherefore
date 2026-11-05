@@ -7,6 +7,24 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.10.0 (2026-11-05)
+
+**One palette.** A brand is a fact like a price, and a colour typed anywhere
+else is the brand said twice. `wherefore check palette` reads every tracked
+text file and fails a colour literal - #hex, rgb(), hsl() and their kin, a
+named colour on a colour property - that is not one of the values the brand's
+source holds, naming the file and the line.
+
+- Declared in `wherefore.json`: `palette.source`, the JSON file the colours
+  live in (every #RRGGBB string in it, wherever it sits, is the brand's);
+  `read`, globs that limit what is read; `not_ours`, files whose colours are
+  somebody else's, each with why. A corpus with no brand declines it:
+  `{"none": why}`.
+- On by default: a corpus that declares neither fails the check in words, and
+  the gate - which never fails for it - says when colours are said in more
+  than one file and no palette is declared. The company's site had to ask for
+  this; nobody should have to.
+
 ## 0.9.0 (2026-11-05)
 
 **The map in the corpus's own colours.** `wherefore graph --theme CSS`, which

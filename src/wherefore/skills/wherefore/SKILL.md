@@ -39,6 +39,7 @@ cat wherefore.json          # sources, generators in order, inventory, comparato
 wherefore list              # what each generator writes, right now
 wherefore gate              # is every tracked file classified and current?
 wherefore graph             # what builds what: which script makes each file, from what
+wherefore check palette     # every colour anywhere is one the brand's source holds, or excused with why
 ```
 
 `wherefore graph` is for seeing the chain before you change it: which sources a
@@ -51,9 +52,16 @@ shows what it wrote but not what it read: its reads are not observed.
 A corpus may publish its own map: a `run` generator that is
 `wherefore graph --html site/map/index.html`, committed like any generated
 file. The gate runs it; `wherefore graph` credits it with that file rather than
-running it, so the map never maps itself without end. Give it `--theme site/brand.css` (or any stylesheet that
-sets the page's custom properties) and the map is drawn in the corpus's own
-colours, with no palette of the engine's left in it.
+running it, so the map never maps itself without end. Give it
+`--theme site/brand.css` (or any stylesheet that sets the page's custom
+properties) and the map is drawn in the corpus's own colours, with no palette
+of the engine's left in it.
+
+A brand is a fact like a price. Declare `palette` in wherefore.json - `source`,
+the JSON file the colours live in - and `wherefore check palette` fails a
+colour said anywhere else that the source does not hold, unless the file is in
+`not_ours` with why. A corpus with no brand declines it: `{"none": why}`. The
+gate says when colours are said in several files and nothing is declared.
 
 `wherefore.json` and any file a section includes are where every exemption
 lives, and **every exemption carries a `why`**. The engine refuses an entry
