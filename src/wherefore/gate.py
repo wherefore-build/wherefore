@@ -435,12 +435,16 @@ def parse(argv):
     return "--keep" in args, None
 
 
-def _palette_notice():
-    """Colours said in several files and no palette declared: say so, once, and go on.
-    The gate never fails for it; `wherefore check palette` does, when asked."""
+def _palette_notice(made):
+    """Colours said in several of the files the build made, and no palette
+    declared: say so, once, and go on. The gate never fails for it;
+    `wherefore check palette` does, when asked. It reads only `made` - the
+    generated files, which this run wrote and compared - so the gate opens
+    nothing for the notice that it did not open to judge: a client that
+    records what its gate reads (the first client does) sees no new read."""
     try:
         from . import config, palette
-        said = palette.notice(config.load())
+        said = palette.notice(config.load(), made)
     except Exception:          # the notice is a courtesy, never a verdict
         return
     if said:
@@ -692,7 +696,7 @@ def main(argv=None):
               f"{len(reshoot)} groups out of date, "
               f"{len(unstamped)} deriving from nothing")
 
-        _palette_notice()
+        _palette_notice(sorted(generated))
         if fails:
             print()
             for f in fails:

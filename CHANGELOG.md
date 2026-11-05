@@ -7,6 +7,16 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.10.1 (2026-11-05)
+
+**The gate's palette notice reads nothing it did not read to judge.** 0.10.0
+had the gate read every tracked text file to count the colours said, which
+widened what the gate opens - and the first client holds its gate to exactly
+that, recording every file a job reads against the files its rules promise it
+never does. The notice now counts colours only in the files the build made,
+which the gate wrote and compared anyway, and says so: "colours are said in N
+files the build made". A courtesy must not change what a command touches.
+
 ## 0.10.0 (2026-11-05)
 
 **One palette.** A brand is a fact like a price, and a colour typed anywhere

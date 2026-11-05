@@ -65,15 +65,23 @@ class OnePalette(unittest.TestCase):
         self.assertNotEqual(code, 0)
         self.assertIn("palette.not_ours['x.css']", out)
 
-    def test_the_gate_says_so_when_colours_are_said_and_nothing_is_declared(self):
-        root = corpus(None, **{"site/a.css": "a { color: #17181B; }\n", "site/b.css": "b { color: #F7F6F2; }\n"})
+    def test_the_gate_says_so_when_the_build_makes_coloured_files_and_nothing_is_declared(self):
+        gen = ("import pathlib\n"
+               "pathlib.Path('site').mkdir(exist_ok=True)\n"
+               "pathlib.Path('site/a.css').write_text('a { color: #17181B; }\\n')\n"
+               "pathlib.Path('site/b.css').write_text('b { color: #F7F6F2; }\\n')\n")
+        made = {"gen.py": gen, "site/a.css": "a { color: #17181B; }\n", "site/b.css": "b { color: #F7F6F2; }\n",
+                "notes/old.css": ".y { color: #ABCDEF; }\n"}
+        doc = dict(BASE, generators=[{"script": "gen.py", "cwd": ".", "makes": "two stylesheets"}])
+        root = repo({"wherefore.json": doc, "brand/tokens.json": BRAND, **made})
         code, out = wherefore(root, "gate")
-        self.assertIn("NOTICE colours are said in 3 files and no palette is declared", out,
-                      "the brand file counts: it says colours too, and nothing names it the source")
-        root = corpus({"source": "brand/tokens.json"}, **{"site/a.css": "a { color: #17181B; }\n", "site/b.css": "b { color: #F7F6F2; }\n"})
+        self.assertIn("NOTICE colours are said in 2 files the build made and no palette is declared", out,
+                      "the two files the generator wrote count; the brand file and notes/old.css, which "
+                      "nothing made, do not - the gate reads nothing for the notice it did not read to judge")
+        doc["palette"] = {"source": "brand/tokens.json"}
+        root = repo({"wherefore.json": doc, "brand/tokens.json": BRAND, **made})
         code, out = wherefore(root, "gate")
         self.assertNotIn("NOTICE colours", out)
-
 
 if __name__ == "__main__":
     unittest.main()

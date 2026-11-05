@@ -28,9 +28,11 @@ corpus with no brand says so, once, with why:
     "palette": {"none": "a shop's parts list: nothing here is coloured"}
 
 ON BY DEFAULT. A corpus that declares neither fails this check in words, and the
-gate, which never fails for it, says when colours are said in more than one
-file and no palette is declared - so the drift is caught before anybody thinks
-to ask for it.
+gate, which never fails for it, says when colours are said in more than one of
+the files the build made and no palette is declared - so the drift is caught
+before anybody thinks to ask for it. The gate reads only the generated files
+for this, which it wrote and compared anyway: a courtesy must not widen what
+the gate opens, because a client may hold its gate to exactly that.
 
 WHAT IT CANNOT SEE: a colour built at run time from parts, a colour inside a
 picture, and a literal smuggled through an interpolation. A page that takes its
@@ -130,12 +132,16 @@ def faults(cfg):
     return found, read, excused, len(values)
 
 
-def notice(cfg):
-    """One line for the gate when colours are said and no palette is declared; else None."""
+def notice(cfg, made):
+    """One line for the gate when colours are said in several of `made` - the
+    repo-relative files the build wrote - and no palette is declared; else None."""
     if declared(cfg) is not None:
         return None
     coloured = 0
-    for p, rel in text_files(cfg.root):
+    for rel in made:
+        p = cfg.root / rel
+        if p.suffix.lower() not in TEXT or not p.is_file():
+            continue
         try:
             if any(True for _ in literals(p.read_text(encoding="utf-8", errors="replace"))):
                 coloured += 1
@@ -143,9 +149,10 @@ def notice(cfg):
             continue
     if coloured < NOTICE_FROM:
         return None
-    return (f"NOTICE colours are said in {coloured} files and no palette is declared: `wherefore check "
-            f"palette` would hold them to one source. Declare `palette` in wherefore.json - its "
-            f"`source`, the JSON file the brand lives in - or decline it, {{\"none\": why}}.")
+    return (f"NOTICE colours are said in {coloured} files the build made and no palette is declared: "
+            f"`wherefore check palette` would hold them to one source. Declare `palette` in "
+            f"wherefore.json - its `source`, the JSON file the brand lives in - or decline it, "
+            f"{{\"none\": why}}.")
 
 
 def main(cfg, args):

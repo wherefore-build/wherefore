@@ -61,7 +61,8 @@ A brand is a fact like a price. Declare `palette` in wherefore.json - `source`,
 the JSON file the colours live in - and `wherefore check palette` fails a
 colour said anywhere else that the source does not hold, unless the file is in
 `not_ours` with why. A corpus with no brand declines it: `{"none": why}`. The
-gate says when colours are said in several files and nothing is declared.
+gate says when colours are said in several of the files the build made and
+nothing is declared, reading nothing for it that it did not read to judge.
 
 `wherefore.json` and any file a section includes are where every exemption
 lives, and **every exemption carries a `why`**. The engine refuses an entry
