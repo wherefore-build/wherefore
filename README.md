@@ -24,7 +24,7 @@ hold your app, website and docs. [How it is built](https://wherefore.build/#case
 - **Start a corpus** (since 0.1.0): write a wherefore.json that declares nothing yet. `wherefore init [DIR]`
 - **The gate** (since 0.1.0): every tracked file classified, every generated one current; puts the tree back unless --keep. `wherefore gate [--keep]`, `wherefore gate --restamp GROUP`
 - **The build** (since 0.1.0): the roll: every generator - a Python script or any command - twice, compared with what is committed, and the results left in place. `wherefore build`, `wherefore list`
-- **What builds what** (since 0.7.0): what builds what: run every generator once, trace what each reads and writes, and draw it as one self-contained page (and JSON) - changing nothing. `wherefore graph [--html PATH] [--json PATH|-] [--theme CSS ...]`
+- **What builds what** (since 0.7.0): what builds what: run every generator once, trace what each reads and writes, and draw it as one self-contained page (and JSON) - changing nothing. `wherefore graph [--html PATH] [--json PATH|-] [--theme CSS ...] [--home URL [WORDS]]`
 - **Proofs** (since 0.1.0): run the client's proofs, one at a time, in place. `wherefore prove [SCRIPT ...]`
 - **Retired facts** (since 0.1.0): nothing a person reads still claims a retired value or phrase. `wherefore check retired`
 - **Reach** (since 0.1.0): every fact, moved one at a time, reaches what it should. `wherefore check reach`
@@ -66,21 +66,21 @@ project's. What you import and what you type are `wherefore`.
 pip install -e .                 # from a checkout of this repository
 pip install -e '.[pictures,xlsx]' # with picture and workbook comparison
 
-wherefore scan PATH|URL ...                                      # where each stated value appears, and where the copies disagree; needs no setup
-wherefore init [DIR]                                             # write a wherefore.json that declares nothing yet
-wherefore gate [--keep]                                          # every tracked file classified, every generated one current; puts the tree back unless --keep
-wherefore gate --restamp GROUP                                   # record a re-made capture against its sources
-wherefore build                                                  # the roll: every generator - a Python script or any command - twice, compared with what is committed, and the results left in place
-wherefore list                                                   # run every generator once and say what each wrote
-wherefore graph [--html PATH] [--json PATH|-] [--theme CSS ...]  # what builds what: run every generator once, trace what each reads and writes, and draw it as one self-contained page (and JSON) - changing nothing
-wherefore prove [SCRIPT ...]                                     # run the client's proofs, one at a time, in place
-wherefore check retired                                          # nothing a person reads still claims a retired value or phrase
-wherefore check reach                                            # every fact, moved one at a time, reaches what it should
-wherefore check claims                                           # every claim says only what its rule allows
-wherefore check upstream                                         # every copy taken from elsewhere still matches where it was taken from, read there now
-wherefore check palette                                          # every colour anywhere is one the brand's source holds, or the file says, with why, whose colours they are
-wherefore hook install                                           # a pre-push hook: no push leaves the corpus stale
-wherefore hook pre-push                                          # what the installed hook runs before a push; not for typing
+wherefore scan PATH|URL ...                                                           # where each stated value appears, and where the copies disagree; needs no setup
+wherefore init [DIR]                                                                  # write a wherefore.json that declares nothing yet
+wherefore gate [--keep]                                                               # every tracked file classified, every generated one current; puts the tree back unless --keep
+wherefore gate --restamp GROUP                                                        # record a re-made capture against its sources
+wherefore build                                                                       # the roll: every generator - a Python script or any command - twice, compared with what is committed, and the results left in place
+wherefore list                                                                        # run every generator once and say what each wrote
+wherefore graph [--html PATH] [--json PATH|-] [--theme CSS ...] [--home URL [WORDS]]  # what builds what: run every generator once, trace what each reads and writes, and draw it as one self-contained page (and JSON) - changing nothing
+wherefore prove [SCRIPT ...]                                                          # run the client's proofs, one at a time, in place
+wherefore check retired                                                               # nothing a person reads still claims a retired value or phrase
+wherefore check reach                                                                 # every fact, moved one at a time, reaches what it should
+wherefore check claims                                                                # every claim says only what its rule allows
+wherefore check upstream                                                              # every copy taken from elsewhere still matches where it was taken from, read there now
+wherefore check palette                                                               # every colour anywhere is one the brand's source holds, or the file says, with why, whose colours they are
+wherefore hook install                                                                # a pre-push hook: no push leaves the corpus stale
+wherefore hook pre-push                                                               # what the installed hook runs before a push; not for typing
 ```
 
 **See what builds what.** `wherefore graph` runs every generator once, records

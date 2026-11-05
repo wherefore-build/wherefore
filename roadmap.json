@@ -24,6 +24,12 @@
    "state": "later",
    "name": "Scan two repositories at once",
    "words": "Point the scan at your site and your app together, and see every value they both state and where the two disagree."
+  },
+  {
+   "id": "drift",
+   "state": "later",
+   "name": "Drift, on the map",
+   "words": "What the scan finds - a value stated in several places that no source holds - drawn on the map beside the files that say it, so what is not yet tracked is seen, and seen shrinking."
   }
  ]
 }

@@ -55,7 +55,9 @@ file. The gate runs it; `wherefore graph` credits it with that file rather than
 running it, so the map never maps itself without end. Give it
 `--theme site/brand.css` (or any stylesheet that sets the page's custom
 properties) and the map is drawn in the corpus's own colours, with no palette
-of the engine's left in it.
+of the engine's left in it; `--home URL [WORDS]` puts a way back to the site
+on it. The map calls what nobody regenerates "written, not built" - by a
+person or by an agent - never "by hand".
 
 A brand is a fact like a price. Declare `palette` in wherefore.json - `source`,
 the JSON file the colours live in - and `wherefore check palette` fails a
