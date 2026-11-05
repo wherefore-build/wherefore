@@ -38,7 +38,15 @@ make the **source** say the right thing, and let the generators carry it.
 cat wherefore.json          # sources, generators in order, inventory, comparators, checks
 wherefore list              # what each generator writes, right now
 wherefore gate              # is every tracked file classified and current?
+wherefore graph             # what builds what: which script makes each file, from what
 ```
+
+`wherefore graph` is for seeing the chain before you change it: which sources a
+script reads, which files it makes, and what else moves with a fact. It runs
+every generator once, writes `wherefore-graph.html` (and JSON with `--json`),
+and puts every file back exactly as it was - it changes nothing, so run it
+whenever the shape of the corpus is the question. A command generator (`run`)
+shows what it wrote but not what it read: its reads are not observed.
 
 `wherefore.json` and any file a section includes are where every exemption
 lives, and **every exemption carries a `why`**. The engine refuses an entry

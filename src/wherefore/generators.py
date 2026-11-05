@@ -232,12 +232,19 @@ def watching(g):
         seen.extend(sorted(p for p, s in _picture().items() if before.get(p) != s))
 
 
-def run_all(quiet=True, only_resettle=False):
+def run_all(quiet=True, only_resettle=False, reads=None):
     """Run every generator in order, watching what each one writes.
 
     Returns (wrote, failures):
       wrote     {absolute path: [generator names, in the order they wrote it]}
       failures  [(generator, stderr tail)]
+
+    With `reads`, a dict, each generator's reads are recorded too, through the
+    observer's read log - one log per generator, so whose read it was never
+    rests on a script's name - and reads[name] is [(mode, absolute path)] in
+    the order they happened. A `run` generator loads no observer, so for one
+    reads[name] is None: not observed, which is not the same as reading
+    nothing.
 
     A file written by two generators is not an error here - the last one wins
     and the gate compares bytes - but it is worth seeing, so the list keeps
@@ -263,6 +270,9 @@ def run_all(quiet=True, only_resettle=False):
             safe = re.sub(r"[^\w.-]+", "_", who)[:60]
             log = tmp / f"{i:02d}-{safe}.log"
             env[f"{ENV_PREFIX}WRITE_LOG"] = str(log)
+            readlog = tmp / f"{i:02d}-{safe}.reads"
+            if reads is not None:
+                env[f"{ENV_PREFIX}READ_LOG"] = str(readlog)
             if not (ROOT / g.cwd).is_dir():
                 failures.append((who, f"its cwd, {g.cwd!r}, is not a directory in "
                                       f"{ROOT}: nothing ran"))
@@ -287,9 +297,23 @@ def run_all(quiet=True, only_resettle=False):
                 paths.update(log.read_text(encoding="utf-8", errors="replace").splitlines())
             for line in sorted(paths):
                 wrote.setdefault(line, []).append(who)
+            if reads is not None:
+                reads[who] = None if g.run else _read_log(readlog)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     return wrote, failures
+
+
+def _read_log(path):
+    """[(mode, realpath)] from an observer read log: `mode<TAB>who<TAB>path`."""
+    if not path.exists():
+        return []
+    out = []
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        parts = line.split("\t")
+        if len(parts) == 3:
+            out.append((parts[0], parts[2]))
+    return out
 
 
 def launch(g, env):

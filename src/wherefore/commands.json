@@ -26,6 +26,10 @@
    "does": "run every generator once and say what each wrote"
   },
   {
+   "usage": "wherefore graph [--html PATH] [--json PATH|-]",
+   "does": "what builds what: run every generator once, trace what each reads and writes, and draw it as one self-contained page (and JSON) - changing nothing"
+  },
+  {
    "usage": "wherefore prove [SCRIPT ...]",
    "does": "run the client's proofs, one at a time, in place"
   },
