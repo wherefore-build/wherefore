@@ -7,6 +7,18 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.9.0 (2026-11-05)
+
+**The map in the corpus's own colours.** `wherefore graph --theme CSS`, which
+may be given more than once, puts the stylesheets where the page's own light
+and dark palettes were, so the page's rules read the corpus's custom
+properties instead: `--ground`, `--surface`, `--line`, `--ink`, `--muted`,
+`--accent`, `--accent-ink`, `--lit`, `--gen`, `--capt`, `--hand`, `--unk`,
+`--bad`, `--sans`, `--serif`, `--mono` and `--r`. A corpus that holds its
+brand in one place need not carry a second palette typed into the engine - the
+company's site found the engine's dark accent was its own accent, typed twice.
+A map generator that names a theme is still credited rather than run.
+
 ## 0.8.0 (2026-11-05)
 
 **The map credits itself.** A corpus may publish its own map: a `run`

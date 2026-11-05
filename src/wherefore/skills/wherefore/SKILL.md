@@ -51,7 +51,9 @@ shows what it wrote but not what it read: its reads are not observed.
 A corpus may publish its own map: a `run` generator that is
 `wherefore graph --html site/map/index.html`, committed like any generated
 file. The gate runs it; `wherefore graph` credits it with that file rather than
-running it, so the map never maps itself without end.
+running it, so the map never maps itself without end. Give it `--theme site/brand.css` (or any stylesheet that
+sets the page's custom properties) and the map is drawn in the corpus's own
+colours, with no palette of the engine's left in it.
 
 `wherefore.json` and any file a section includes are where every exemption
 lives, and **every exemption carries a `why`**. The engine refuses an entry

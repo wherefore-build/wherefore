@@ -34,6 +34,7 @@ import html
 import importlib
 import json
 import os
+import re
 import pathlib
 import shutil
 import subprocess
@@ -43,7 +44,7 @@ import tempfile
 from . import __version__
 
 SCHEMA = 1
-USAGE = "usage: wherefore graph [--html PATH] [--json PATH|-]"
+USAGE = "usage: wherefore graph [--html PATH] [--json PATH|-] [--theme CSS ...]"
 DEFAULT_HTML = "wherefore-graph.html"
 WRITING = set("wax+")
 
@@ -93,11 +94,13 @@ def maps_itself(g):
         return None
     out, it = [], iter(words[1:])
     for a in it:
-        if a not in ("--html", "--json"):
+        if a not in ("--html", "--json", "--theme"):
             return None               # not a call this command would take: let it run, and fail in words
         dest = next(it, None)
         if dest is None:
             return None
+        if a == "--theme":
+            continue                  # a stylesheet it reads, not a file it writes
         if dest != "-":
             out.append(os.path.normpath(os.path.join(g.cwd, dest)))
     if not out and "--html" not in words:
@@ -264,6 +267,28 @@ def summary(m, wrote_to=None):
 
 # ── the page ────────────────────────────────────────────────────────────────
 
+THEME_BLOCKS = re.compile(r":root \{.*?\n\}\n@media \(prefers-color-scheme: dark\) \{\n  :root \{.*?\n  \}\n\}\n", re.S)
+
+
+def themed(page, theme):
+    """The page with its own light and dark palettes replaced by `theme`, a stylesheet's text.
+
+    THE MAP IN A CORPUS'S OWN COLOURS. A corpus that holds its brand in one
+    place - every colour and face a custom property the site builds from its
+    tokens - should not carry a second palette typed into the engine. `--theme`
+    takes one or more stylesheets and puts them where the page's palettes were,
+    so the page's rules read the corpus's properties: --ground, --surface,
+    --line, --ink, --muted, --accent, --accent-ink, --lit, --gen, --capt,
+    --hand, --unk, --bad, --sans, --serif, --mono and --r. A theme that leaves
+    one out leaves that rule with no value, so set them all, by value or as
+    var() of what the corpus already has."""
+    if not theme:
+        return page
+    if not THEME_BLOCKS.search(page):
+        raise SystemExit("the page's palettes were not where --theme puts the theme: this is a bug in the engine")
+    return THEME_BLOCKS.sub(lambda _: theme.rstrip("\n") + "\n", page, count=1)
+
+
 def page(m):
     """One self-contained HTML page: no font, script or style from anywhere else."""
     data = json.dumps(m, ensure_ascii=False, sort_keys=True).replace("</", "<\\/")
@@ -277,13 +302,19 @@ def page(m):
 # ── the command ─────────────────────────────────────────────────────────────
 
 def parse(args):
-    out = {"html": DEFAULT_HTML, "json": None}
+    out = {"html": DEFAULT_HTML, "json": None, "theme": []}
     it = iter(args)
     for a in it:
         if a in ("-h", "--help"):
             print(USAGE + "\n\n" + __doc__.split("\n\n")[1])
             return 0
-        if a in ("--html", "--json"):
+        if a == "--theme":
+            try:
+                out["theme"].append(next(it))
+            except StopIteration:
+                print(f"::error::--theme takes a stylesheet\n{USAGE}")
+                return 2
+        elif a in ("--html", "--json"):
             try:
                 out[a[2:]] = next(it)
             except StopIteration:
@@ -306,10 +337,19 @@ def main(cfg, args):
     from . import generators as G
     tracked, wrote, reads, failures = observe()
     m = model(cfg.name, tracked, wrote, reads, failures)
+    theme = ""
+    for t in opts["theme"]:
+        path = pathlib.Path(t)
+        if not path.is_absolute():
+            path = pathlib.Path.cwd() / path
+        if not path.is_file():
+            print(f"::error::--theme {t}: no such stylesheet")
+            return 2
+        theme += path.read_text(encoding="utf-8")
     to_stdout = "-" in (opts["html"], opts["json"])
     say = sys.stderr if to_stdout else sys.stdout
     written = []
-    for kind, text in (("html", lambda: page(m)),
+    for kind, text in (("html", lambda: themed(page(m), theme)),
                        ("json", lambda: json.dumps(m, indent=1, ensure_ascii=False) + "\n")):
         dest = opts[kind]
         if dest is None:
