@@ -20,6 +20,10 @@ for p in proofs/*_proof.py; do python "$p" || exit 1; done
 - **A command is said once,** in `src/wherefore/commands.json`. The CLI's help,
   the README and the skill all read it, and `corpus/commands_named.py` fails a
   document that names a command the CLI does not have.
+- **The roadmap is `roadmap.json`,** beside the code: what is next and what
+  is later, each item one line, and an item leaves in the change that ships
+  it (`tests/test_roadmap.py`). Ask in an issue before starting anything
+  bigger than a fix; an item may name the issue it answers.
 - **The version moves whenever `src/` does** (`corpus/version_moves.py`), with
   an entry in `CHANGELOG.md`. Merging to `main` tags and publishes the release
   from that entry.

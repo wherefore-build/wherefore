@@ -53,6 +53,10 @@
      "every release, said once as data, with a picture of it working: the source the company's changelog page is built from; tests/test_releases.py holds it to CHANGELOG.md and runs the newest picture again"
     ],
     [
+     "roadmap.json",
+     "the roadmap, beside the code: what is next and what is later, said once, for the people and agents working here and for the company's site, which copies it; tests/test_roadmap.py fails an item the engine already ships"
+    ],
+    [
      "tests/fixture/**",
      "the fixture company's corpus - the engine's test data. It is a corpus of its own, held by its own wherefore.json and gate in tests/test_phase5.py, not by this one"
     ],
