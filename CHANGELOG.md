@@ -7,6 +7,21 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.8.0 (2026-11-05)
+
+**The map credits itself.** A corpus may publish its own map: a `run`
+generator that is `wherefore graph --html site/map/index.html`, so the page is
+built, committed and judged like any other generated file, and a site can link
+to the whole chain of what builds it.
+
+- Under the gate it runs as any command does, and the page it writes is the
+  same bytes on every run, so the gate holds it.
+- Under `wherefore graph` it is not run - the map runs every generator, and
+  that one would run the map, without end. It is credited with the files its
+  `--html` and `--json` name instead, as their generator, with its reads not
+  observed. Its command is recognised as `wherefore graph` or
+  `python -m wherefore graph`; anything else runs as before.
+
 ## 0.7.0 (2026-11-04)
 
 **What builds what.** `wherefore graph` draws a corpus's chain of authorship:
