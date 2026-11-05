@@ -7,6 +7,16 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.12.1 (2026-11-05)
+
+**The roadmap says what shipped, and who asked.** Releases that reach every
+client has been true since 0.8.0 - the release opens each client's pin pull
+request itself - and sat on the roadmap as "next"; it is a feature now, and
+off the roadmap, as the roadmap's own test requires. The first request to
+come in through `wherefore report feature` is on it, naming the issue and who asked:
+an app you log in to and see every repository you connected, what each
+builds, what is held, and what is drifting.
+
 ## 0.12.0 (2026-11-05)
 
 **Tell us.** A developer tells their agent to ping us, and this is what the
