@@ -8,12 +8,6 @@
    "words": "The product's docs, compiled from the release they describe."
   },
   {
-   "id": "pins",
-   "state": "next",
-   "name": "Releases that reach every client",
-   "words": "When the engine ships, every repository that pins it gets a pull request moving its pin, and the checks say what it still has to describe."
-  },
-  {
    "id": "launch",
    "state": "later",
    "name": "Launches that wait",
@@ -30,6 +24,14 @@
    "state": "later",
    "name": "Drift, on the map",
    "words": "What the scan finds - a value stated in several places that no source holds - drawn on the map beside the files that say it, so what is not yet tracked is seen, and seen shrinking."
+  },
+  {
+   "id": "app",
+   "state": "later",
+   "name": "Your things, in one place",
+   "words": "An app you log in to and see every repository you connected: what each builds, what is held, and what is drifting.",
+   "issue": "https://github.com/wherefore-build/wherefore/issues/12",
+   "asked_by": "zakholdsworth"
   }
  ]
 }

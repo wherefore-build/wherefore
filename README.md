@@ -34,6 +34,7 @@ hold your app, website and docs. [How it is built](https://wherefore.build/#case
 - **The pre-push hook** (since 0.1.0): a pre-push hook: no push leaves the corpus stale. `wherefore hook install`, `wherefore hook pre-push`
 - **The skill, for Claude Code and Codex** (since 0.2.0): teaches your coding agent the rules, and starts a corpus with you: one fact, end to end. One skill, written where each agent reads it, and held to the release
 - **Tell us** (since 0.12.0): something the engine did that it should not have, written for its makers - the release, the corpus's shape, the output given, your words, nothing private - and opened as an issue, or shown first. `wherefore report bug WORDS ... [--from FILE] [--show]`, `wherefore report ask WORDS ... [--from FILE] [--show]`, `wherefore report feature WORDS ... [--from FILE] [--show]`
+- **Releases that reach every client** (since 0.8.0): when the engine ships, every repository that pins it gets a pull request moving its pin, opened by the release itself, and the client's checks say what it still has to describe before it can build
 
 ## The principles it enforces
 

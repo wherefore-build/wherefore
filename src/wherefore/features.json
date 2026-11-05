@@ -115,6 +115,12 @@
     "wherefore report ask WORDS ... [--from FILE] [--show]",
     "wherefore report feature WORDS ... [--from FILE] [--show]"
    ]
+  },
+  {
+   "id": "pins",
+   "name": "Releases that reach every client",
+   "since": "0.8.0",
+   "says": "when the engine ships, every repository that pins it gets a pull request moving its pin, opened by the release itself, and the client's checks say what it still has to describe before it can build"
   }
  ]
 }

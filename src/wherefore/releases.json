@@ -2,6 +2,19 @@
  "note": "Every release of the engine, newest first, said once as data: its version, its date, a title and a sentence, and a picture of it working. A client that tells people about the product - the company's changelog page - reads this from the release it pins, so the page lists every release and cannot list one that was never cut. CHANGELOG.md is the long account of each release; tests/test_releases.py holds its headings to the versions and dates here, every feature's `since` (features.json) to a release here, and the newest release to the version pyproject.toml states. `shows` is what the release printed when it was run: `run` is typed in a fresh git repository named fernhollow (shown as ~/fernhollow), holding `files` if any, or a copy of the fixture company if `fixture` is true; `output` is what it printed, in order, with a line of just … where lines are left out. The test runs the newest release's again, on every change, so the picture of the current release cannot drift from what it does; an older one's is history, true of the release that printed it.",
  "releases": [
   {
+   "version": "0.12.1",
+   "date": "2026-11-05",
+   "title": "The roadmap says what shipped",
+   "says": "Releases that reach every client, true since 0.8.0, is a feature and off the roadmap; the first request to come in through wherefore report is on the roadmap, naming the issue and who asked.",
+   "shows": {
+    "fixture": false,
+    "run": "wherefore --version",
+    "output": [
+     "wherefore 0.12.1"
+    ]
+   }
+  },
+  {
    "version": "0.12.0",
    "date": "2026-11-05",
    "title": "Tell us",
