@@ -32,6 +32,14 @@ WHAT IT CANNOT SEE: which copy is right. It says which value most places state
 and lists every place; deciding is a person's, and once decided the fact belongs
 in a source that every copy is built from - which is the rest of Wherefore.
 
+TWO REPOSITORIES AT ONCE. Given more than one place - the site and the app,
+the docs and the deck - every place is tagged with the root it came from, and
+the scan also says what the roots STATE IN COMMON: every statement said in
+more than one root, and which of those the roots disagree on. "Both say
+'start your {} day free trial': site 14, app 30" is the drift between two
+teams, which no one repository's own checks can see; it is the first thing
+the Team layer shows, with nothing installed.
+
 Exit status: 0 when every statement says one thing everywhere, 1 when some
 disagree, 2 for a line it cannot act on.
 """
@@ -249,16 +257,18 @@ def crawl(start, max_pages=50):
 def scan(targets, everything=False, max_pages=50):
     """{"sources": n, "stated": n, "unread": [...], "disagree": [group, ...]}."""
     seen = collections.defaultdict(list)
-    sources, unread = 0, []
+    sources, unread, read = 0, [], []
     for t in targets:
+        root = _root(t)
         if re.match(r"^https?://", t):
             for url, lines, err in crawl(t, max_pages):
                 if err:
                     unread.append(f"{url}: {err}")
                     continue
                 sources += 1
+                read.append(root)
                 for key, value, n, raw in statements(lines):
-                    seen[key].append((value, url, n, raw))
+                    seen[key].append((value, url, n, raw, root))
             continue
         if not pathlib.Path(t).exists():
             unread.append(f"{t}: no such file or directory")
@@ -270,8 +280,26 @@ def scan(targets, everything=False, max_pages=50):
             else:
                 lines = read_text(src)
             sources += 1
+            read.append(root)
             for key, value, n, raw in statements(lines):
-                seen[key].append((value, str(f), n, raw))
+                seen[key].append((value, str(f), n, raw, root))
+    roots = list(dict.fromkeys(read))              # the places actually read, in the order given
+    shared = []
+    if len(roots) > 1:
+        # WHAT THE ROOTS STATE IN COMMON: a statement said in more than one
+        # root, with what each root says. Disagreement here is between places,
+        # not within one - the drift no single repository's checks can see.
+        for (kind, left, right), occ in seen.items():
+            by_root = collections.defaultdict(collections.Counter)
+            for v, where, n, raw, r in occ:
+                by_root[r][v] += 1
+            if len(by_root) < 2:
+                continue
+            says = " ".join(list(left) + ["{}"] + list(right))
+            each = {r: [{"value": v, "count": c} for v, c in by_root[r].most_common()] for r in roots if r in by_root}
+            agree = len({v for cnt in by_root.values() for v in cnt}) == 1
+            shared.append({"says": says, "kind": kind, "roots": each, "agree": agree})
+        shared.sort(key=lambda g: (g["agree"], -sum(c["count"] for cs in g["roots"].values() for c in cs), g["says"]))
     groups = []
     for (kind, left, right), occ in seen.items():
         counts = collections.Counter(v for v, *_ in occ).most_common()
@@ -284,12 +312,23 @@ def scan(targets, everything=False, max_pages=50):
             continue
         values = []
         for v, c in counts:
-            where = [{"in": w, "at": n, "as": raw} for vv, w, n, raw in occ if vv == v]
+            where = [{"in": w, "at": n, "as": raw, "root": r} for vv, w, n, raw, r in occ if vv == v]
             values.append({"value": v, "count": c, "where": where})
         groups.append({"says": " ".join(list(left) + ["{}"] + list(right)), "kind": kind, "values": values})
     groups.sort(key=lambda g: (-sum(v["count"] for v in g["values"]), g["says"]))
-    return {"sources": sources, "stated": sum(len(o) for o in seen.values()),
-            "unread": unread, "disagree": groups}
+    out = {"sources": sources, "stated": sum(len(o) for o in seen.values()),
+           "unread": unread, "disagree": groups}
+    if len(roots) > 1:
+        out["roots"] = roots
+        out["shared"] = shared
+    return out
+
+
+def _root(target):
+    """The place a target names, as the report says it: a host, or the path as given."""
+    if re.match(r"^https?://", target):
+        return urllib.parse.urlsplit(target).netloc
+    return target.rstrip("/") or target
 
 
 def report(result, limit=20):
@@ -307,6 +346,18 @@ def report(result, limit=20):
             lines.append(f"     {v['value']:<12} {v['count']}x   {shown}")
     if len(d) > limit:
         lines.append(f"\n  ... and {len(d) - limit} more; --json lists every one")
+    if "shared" in result:
+        shared = result["shared"]
+        split = [g for g in shared if not g["agree"]]
+        lines.append(f"\n{len(result['roots'])} places read together - {', '.join(result['roots'])} - state "
+                     f"{len(shared)} thing{'s' if len(shared) != 1 else ''} in common; "
+                     f"they disagree on {len(split)}")
+        for g in shared[:limit]:
+            said = " · ".join(f"{r}: " + ", ".join(f"{c['value']} ({c['count']}x)" for c in cs)
+                              for r, cs in g["roots"].items())
+            lines.append(f"  {'DIFFER' if not g['agree'] else 'agree '}  " + '"' + g["says"] + '"  ' + said)
+        if len(shared) > limit:
+            lines.append(f"  ... and {len(shared) - limit} more; --json lists every one")
     for u in result["unread"]:
         lines.append(f"\n::warning::could not read {u}")
     if d:
@@ -351,7 +402,8 @@ def main(argv):
               "::error::nothing here to read: no page, Markdown or text file\n" + "\n".join(result["unread"]))
         return 2
     print(json.dumps(result, indent=1, ensure_ascii=False) if as_json else report(result))
-    return 1 if result["disagree"] else 0
+    split = any(not g["agree"] for g in result.get("shared", []))
+    return 1 if result["disagree"] or split else 0
 
 
 if __name__ == "__main__":

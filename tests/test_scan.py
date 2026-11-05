@@ -248,5 +248,45 @@ class TheLine(unittest.TestCase):
         self.assertIn("usage: wherefore scan", out)
 
 
+class TwoPlacesAtOnce(unittest.TestCase):
+    """More than one place: every statement they both make, and where they differ."""
+    def places(self):
+        root = pathlib.Path(tempfile.mkdtemp(prefix="wherefore-scan2-"))
+        (root / "site").mkdir(); (root / "app").mkdir()
+        (root / "site/index.html").write_text("<p>Start your 14 day free trial today. Plans from 9 dollars a month. "
+                                              "Ships in 2 business days to anywhere.</p>\n", encoding="utf-8")
+        (root / "site/pricing.html").write_text("<p>Start your 14 day free trial today.</p>\n", encoding="utf-8")
+        (root / "app/welcome.md").write_text("Start your 30 day free trial today. Plans from 9 dollars a month.\n", encoding="utf-8")
+        return root
+
+    def test_what_both_say_and_where_they_differ(self):
+        root = self.places()
+        code, out = run(root, "site", "app")
+        self.assertEqual(code, 1, out)
+        self.assertIn("2 places read together - site, app - state 2 things in common; they disagree on 1", out)
+        self.assertIn('DIFFER  "start your {} day free"  site: 14 (2x) · app: 30 (1x)', out)
+        self.assertIn('agree   "plans from {} dollars a"  site: 9 (1x) · app: 9 (1x)', out)
+        self.assertNotIn("business days", out, "said in one place only: not in common")
+
+    def test_json_tags_every_place_with_its_root(self):
+        root = self.places()
+        code, out = run(root, "site", "app", "--json")
+        d = json.loads(out)
+        self.assertEqual(d["roots"], ["site", "app"])
+        trial = [g for g in d["shared"] if g["says"] == "start your {} day free"][0]
+        self.assertFalse(trial["agree"])
+        self.assertEqual(trial["roots"]["site"], [{"value": "14", "count": 2}])
+        self.assertEqual(trial["roots"]["app"], [{"value": "30", "count": 1}])
+        self.assertEqual({w["root"] for g in d["disagree"] for v in g["values"] for w in v["where"]}, {"site", "app"})
+
+    def test_one_place_reads_as_before(self):
+        root = self.places()
+        code, out = run(root, "site", "--json")
+        d = json.loads(out)
+        self.assertNotIn("shared", d)
+        self.assertNotIn("roots", d)
+        self.assertEqual(code, 0, "the site agrees with itself")
+
+
 if __name__ == "__main__":
     unittest.main()
