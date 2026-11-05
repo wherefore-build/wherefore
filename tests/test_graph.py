@@ -145,6 +145,37 @@ class TheMapCreditsItself(unittest.TestCase):
         self.assertIn("a second regeneration moves 0 files", out)
 
 
+class TheMapInTheCorpussOwnColours(unittest.TestCase):
+    """`--theme` puts a corpus's stylesheet where the page's own palettes were."""
+    def test_the_theme_replaces_both_palettes(self):
+        root = fernhollow()
+        theme = root / "theme.css"
+        theme.write_text(":root { --ground: var(--paper); --surface: var(--paper); --line: var(--rule); --ink: var(--text);\n"
+                         "  --muted: var(--text); --accent: var(--go); --accent-ink: var(--paper); --lit: var(--paper);\n"
+                         "  --gen: var(--go); --capt: var(--go); --hand: var(--text); --unk: var(--stop); --bad: var(--stop);\n"
+                         "  --sans: Fern, sans-serif; --serif: Fern, serif; --mono: Fern, monospace; --r: 4px; }\n",
+                         encoding="utf-8")
+        code, said, data, page = graph(root, "--theme", str(theme))
+        self.assertEqual(code, 0, said)
+        self.assertIn("--ground: var(--paper)", page)
+        for own in ("#F7F6F2", "#0B0C0E", "#3F6B00", "#C3FF0F", "prefers-color-scheme: dark"):
+            self.assertNotIn(own, page, f"the page still carries its own palette: {own}")
+        self.assertIn("background: var(--ground)", page, "the rules still read the properties the theme sets")
+
+    def test_a_theme_that_is_not_there_is_refused_in_words(self):
+        root = fernhollow()
+        code, said, data, page = graph(root, "--theme", "no-such.css")
+        self.assertEqual(code, 2)
+        self.assertIn("--theme no-such.css: no such stylesheet", said)
+
+    def test_a_map_generator_with_a_theme_is_still_credited_not_run(self):
+        from wherefore import graph as G
+        from wherefore.generators import Gen
+        g = Gen(script=None, cwd=".", makes="", stdout_to=None, probe=None, resettle=False,
+                run=[sys.executable, "-m", "wherefore", "graph", "--html", "site/map/index.html", "--theme", "site/brand/map.css"])
+        self.assertEqual(G.maps_itself(g), ["site/map/index.html"])
+
+
 class ItChangesNothing(unittest.TestCase):
     def test_the_tree_is_as_it_was(self):
         root = fernhollow()

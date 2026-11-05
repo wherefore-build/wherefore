@@ -40,7 +40,7 @@
    "name": "What builds what",
    "since": "0.7.0",
    "commands": [
-    "wherefore graph [--html PATH] [--json PATH|-]"
+    "wherefore graph [--html PATH] [--json PATH|-] [--theme CSS ...]"
    ]
   },
   {
