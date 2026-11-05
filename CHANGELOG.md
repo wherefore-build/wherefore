@@ -7,6 +7,27 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.11.0 (2026-11-05)
+
+**The map says what it is.** Three things the company's owner saw on the
+site's own map, made the engine's.
+
+- "Written by hand" said a person, and most of it is written by agents: the
+  map now says *written, not built* - by a person or by an agent, and never
+  regenerated, so it is current only while someone keeps it so. The page's
+  foot says the opposite of itself: nothing on it is written, all of it is
+  built.
+- `wherefore graph --home URL [WORDS]` puts a way back on the map, to the
+  site it is of, in WORDS or in the corpus's name.
+- A theme gets two marks beside the accent: `--mark`, what the map marks with
+  (the bar down a script's card), and `--em` with `--em-mark`, the headline's
+  word and the highlighter behind it. A brand whose accent is a highlighter -
+  lime on white - writes with its ink and marks with its accent, and the word
+  takes the brand's colour again.
+
+The roadmap gains *drift, on the map* (later): what the scan finds, drawn
+beside the files that say it, so what is not yet tracked is seen shrinking.
+
 ## 0.10.1 (2026-11-05)
 
 **The gate's palette notice reads nothing it did not read to judge.** 0.10.0
