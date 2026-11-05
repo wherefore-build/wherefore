@@ -48,6 +48,11 @@ and puts every file back exactly as it was - it changes nothing, so run it
 whenever the shape of the corpus is the question. A command generator (`run`)
 shows what it wrote but not what it read: its reads are not observed.
 
+A corpus may publish its own map: a `run` generator that is
+`wherefore graph --html site/map/index.html`, committed like any generated
+file. The gate runs it; `wherefore graph` credits it with that file rather than
+running it, so the map never maps itself without end.
+
 `wherefore.json` and any file a section includes are where every exemption
 lives, and **every exemption carries a `why`**. The engine refuses an entry
 without one. Read the reasons before changing anything near them.

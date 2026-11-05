@@ -68,6 +68,43 @@ def configure(cfg):
         importlib.import_module(path.stem)
 
 
+# ── the map's own generator ─────────────────────────────────────────────────
+#
+# A corpus may publish its own map: a `run` generator that is this command -
+# `wherefore graph --html site/map/index.html`, say - so the page is built and
+# judged like any other generated file. Under the gate it runs as any command
+# does. Under this command it is NOT run: the map runs every generator, and
+# that one would run the map, without end. It is credited instead with the
+# files its arguments name, and the gate holds those files to what it writes.
+
+def maps_itself(g):
+    """The paths, relative to the root, that a `run` generator which is this
+    command would write; None for any other generator."""
+    if not g.run:
+        return None
+    words = list(g.run)
+    if len(words) >= 3 and words[1] == "-m" and words[2] == "wherefore":
+        words = words[3:]
+    elif words and pathlib.PurePath(words[0]).name in ("wherefore", "wherefore.exe"):
+        words = words[1:]
+    else:
+        return None
+    if words[:1] != ["graph"]:
+        return None
+    out, it = [], iter(words[1:])
+    for a in it:
+        if a not in ("--html", "--json"):
+            return None               # not a call this command would take: let it run, and fail in words
+        dest = next(it, None)
+        if dest is None:
+            return None
+        if dest != "-":
+            out.append(os.path.normpath(os.path.join(g.cwd, dest)))
+    if not out and "--html" not in words:
+        out.append(os.path.normpath(os.path.join(g.cwd, DEFAULT_HTML)))
+    return out
+
+
 # ── the run, and putting the tree back ──────────────────────────────────────
 
 def _untracked(root):
@@ -99,7 +136,15 @@ def observe():
     try:
         with copying():
             gate.snapshot(names, tmp / "before")
-        wrote, failures = G.run_all(quiet=True, reads=reads)
+        every = list(G.GENERATORS)
+        G.GENERATORS[:] = [g for g in every if maps_itself(g) is None]
+        try:
+            wrote, failures = G.run_all(quiet=True, reads=reads)
+        finally:
+            G.GENERATORS[:] = every
+        for g in every:
+            for rel in maps_itself(g) or ():
+                wrote.setdefault(os.path.realpath(G.ROOT / rel), []).append(G.name(g))
         tracked = G.tracked()
     finally:
         with copying():
