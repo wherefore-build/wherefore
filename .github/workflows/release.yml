@@ -16,6 +16,15 @@
 # PUBLISH_TO_PYPI is "true" - publishing is the owner's decision, made once,
 # by setting it (PUBLISHING.md). It uploads by PyPI's trusted publishing: PyPI
 # trusts this workflow in this repository, so no PyPI token is stored anywhere.
+#
+# AND EVERY CLIENT IS TOLD. Once the release is on PyPI, each repository that
+# pins the engine is sent `engine-released` with the version, and its own
+# workflow moves its pin, regenerates what the release lets through, and opens
+# a draft pull request whose checks say what it still has to describe. Nothing
+# merges by itself. Telling another repository takes a token that may write to
+# it - CLIENTS_TOKEN, a fine-grained token the owner makes - and while there is
+# none, the job says so and does nothing. The pendulum is not on the list: its
+# pin moves by hand, deliberately, as its own requirements-engine.txt says.
 name: release
 
 on:
@@ -37,6 +46,7 @@ jobs:
     outputs:
       tagged: ${{ steps.tag.outputs.tagged }}
       sha: ${{ steps.tag.outputs.sha }}
+      version: ${{ steps.tag.outputs.version }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -54,6 +64,7 @@ jobs:
             exit 1
           fi
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "version=$V" >> "$GITHUB_OUTPUT"
           if git rev-parse -q --verify "refs/tags/v$V" >/dev/null; then
             echo "v$V is already tagged - nothing to publish."
             echo "tagged=false" >> "$GITHUB_OUTPUT"
@@ -85,3 +96,21 @@ jobs:
           python3 -m build
       - name: Upload it to PyPI, by trusted publishing
         uses: pypa/gh-action-pypi-publish@release/v1
+
+  clients:
+    needs: [publish, pypi]
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.CLIENTS_TOKEN }}
+      VERSION: ${{ needs.publish.outputs.version }}
+    steps:
+      - name: Tell every repository that pins the engine
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::notice::No CLIENTS_TOKEN, so no client is told of $VERSION. Make a fine-grained token with contents write on each client, and save it as CLIENTS_TOKEN in this repository's secrets."
+            exit 0
+          fi
+          for client in wherefore-build/web; do
+            gh api -X POST "repos/$client/dispatches" -f event_type=engine-released -f "client_payload[version]=$VERSION"
+            echo "told $client: wherefore-build $VERSION is on PyPI"
+          done
