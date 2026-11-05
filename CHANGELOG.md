@@ -7,6 +7,20 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.12.0 (2026-11-05)
+
+**Tell us.** A developer tells their agent to ping us, and this is what the
+agent runs: `wherefore report bug`, `wherefore report ask` or `wherefore report feature`,
+with the words after it and `--from FILE` for a command's output,
+writes the report a maintainer needs and nothing private - the release, the
+shape of the corpus in counts, the output given, the person's words, never a
+file's contents - prints it whole, and opens it as an issue on
+wherefore-build/wherefore with `gh`, or prints a link that opens it filled in.
+`--show` sends nothing; the skill tells an agent to run that first and show
+the person. Issues are the inbox for all three; what becomes a feature is the
+maintainers' call, and the roadmap item that answers an issue may now say who
+asked (`asked_by`). Three issue templates give a person the same shape by hand.
+
 ## 0.11.0 (2026-11-05)
 
 **The map says what it is.** Three things the company's owner saw on the

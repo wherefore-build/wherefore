@@ -191,6 +191,12 @@ def _hook(args):
     return hook.main(cfgmod.load(), args)
 
 
+def _report(args):
+    # NO wherefore.json needed either: a person stuck before the first fact can still ask.
+    from . import report
+    return report.main(args)
+
+
 def _scan(args):
     # NO wherefore.json: the scan is the first win, before there is a corpus.
     from . import scan
@@ -199,7 +205,7 @@ def _scan(args):
 
 COMMANDS = {"init": _init, "list": _list, "build": _build, "gate": _gate,
             "graph": _graph, "prove": _prove, "check": _check, "hook": _hook,
-            "scan": _scan}
+            "scan": _scan, "report": _report}
 
 
 def commands():

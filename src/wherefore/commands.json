@@ -60,6 +60,18 @@
   {
    "usage": "wherefore hook pre-push",
    "does": "what the installed hook runs before a push; not for typing"
+  },
+  {
+   "usage": "wherefore report bug WORDS ... [--from FILE] [--show]",
+   "does": "something the engine did that it should not have, written for its makers - the release, the corpus's shape, the output given, your words, nothing private - and opened as an issue, or shown first"
+  },
+  {
+   "usage": "wherefore report ask WORDS ... [--from FILE] [--show]",
+   "does": "a question for the engine's makers, written the same way and opened as an issue, or shown first"
+  },
+  {
+   "usage": "wherefore report feature WORDS ... [--from FILE] [--show]",
+   "does": "something you want the engine to do, written the same way and opened as an issue, or shown first"
   }
  ]
 }

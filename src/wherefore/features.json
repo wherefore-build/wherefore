@@ -105,6 +105,16 @@
    "name": "The skill, for Claude Code and Codex",
    "since": "0.2.0",
    "says": "teaches your coding agent the rules, and starts a corpus with you: one fact, end to end. One skill, written where each agent reads it, and held to the release"
+  },
+  {
+   "id": "report",
+   "name": "Tell us",
+   "since": "0.12.0",
+   "commands": [
+    "wherefore report bug WORDS ... [--from FILE] [--show]",
+    "wherefore report ask WORDS ... [--from FILE] [--show]",
+    "wherefore report feature WORDS ... [--from FILE] [--show]"
+   ]
   }
  ]
 }
