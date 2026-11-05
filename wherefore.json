@@ -1,6 +1,7 @@
 {
  "wherefore": 1,
  "name": "wherefore",
+ "palette": {"none": "the engine has no brand: the colours in this tree are the map's default theme in graph.py, the fixture company's, and the release pictures' - none of them a fact about Wherefore"},
  "note": "This repository as a client of the engine it holds. Its README is generated from a template, the commands and the principles, each said once in src/wherefore/; everything else is authored or test data. It is judged by the previous release (requirements-engine.txt), never by the code being edited.",
  "sources": {
   "commands": {

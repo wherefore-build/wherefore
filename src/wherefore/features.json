@@ -84,6 +84,14 @@
    ]
   },
   {
+   "id": "palette",
+   "name": "One palette",
+   "since": "0.10.0",
+   "commands": [
+    "wherefore check palette"
+   ]
+  },
+  {
    "id": "hook",
    "name": "The pre-push hook",
    "since": "0.1.0",

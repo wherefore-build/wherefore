@@ -50,6 +50,10 @@
    "does": "every copy taken from elsewhere still matches where it was taken from, read there now"
   },
   {
+   "usage": "wherefore check palette",
+   "does": "every colour anywhere is one the brand's source holds, or the file says, with why, whose colours they are"
+  },
+  {
    "usage": "wherefore hook install",
    "does": "a pre-push hook: no push leaves the corpus stale"
   },

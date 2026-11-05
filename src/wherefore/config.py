@@ -197,6 +197,24 @@ def validate(cfg):
         if src.get("adapter", "leaves") not in ("leaves", "params"):
             raise ConfigError(f"source {name!r}: adapter {src.get('adapter')!r} is not "
                               f"one this engine has (leaves, params)")
+    pal = d.get("palette")
+    if pal is not None:
+        if not isinstance(pal, dict):
+            raise ConfigError("`palette` is an object: {\"source\": a JSON file the brand lives in} or "
+                              "{\"none\": why there is no brand here}")
+        if "none" in pal:
+            if set(pal) != {"none"} or not (isinstance(pal["none"], str) and pal["none"].strip()):
+                raise ConfigError("`palette.none` is the reason this corpus has no brand, and the only key beside it is none")
+        else:
+            unknown = set(pal) - {"source", "read", "not_ours", "why"}
+            if unknown:
+                raise ConfigError(f"`palette` has {', '.join(sorted(unknown))}, which it does not take: source, read, not_ours, why")
+            if not (isinstance(pal.get("source"), str) and pal["source"]):
+                raise ConfigError("`palette.source` is the JSON file the brand's colours live in")
+            if "read" in pal and not (isinstance(pal["read"], list) and all(isinstance(x, str) and x for x in pal["read"])):
+                raise ConfigError("`palette.read` is a list of globs, the files to read")
+            for rel, why in (pal.get("not_ours") or {}).items():
+                _why(why, f"palette.not_ours[{rel!r}]")
     seen = set()
     for i, g in enumerate(d.get("generators", [])):
         where = f"generators[{i}]"

@@ -435,6 +435,18 @@ def parse(argv):
     return "--keep" in args, None
 
 
+def _palette_notice():
+    """Colours said in several files and no palette declared: say so, once, and go on.
+    The gate never fails for it; `wherefore check palette` does, when asked."""
+    try:
+        from . import config, palette
+        said = palette.notice(config.load())
+    except Exception:          # the notice is a courtesy, never a verdict
+        return
+    if said:
+        print(f"\n  {said}")
+
+
 def main(argv=None):
     argv = sys.argv if argv is None else argv
     parsed = parse(argv)
@@ -680,6 +692,7 @@ def main(argv=None):
               f"{len(reshoot)} groups out of date, "
               f"{len(unstamped)} deriving from nothing")
 
+        _palette_notice()
         if fails:
             print()
             for f in fails:
