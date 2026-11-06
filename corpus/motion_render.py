@@ -127,9 +127,16 @@ def main(argv=None):
     site = site_checkout(a.site)
     out = pathlib.Path(a.out).resolve()
     out.mkdir(parents=True, exist_ok=True)
-    boards = motion.storyboards([f["id"] for f in feats], ROOT)
-    pages = site / "site/motion"
-    motion.write(boards, pages, site / "site/brand.css")
+    # THE SITE'S OWN CLIPS: its wherefore.json names the brand stylesheet, its
+    # copy of the roadmap and where the clips go, and its own numbers fill
+    # each mechanism scene - the clips on a release are the site's.
+    from wherefore import config as cfgmod
+    cfg = cfgmod.load(site)
+    settings = motion.settings_from(cfg)
+    boards = motion.storyboards([f["id"] for f in feats], site, settings, cfg)
+    pages = site / settings.get("out", "site/motion")
+    css = site / settings["css"] if settings.get("css") else site / "site/brand.css"
+    motion.write(boards, pages, css, settings.get("vars"), out)
     for b in boards:
         files, said = [], []
         for frame in FRAMES:
