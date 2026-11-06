@@ -7,6 +7,19 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.22.0 (2026-11-06)
+
+**Many ladders, one by default.** A `launch` section was one ladder: one set
+of stages for every thing it held. Things move differently - a feature
+through building, beta and live, the site through draft and launched, a
+roadmap item through later, next and shipped - so a section may now name
+several under `ladders`, each with its own things, stages and needs. The
+one-ladder form stays as it was, the default, and most corpora need no
+more. A thing is on one ladder: two ladders that read the same things are
+refused. The check lists each ladder under its name and a fault names its
+ladder; `--json` is now every ladder with the things on it, which is what
+the app will draw. A hard change to the JSON, made while nobody reads it.
+
 ## 0.21.1 (2026-11-06)
 
 **A stopped build says why, this time truly.** 0.20.1 had the watch quote

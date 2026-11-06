@@ -44,6 +44,17 @@ WHAT IS READ: tracked files, the way the gate sees them, generated pages
 included - the feature page is what a visitor reads. Markup is read as its
 text and as its source, so a name split by a tag still counts.
 
+ONE LADDER, OR SEVERAL. The section above is one ladder, and most corpora
+need no more. Things that move differently - features through building,
+beta and live; the site through draft and launched - each get a ladder of
+their own, by name:
+
+    "launch": {"ladders": {"features": {"of": ..., "stages": [...], "needs": {...}},
+                           "site": {"of": ..., "stages": ["draft", "launched"], ...}}}
+
+A thing is on one ladder: two ladders that read the same things are
+refused. The check and its JSON say which ladder each thing is on.
+
 `wherefore check launch` fails on a thing at a stage it does not have
 everything for; for every other thing it says what the next stage still
 waits on. `--json` prints the same, for a reader that draws it.
@@ -57,6 +68,7 @@ import subprocess
 from . import scan, sources
 
 FIELDS = ("of", "stages", "needs", "until", "why")
+DEFAULT = "default"
 OF_FIELDS = ("source", "path", "at", "id", "stage")
 KINDS = ("has", "file", "says", "lacks")
 MARKUP = (".html", ".htm", ".svg")
@@ -66,55 +78,96 @@ MISSING = object()
 
 # ── what the section may say ─────────────────────────────────────────────────
 
+def ladders(d):
+    """[(name, ladder)]: the ladders the section names, or the one it is.
+
+    A section is one ladder - `of`, `stages`, `needs`, `until` - named
+    `default`, which is how most corpora start; or `ladders`, several by name,
+    for things that move differently: features through building, beta and live,
+    the site through draft and launched."""
+    if "ladders" in d:
+        return list(d["ladders"].items())
+    return [(DEFAULT, d)]
+
+
 def validate(doc):
     d = doc.get("launch")
     if d is None:
         return
     from .config import ConfigError
     if not isinstance(d, dict):
-        raise ConfigError("`launch` is an object: `of`, where the stages live; `stages`, in order; "
-                          "`needs` and `until`, what each stage requires")
+        raise ConfigError("`launch` is one ladder - `of`, where the stages live; `stages`, in order; "
+                          "`needs` and `until`, what each stage requires - or `ladders`, several by name")
+    if "ladders" not in d:
+        _ladder(d, "launch", doc)
+        return
+    unknown = set(d) - {"ladders", "why"}
+    if unknown:
+        raise ConfigError(f"`launch` names `ladders`, so beside it there is only `why`: {', '.join(sorted(unknown))} "
+                          f"belong{'s' if len(unknown) == 1 else ''} to a ladder")
+    named = d["ladders"]
+    if not isinstance(named, dict) or not named:
+        raise ConfigError("`launch.ladders` names each ladder: {\"features\": {...}, \"site\": {...}}")
+    seen = {}
+    for name, ladder in named.items():
+        if not re.fullmatch(r"[a-z0-9][a-z0-9_-]*", name):
+            raise ConfigError(f"`launch.ladders` names {name!r}: a ladder's name is lower case, digits, `-` and `_`")
+        _ladder(ladder, f"launch.ladders.{name}", doc)
+        of = ladder["of"]
+        rel = (doc.get("sources") or {})[of["source"]]["path"] if "source" in of else of["path"]
+        key = (rel, of.get("at"))
+        if key in seen:
+            raise ConfigError(f"`launch.ladders.{name}` reads the same things as `{seen[key]}` ({rel}"
+                              + (f", {of['at']}" if of.get("at") else "") + "): a thing is on one ladder")
+        seen[key] = name
+
+
+def _ladder(d, where, doc):
+    """One ladder, said where `where` says."""
+    from .config import ConfigError
+    if not isinstance(d, dict):
+        raise ConfigError(f"`{where}` is a ladder: `of`, `stages`, `needs` and `until`")
     unknown = set(d) - set(FIELDS)
     if unknown:
-        raise ConfigError(f"`launch` has {', '.join(sorted(unknown))}, which it does not take: "
+        raise ConfigError(f"`{where}` has {', '.join(sorted(unknown))}, which it does not take: "
                           f"{', '.join(FIELDS)}")
     stages = d.get("stages")
     if (not isinstance(stages, list) or len(stages) < 2 or len(set(stages)) != len(stages)
             or not all(isinstance(s, str) and s.strip() for s in stages)):
-        raise ConfigError("`launch.stages` is the stages in order, at least two, each named once: "
+        raise ConfigError(f"`{where}.stages` is the stages in order, at least two, each named once: "
                           "[\"building\", \"beta\", \"live\"]")
     of = d.get("of")
     if not isinstance(of, dict):
-        raise ConfigError("`launch.of` says where each thing's stage lives: "
+        raise ConfigError(f"`{where}.of` says where each thing's stage lives: "
                           "{\"source\": \"facts\", \"at\": \"features\", \"id\": \"id\", \"stage\": \"stage\"}")
     unknown = set(of) - set(OF_FIELDS)
     if unknown:
-        raise ConfigError(f"`launch.of` has {', '.join(sorted(unknown))}, which it does not take: "
+        raise ConfigError(f"`{where}.of` has {', '.join(sorted(unknown))}, which it does not take: "
                           f"{', '.join(OF_FIELDS)}")
     if ("source" in of) == ("path" in of):
-        raise ConfigError("`launch.of` names its file one way: `source`, a source in wherefore.json by name, "
+        raise ConfigError(f"`{where}.of` names its file one way: `source`, a source in wherefore.json by name, "
                           "or `path`, a JSON file")
     if "source" in of and of["source"] not in (doc.get("sources") or {}):
-        raise ConfigError(f"`launch.of.source` is {of['source']!r}, which is not a source in wherefore.json")
+        raise ConfigError(f"`{where}.of.source` is {of['source']!r}, which is not a source in wherefore.json")
     if not (isinstance(of.get("stage"), str) and of["stage"]):
-        raise ConfigError("`launch.of.stage` is the field that holds each thing's stage")
+        raise ConfigError(f"`{where}.of.stage` is the field that holds each thing's stage")
     if "id" in of and "at" not in of:
-        raise ConfigError("`launch.of.id` names each thing's field among several (`at`); "
+        raise ConfigError(f"`{where}.of.id` names each thing's field among several (`at`); "
                           "without `at` the one thing is the corpus itself")
     for part in ("needs", "until"):
         block = d.get(part, {})
         if not isinstance(block, dict):
-            raise ConfigError(f"`launch.{part}` maps a stage to what it requires: {{\"beta\": [...]}}")
+            raise ConfigError(f"`{where}.{part}` maps a stage to what it requires: {{\"beta\": [...]}}")
         for stage, reqs in block.items():
             if stage not in stages:
-                raise ConfigError(f"`launch.{part}` names {stage!r}, which is not one of the stages "
+                raise ConfigError(f"`{where}.{part}` names {stage!r}, which is not one of the stages "
                                   f"({', '.join(stages)})")
             if part == "until" and stage == stages[0]:
-                raise ConfigError(f"`launch.until.{stage}` is before the first stage, where nothing is")
+                raise ConfigError(f"`{where}.until.{stage}` is before the first stage, where nothing is")
             if not isinstance(reqs, list) or not reqs:
-                raise ConfigError(f"`launch.{part}.{stage}` is a list of requirements")
+                raise ConfigError(f"`{where}.{part}.{stage}` is a list of requirements")
             for i, r in enumerate(reqs):
-                _requirement(r, f"launch.{part}.{stage}[{i}]")
+                _requirement(r, f"{where}.{part}.{stage}[{i}]")
 
 
 def _requirement(r, where):
@@ -147,9 +200,8 @@ def _get(fields, dotted):
         return MISSING
 
 
-def things(cfg):
-    """[{id, stage, fields}] for every thing the section names, in the source's order."""
-    d = cfg.doc["launch"]
+def things(cfg, d):
+    """[{id, stage, fields}] for every thing a ladder names, in the source's order."""
     of = d["of"]
     rel = cfg.doc["sources"][of["source"]]["path"] if "source" in of else of["path"]
     doc = json.loads((cfg.root / rel).read_text(encoding="utf-8"))
@@ -248,11 +300,14 @@ def judge(req, thing, corpus):
 
 
 def find(cfg):
-    """Every thing, its stage, and every requirement that applies to it now and at the next stage."""
-    d = cfg.doc["launch"]
-    stages, needs, until = d["stages"], d.get("needs", {}), d.get("until", {})
+    """Every ladder; on each, every thing, its stage, and every requirement that applies now and at the next stage."""
     corpus = Corpus(cfg.root)
-    listed, rel = things(cfg)
+    return {"ladders": [dict(name=name, **_climb(cfg, d, corpus)) for name, d in ladders(cfg.doc["launch"])]}
+
+
+def _climb(cfg, d, corpus):
+    stages, needs, until = d["stages"], d.get("needs", {}), d.get("until", {})
+    listed, rel = things(cfg, d)
     out = []
     for t in listed:
         row = {"id": t["id"], "stage": t["stage"] if t["stage"] is not MISSING else None,
@@ -280,23 +335,24 @@ def find(cfg):
 
 # ── the check ────────────────────────────────────────────────────────────────
 
-def report(found):
+def _report(lad, named):
+    """(lines, faults, things short, things ready) for one ladder; `named` puts its name on each fault."""
     lines, faults, short, ready = [], 0, 0, 0
-    n = len(found["things"])
-    width = max([len(t["id"]) for t in found["things"]] + [8])
-    stw = max(len(s) for s in found["stages"])
-    for t in found["things"]:
+    who = f"{lad['name']}: " if named else ""
+    width = max([len(t["id"]) for t in lad["things"]] + [8])
+    stw = max(len(s) for s in lad["stages"])
+    for t in lad["things"]:
         if not t["known"]:
             faults += 1
             short += 1
-            lines.append(f"::error::{t['id']} is at {t['stage']!r}, which is not one of the stages "
-                         f"({', '.join(found['stages'])}) - say one in {found['of']}")
+            lines.append(f"::error::{who}{t['id']} is at {t['stage']!r}, which is not one of the stages "
+                         f"({', '.join(lad['stages'])}) - say one in {lad['of']}")
             continue
         missing = [r for r in t["now"] if not r["held"]]
         for r in missing:
             faults += 1
             when = f"from {r['stage']} it needs" if r["part"] == "needs" else f"until {r['stage']},"
-            lines.append(f"::error::{t['id']} is {t['stage']}, and {when} {r['why']}: {r['said']}")
+            lines.append(f"::error::{who}{t['id']} is {t['stage']}, and {when} {r['why']}: {r['said']}")
         if missing:
             short += 1
             continue
@@ -312,12 +368,25 @@ def report(found):
             else:
                 tail = f"; {nxt['stage']} waits on " + "; ".join(w["why"] for w in nxt["wants"] if not w["held"])
         lines.append(f"  ok   {t['id']:<{width}}  {t['stage']:<{stw}}  {held} held{tail}")
+    return lines, faults, short, ready
+
+
+def report(found):
+    named = len(found["ladders"]) > 1
+    lines, faults, short, ready, n = [], 0, 0, 0, 0
+    for lad in found["ladders"]:
+        got = _report(lad, named)
+        if named:
+            lines.append(f"{lad['name']}  {' · '.join(lad['stages'])}  ({lad['of']})")
+        lines += got[0]
+        faults, short, ready, n = faults + got[1], short + got[2], ready + got[3], n + len(lad["things"])
+    where = f"on {len(found['ladders'])} ladders" if named else f"in {found['ladders'][0]['of']}"
     if faults:
         lines.append(f"\n{short} of {n} thing{'s' if n != 1 else ''} lack{'s' if short == 1 else ''} what "
                      f"{'its stage needs' if short == 1 else 'their stages need'} ({faults} missing): "
                      f"a stage moves only when what it needs is there")
         return "\n".join(lines), 1
-    lines.append(f"\nok   {n} thing{'s' if n != 1 else ''} in {found['of']}, each at a stage it has everything for"
+    lines.append(f"\nok   {n} thing{'s' if n != 1 else ''} {where}, each at a stage it has everything for"
                  + (f"; {ready} ready for the next" if ready else ""))
     return "\n".join(lines), 0
 
@@ -328,7 +397,7 @@ def main(cfg, args):
         return 0 if args and args[0] in ("-h", "--help") else 2
     if cfg.doc.get("launch") is None:
         if "--json" in args:
-            print(json.dumps({"stages": [], "of": None, "things": []}, indent=1))
+            print(json.dumps({"ladders": []}, indent=1))
             return 0
         print("ok   no launch section: nothing here waits on a stage. Declare one in wherefore.json - "
               "where each thing's stage lives, the stages in order, and what each needs")
@@ -336,7 +405,8 @@ def main(cfg, args):
     found = find(cfg)
     if "--json" in args:
         print(json.dumps(found, indent=1, ensure_ascii=False))
-        return 1 if any(not t["known"] or not all(r["held"] for r in t["now"]) for t in found["things"]) else 0
+        return 1 if any(not t["known"] or not all(r["held"] for r in t["now"])
+                        for lad in found["ladders"] for t in lad["things"]) else 0
     text, code = report(found)
     print(text)
     return code

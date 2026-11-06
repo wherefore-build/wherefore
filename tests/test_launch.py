@@ -31,7 +31,7 @@ def corpus(features, files=None, section=None, facts_extra=None):
 
 
 def found(root):
-    return {t["id"]: t for t in launch.find(cfgmod.load(root))["things"]}
+    return {t["id"]: t for lad in launch.find(cfgmod.load(root))["ladders"] for t in lad["things"]}
 
 
 def missing(t):
@@ -98,8 +98,9 @@ class TheCheck(unittest.TestCase):
         code, out = wherefore(root, "check", "launch", "--json")
         self.assertEqual(code, 0, out)
         got = json.loads(out)
-        self.assertEqual(got["stages"], ["building", "beta", "live"])
-        t = got["things"][0]
+        self.assertEqual([lad["name"] for lad in got["ladders"]], ["default"], "one ladder is the default one")
+        self.assertEqual(got["ladders"][0]["stages"], ["building", "beta", "live"])
+        t = got["ladders"][0]["things"][0]
         self.assertEqual((t["id"], t["stage"], t["next"]["stage"], t["next"]["ready"]), ("lid", "building", "beta", False))
         self.assertEqual(t["now"][0], {"part": "until", "stage": "beta", "why": "nothing public names it", "held": True,
                                        "said": "nothing in site/** says “Steel lid”"})
@@ -118,6 +119,59 @@ class TheCheck(unittest.TestCase):
         code, out = wherefore(root, "check", "launch")
         self.assertEqual(code, 1, out)
         self.assertIn("::error::kettles is launched, and from launched it needs no draft banner: site/index.html says", out)
+
+
+class SeveralLadders(unittest.TestCase):
+    SITE = {"of": {"source": "facts", "stage": "site.status"}, "stages": ["draft", "launched"],
+            "needs": {"launched": [{"in": "site/**", "lacks": "Not launched yet.", "why": "no draft banner"}]}}
+
+    def two(self, features, files, status="draft"):
+        return corpus(features, files, {"ladders": {"features": LADDER, "site": self.SITE}},
+                      {"site": {"status": status}})
+
+    def test_each_ladder_holds_its_own_things_by_its_own_stages(self):
+        root = self.two([{"id": "lid", "name": "Steel lid", "stage": "beta"}],
+                        {"docs/lid.md": "x\n", "CHANGELOG.md": "Steel lid (beta)\n",
+                         "site/index.html": "<p>Not launched yet.</p>\n"})
+        got = launch.find(cfgmod.load(root))["ladders"]
+        self.assertEqual([(lad["name"], lad["stages"][-1], [t["id"] for t in lad["things"]]) for lad in got],
+                         [("features", "live", ["lid"]), ("site", "launched", ["kettles"])])
+        code, out = wherefore(root, "check", "launch")
+        self.assertEqual(code, 0, out)
+        self.assertIn("features  building · beta · live  (facts.json)", out)
+        self.assertIn("site  draft · launched  (facts.json)", out)
+        self.assertIn("ok   2 things on 2 ladders, each at a stage it has everything for", out)
+
+    def test_a_fault_names_its_ladder(self):
+        root = self.two([{"id": "lid", "name": "Steel lid", "stage": "building"}],
+                        {"site/index.html": "<p>Not launched yet.</p>\n"}, status="launched")
+        code, out = wherefore(root, "check", "launch")
+        self.assertEqual(code, 1, out)
+        self.assertIn("::error::site: kettles is launched, and from launched it needs no draft banner:", out)
+        self.assertNotIn("::error::features:", out, "the feature, still building, has everything building asks")
+
+    def test_two_ladders_on_the_same_things_are_refused(self):
+        doc = {"wherefore": 1, "name": "t", "sources": {"facts": {"path": "facts.json", "why": "x"}},
+               "launch": {"ladders": {"a": LADDER, "b": {**LADDER, "of": {"path": "facts.json", "at": "features", "stage": "s"}}}}}
+        with self.assertRaises(cfgmod.ConfigError) as e:
+            launch.validate(doc)
+        self.assertIn("`launch.ladders.b` reads the same things as `a` (facts.json, features): a thing is on one ladder",
+                      str(e.exception))
+
+    def test_beside_ladders_only_why(self):
+        doc = {"wherefore": 1, "name": "t", "sources": {"facts": {"path": "facts.json", "why": "x"}},
+               "launch": {"ladders": {"a": LADDER}, "stages": ["x", "y"]}}
+        with self.assertRaises(cfgmod.ConfigError) as e:
+            launch.validate(doc)
+        self.assertIn("stages belongs to a ladder", str(e.exception))
+        doc["launch"] = {"ladders": {"Features!": LADDER}}
+        with self.assertRaises(cfgmod.ConfigError) as e:
+            launch.validate(doc)
+        self.assertIn("a ladder's name is lower case", str(e.exception))
+        doc["launch"] = {"ladders": {"a": {**LADDER, "needs": {"beta": [{"has": "x"}]}}}}
+        with self.assertRaises(cfgmod.ConfigError) as e:
+            launch.validate(doc)
+        self.assertIn("`launch.ladders.a.needs.beta[0]` has no `why`", str(e.exception))
 
 
 class WhatCannotBeMeant(unittest.TestCase):

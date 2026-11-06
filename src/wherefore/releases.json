@@ -2,6 +2,31 @@
  "note": "Every release of the engine, newest first, said once as data: its version, its date, a title and a sentence, and a picture of it working. A client that tells people about the product - the company's changelog page - reads this from the release it pins, so the page lists every release and cannot list one that was never cut. CHANGELOG.md is the long account of each release; tests/test_releases.py holds its headings to the versions and dates here, every feature's `since` (features.json) to a release here, and the newest release to the version pyproject.toml states. `shows` is what the release printed when it was run: `run` is typed in a fresh git repository named fernhollow (shown as ~/fernhollow), holding `files` if any, or a copy of the fixture company if `fixture` is true; `output` is what it printed, in order, with a line of just … where lines are left out. The test runs the newest release's again, on every change, so the picture of the current release cannot drift from what it does; an older one's is history, true of the release that printed it.",
  "releases": [
   {
+   "version": "0.22.0",
+   "date": "2026-11-06",
+   "title": "Many ladders, one by default",
+   "says": "Things that move differently each get a ladder of their own - features through building, beta and live, the site through draft and launched - and one ladder stays the default.",
+   "shows": {
+    "fixture": false,
+    "run": "wherefore check launch",
+    "files": {
+     "wherefore.json": "{\n \"wherefore\": 1,\n \"name\": \"fernhollow-kettles\",\n \"sources\": {\n  \"facts\": {\n   \"path\": \"facts.json\",\n   \"why\": \"the source\"\n  }\n },\n \"launch\": {\n  \"ladders\": {\n   \"features\": {\n    \"of\": {\n     \"source\": \"facts\",\n     \"at\": \"features\",\n     \"id\": \"id\",\n     \"stage\": \"stage\"\n    },\n    \"stages\": [\n     \"building\",\n     \"beta\",\n     \"live\"\n    ],\n    \"needs\": {\n     \"beta\": [\n      {\n       \"file\": \"docs/{id}.md\",\n       \"why\": \"a help doc\"\n      }\n     ],\n     \"live\": [\n      {\n       \"in\": \"site/index.html\",\n       \"says\": \"{name}\",\n       \"why\": \"the landing page names it\"\n      }\n     ]\n    },\n    \"until\": {\n     \"beta\": [\n      {\n       \"in\": \"site/**\",\n       \"lacks\": \"{name}\",\n       \"why\": \"nothing public names it\"\n      }\n     ]\n    }\n   },\n   \"site\": {\n    \"of\": {\n     \"source\": \"facts\",\n     \"stage\": \"site.status\"\n    },\n    \"stages\": [\n     \"draft\",\n     \"launched\"\n    ],\n    \"needs\": {\n     \"launched\": [\n      {\n       \"in\": \"site/**\",\n       \"lacks\": \"{site.banner}\",\n       \"why\": \"no draft banner\"\n      }\n     ]\n    }\n   }\n  }\n }\n}\n",
+     "facts.json": "{\n \"site\": {\n  \"status\": \"launched\",\n  \"banner\": \"A draft: nothing here is for sale yet.\"\n },\n \"features\": [\n  {\n   \"id\": \"lid\",\n   \"name\": \"Steel lid\",\n   \"stage\": \"live\"\n  },\n  {\n   \"id\": \"timer\",\n   \"name\": \"Tea timer\",\n   \"stage\": \"beta\"\n  }\n ]\n}\n",
+     "docs/lid.md": "# Steel lid\n",
+     "docs/timer.md": "# Tea timer\n",
+     "site/index.html": "<p>A draft: nothing here is for sale yet.</p>\n<h1>Fernhollow One, with a steel lid</h1>\n<p>Steel lid</p>\n"
+    },
+    "output": [
+     "features  building · beta · live  (facts.json)",
+     "  ok   lid       live      2 held",
+     "  ok   timer     beta      1 held; live waits on the landing page names it",
+     "site  draft · launched  (facts.json)",
+     "::error::site: fernhollow-kettles is launched, and from launched it needs no draft banner: site/index.html says “A draft: nothing here is for sale yet.”",
+     "1 of 3 things lacks what its stage needs (1 missing): a stage moves only when what it needs is there"
+    ]
+   }
+  },
+  {
    "version": "0.21.1",
    "date": "2026-11-06",
    "title": "A stopped build says why, this time truly",
