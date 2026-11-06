@@ -31,7 +31,12 @@ stylesheet the clip links for the brand's variables and fonts, relative to the
 corpus root; without one the clip carries plain colours), `vars` (the
 variable each role reads, when the stylesheet names them differently), `name`
 (the product's, default Wherefore), `install` (the install line, {version}
-for the version), `site` (where the feature's page is).
+for the version), `site` (where the feature's page is), `roadmap` (the
+corpus's copy of the engine's ledger, so the ask scene can say who asked).
+
+THE MECHANISM SCENE (mechanism.py): what the feature does, drawn from the
+corpus the clip is made in - its own file counts, pages, sources and ledger -
+after the command's answer. Each feature names one of four in features.json.
 """
 import html
 import json
@@ -47,11 +52,11 @@ ELIDED = "…"
 CLAIM_WORDS = 12
 WORDS_PER_SECOND = 3.0
 MIN_SECONDS = 16.0
-MAX_SECONDS = 30.0
+MAX_SECONDS = 32.0
 LINE_WORDS = 14          # an output line longer than this is cut at a clause, with … to say so
 ANSWER_LINES = 4
 ANSWER_WORDS = 28
-FIELDS = ("out", "storyboards", "css", "vars", "name", "install", "site")
+FIELDS = ("out", "storyboards", "css", "vars", "name", "install", "site", "roadmap")
 ROLES = ("ground", "surface", "line", "ink", "muted", "accent", "font-display", "font-body", "font-mono")
 DEFAULTS = {"out": "motion", "name": "Wherefore", "install": "pip install wherefore-build=={version}",
             "site": "https://wherefore.build/"}
@@ -76,14 +81,20 @@ def releases():
     return {r["version"]: r for r in _data("releases.json")["releases"]}
 
 
-def ledger(root=None):
-    """The roadmap's items by feature, from the engine's own repository when run
-    there, else from the release's copy if one ships; empty otherwise."""
-    for path in ([root / "roadmap.json"] if root else []) + [HERE.parents[1] / "roadmap.json"]:
+def ledger_items(root=None, copy=None):
+    """The roadmap's items: the corpus's copy when `motion.roadmap` names one,
+    else the engine's own when run in its repository; [] otherwise."""
+    paths = ([root / copy] if root and copy else []) + ([root / "roadmap.json"] if root else []) \
+        + [HERE.parents[1] / "roadmap.json"]
+    for path in paths:
         if path.exists():
-            items = json.loads(path.read_text(encoding="utf-8"))["items"]
-            return {it["feature"]: it for it in items if it.get("state") == "shipped" and it.get("feature")}
-    return {}
+            return json.loads(path.read_text(encoding="utf-8"))["items"]
+    return []
+
+
+def ledger(root=None, copy=None):
+    """The roadmap's shipped items by feature."""
+    return {it["feature"]: it for it in ledger_items(root, copy) if it.get("state") == "shipped" and it.get("feature")}
 
 
 def docs_examples():
@@ -143,12 +154,15 @@ def _picture(feature, release, examples):
     return None, []
 
 
-def _answer(lines):
+def _answer(lines, short=False):
     """At most ANSWER_LINES lines and ANSWER_WORDS words, the last line always,
-    each cut at a clause: the result is the point."""
+    each cut at a clause: the result is the point. `short`, when a mechanism
+    scene follows: the last line alone."""
     if not lines:
         return []
     last = cut(lines[-1])
+    if short:
+        return [last]
     kept, n = [last], words(last)
     for l in reversed(lines[:-1]):
         c = cut(l)
@@ -165,8 +179,10 @@ def _seconds(text_words, least, most):
     return max(least, min(most, math.ceil(text_words / WORDS_PER_SECOND * 2) / 2))
 
 
-def storyboard(feature, release=None, item=None, examples=(), settings=None):
-    """The scenes of one feature's clip, in time: [{kind, start, end, ...}]."""
+def storyboard(feature, release=None, item=None, examples=(), settings=None, mechanics=None):
+    """The scenes of one feature's clip, in time: [{kind, start, end, ...}].
+    `mechanics` is mechanism.gather()'s {kind: data} for the corpus the clip
+    is made in; the feature's mechanism scene is drawn when its data is there."""
     s = dict(DEFAULTS, **(settings or {}))
     version = feature["since"]
     scenes = []
@@ -189,13 +205,19 @@ def storyboard(feature, release=None, item=None, examples=(), settings=None):
         import math
         typing = math.ceil((0.6 + 0.07 * len(typed) + 0.2 * (len(typed_lines(typed)) - 1) + 1.5) * 2) / 2
         add("command", max(4.0, typing), max(5.0, typing), eyebrow="the command", typed=typed)
-    lines = _answer(printed)
+    from . import mechanism
+    kind = feature.get("mechanism")
+    mech = (mechanics or {}).get(kind) if kind else None
+    lines = _answer(printed, short=mech is not None)
     if lines:
         add("answer", 4.0, 10.0, eyebrow="the answer", lines=lines)
-    else:
+    elif mech is None:
         more = cut(feature.get("details", "").split(". ")[0].strip().rstrip("."), 24)
         if more:
             add("more", 4.0, 9.0, eyebrow="what it does", text=more)
+    if mech is not None:
+        add("mechanism", 5.0, 8.0, eyebrow=mechanism.eyebrow(kind), mechanism=kind, data=mech,
+            caption=mechanism.caption(kind, mech))
     add("claim", 4.0, 4.0, text=feature["claim"])
     home = s["site"].replace("https://", "").replace("http://", "").rstrip("/")
     # The last frame is the one that stays: the address, large, then how to
@@ -209,15 +231,20 @@ def storyboard(feature, release=None, item=None, examples=(), settings=None):
 def texts(scene):
     """Every string a scene shows, in reading order."""
     out = []
-    for k in ("name", "version", "eyebrow", "headline", "typed", "text", "home", "install", "url"):
+    for k in ("name", "version", "eyebrow", "headline", "typed", "text", "caption", "home", "install", "url"):
         if scene.get(k):
             out.append(scene[k])
     out += scene.get("lines", [])
     return out
 
 
-def storyboards(ids=None, root=None, settings=None):
-    rel, items, ex = releases(), ledger(root), docs_examples()
+def storyboards(ids=None, root=None, settings=None, cfg=None):
+    """Every feature's storyboard, or those named; with `cfg`, the corpus the
+    clips are made in, whose numbers fill each mechanism scene."""
+    from . import mechanism
+    copy = (settings or {}).get("roadmap")
+    rel, items, ex = releases(), ledger(root, copy), docs_examples()
+    mechanics = mechanism.gather(cfg, ledger_items(root, copy), list(rel.values()))
     feats = features()
     if ids:
         unknown = sorted(set(ids) - {f["id"] for f in feats})
@@ -225,7 +252,7 @@ def storyboards(ids=None, root=None, settings=None):
             raise SystemExit(f"::error::no feature called {', '.join(unknown)}: "
                              f"{', '.join(f['id'] for f in feats)}")
         feats = [f for f in feats if f["id"] in ids]
-    return [storyboard(f, rel.get(f["since"]), items.get(f["id"]), ex, settings) for f in feats]
+    return [storyboard(f, rel.get(f["since"]), items.get(f["id"]), ex, settings, mechanics) for f in feats]
 
 
 # --- the page ---------------------------------------------------------------
@@ -304,6 +331,10 @@ def page(board, css=None, vars=None):
             inner = f'<div class="eye">{html.escape(sc["eyebrow"])}</div><pre class="term">{"".join(lines)}</pre>'
         elif sc["kind"] == "more":
             inner = f'<div class="eye">{html.escape(sc["eyebrow"])}</div><div class="claim">{html.escape(sc["text"])}</div>'
+        elif sc["kind"] == "mechanism":
+            from . import mechanism
+            inner = (f'<div class="eye">{html.escape(sc["eyebrow"])}</div>{mechanism.render(sc, i, total, rules)}'
+                     f'<p class="mech-cap">{html.escape(sc["caption"])}</p>')
         elif sc["kind"] == "claim":
             inner = f'<div class="claim">{html.escape(sc["text"])}</div>'
         elif sc["kind"] == "close":
@@ -311,7 +342,9 @@ def page(board, css=None, vars=None):
                      f'<div class="install">{html.escape(sc["install"])}</div>'
                      f'<div class="url">{html.escape(sc["url"])}</div>')
         body.append(f'<div class="scene {sc["kind"]}" style="animation-name:{name}">{inner}</div>')
+    from . import mechanism
     style = f"""{root}
+:root{{--d:{total}s}}
 html,body{{margin:0;height:100%;overflow:hidden;background:{var['ground']};color:{var['ink']}}}
 .frame{{position:relative;width:100%;height:100%;container-type:size;font-family:{var['font-body']}}}
 .scene{{position:absolute;inset:0;padding:8cqmin 9cqmin;display:flex;flex-direction:column;justify-content:center;gap:3cqmin;opacity:0;animation:{total}s linear infinite;animation-delay:calc(var(--t) * -1s)}}
@@ -334,6 +367,8 @@ html.still .scene,html.still .typed,html.still .answer .ln{{animation-play-state
 .install{{font:400 3.8cqmin/1.6 {var['font-mono']}}}
 .install b{{color:{var['accent']};font-weight:500}}
 .home{{font:400 12cqmin/1 {var['font-display']};letter-spacing:-0.02em}}
+.mech-cap{{margin:0}}
+{mechanism.CSS.replace("var(--font-mono)", var['font-mono']).replace("var(--font-display)", var['font-display']).replace("var(--font-body)", var['font-body']).replace("var(--muted)", var['muted']).replace("var(--ink)", var['ink']).replace("var(--accent)", var['accent']).replace("var(--surface)", var['surface']).replace("var(--line)", var['line'])}
 .url{{font:400 3.6cqmin/1.5 {var['font-mono']};color:{var['muted']}}}
 {"".join(rules)}"""
     title = f"{board['name']} · {board['version']}"
@@ -429,7 +464,7 @@ def main(cfg, args):
     css = root / s["css"] if s.get("css") else None
     if boards_dir or s.get("storyboards"):
         boards_dir = pathlib.Path(boards_dir) if boards_dir else root / s["storyboards"]
-    boards = storyboards(ids or None, root, s)
+    boards = storyboards(ids or None, root, s, cfg)
     for b in boards:
         print(f"  {b['id']:<12} {len(b['scenes'])} scenes  {b['duration']:>4.1f} s  {b['name']}")
     write(boards, out, css, s.get("vars"), boards_dir)

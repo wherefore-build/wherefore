@@ -5,7 +5,7 @@
    "version": "0.20.0",
    "date": "2026-11-06",
    "title": "Every feature, in motion",
-   "says": "A short clip for each feature, compiled from the ledger: the version, who asked, the command, what it printed, the claim, the install line. A clip is a page in motion that plays in any frame; the release renders it to video and puts it on the release and the issue it answered.",
+   "says": "A short clip for each feature, compiled from the ledger: the version, who asked, the command, what it printed, the claim, the install line. A clip is a page in motion that plays in any frame; the release renders it to video and puts it on the release and the issue it answered, and a scene drawn from the corpus the clip is made in: what the feature compares, holds, sorts or hands over, in that corpus's own numbers.",
    "shows": {
     "fixture": false,
     "run": "wherefore motion published",
