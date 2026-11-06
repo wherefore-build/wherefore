@@ -7,6 +7,34 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.14.0 (2026-11-06)
+
+**One report, with a title** (wherefore-build/wherefore#15). The first real
+use of `wherefore report` found what was wrong with it, and this is that
+report acted on. Choosing bug, ask or feature asked the reporter for the
+maintainers' judgment - whether a thing is a bug or a missing feature depends
+on what the engine was meant to do - and an agent chose "feature" for
+feedback that was mostly a bug and a question. So there is no kind now:
+`wherefore report --title TITLE WORDS ...` is one command for all of it, and
+the issue is labelled in triage. The old form is refused with the new one
+beside it; nobody else had used it, so it is not kept as an alias.
+
+- The title is its own line, at most 100 characters and never cut; the words
+  are the body, so feedback with seven points arrives as seven points, not a
+  one-paragraph heading under a title cut mid-word.
+- `--link` prints the report and a link that opens the issue filled in, and
+  sends nothing even with `gh` signed in: the person reads it there and sends
+  it themselves. A report too long for a link GitHub will open says so,
+  instead of handing over a link that opens nothing.
+- With no corpus, the report says "no corpus here", and with one the engine
+  refuses, only that; it no longer quotes the engine's error, which named the
+  whole working directory.
+- The skill: one report per topic, never one per kind; the agent may draft the
+  title and the words from what the person said, shows them with `--show`,
+  and sends only when the person says - or hands them `--link`.
+- One issue template, Report, in place of three, the same shape as the
+  command.
+
 ## 0.13.0 (2026-11-05)
 
 **Scan two repositories at once.** `wherefore scan` given more than one
