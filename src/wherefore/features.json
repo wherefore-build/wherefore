@@ -180,6 +180,15 @@
     "https://github.com/wherefore-build/wherefore/issues/19",
     "https://github.com/wherefore-build/wherefore/issues/20"
    ]
+  },
+  {
+   "id": "drift",
+   "name": "Drift, on the map",
+   "since": "0.20.0",
+   "commands": [
+    "wherefore check drift"
+   ],
+   "details": "Of the files a person writes by hand, which state a value in two or more of them that no source holds? A generated file restates its sources by construction; a hand-written file that states a value also stated in another, with no source behind either, is a copy nobody is keeping current. The check names each such value with the files that say it and counts them; the map draws them beside those files with the count in its legend. A drift section declares how many the corpus still allows, the check fails when more drift than that, and when fewer do it asks for the number to come down, so the allowance only ever falls."
   }
  ]
 }

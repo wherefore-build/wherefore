@@ -27,12 +27,16 @@ prove one.
 - **Published** (`wherefore check published`): every page the company
   publishes but cannot build still states the source's facts, read live. It
   fails SAYS OTHERWISE, quoting the page, NOT SAID, or UNREACHABLE.
+- **Drift** (`wherefore check drift`): no more values than the corpus
+  allows are said by hand in two or more files with no source behind them.
+  It fails naming each value and its files, and when fewer drift than
+  allowed it asks for the allowance to come down.
 - **Your own checks**: a script in the corpus that reads the tree and exits
   1 with a reason, run by CI beside the engine's. The company's site has a
   dozen: every control pressed cold on a phone, every page fitting a phone's
   width, every text colour readable on its ground.
 
-The gate, reach, retired, claims and palette read nothing outside the
+The gate, reach, retired, claims, palette and drift read nothing outside the
 repository, so the same tree always gives the same answer, and they run on
 every push and in the pre-push hook. Upstream and published go to the
 network, so they run before a deploy, and on a schedule if the client wants
