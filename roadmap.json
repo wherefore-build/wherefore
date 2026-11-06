@@ -1,5 +1,5 @@
 {
- "note": "THE ROADMAP, beside the code it plans, so that the people and the agents working on the engine plan from it. Each item has an id, a name, one line on what it does, and a state - next or later - and may link the issue it answers (`issue`) and say who asked for it there (`asked_by`, a GitHub login). It is a file, not a tracker, because a file is diffed, gated and read by a build with no token: the company's site copies it and holds the copy with `wherefore check upstream`, so what the site says is coming is what is written here. An item leaves in the same change that ships it: tests/test_roadmap.py fails an item whose id src/wherefore/features.json already has. Requests arrive as issues; an item here may name the one it answers.",
+ "note": "THE ROADMAP, beside the code it plans, so that the people and the agents working on the engine plan from it - and THE INBOX'S LEDGER. Each item has an id, a name, one line on what it does, and a state: next, later, or shipped. An item that answers issues names them (`issues`) and who asked (`asked_by`, a GitHub login) and carries its `plan`, the design intent in words, written when it is taken on. When it ships it does not leave: its state becomes shipped, `since` names the release and `feature` the feature that answers it, so the chain from a request to what shipped is written here and the engine's tests hold it (tests/test_roadmap.py, test_features.py, test_releases.py). The release writes back to each issue - the plan when it is planned, what shipped when it ships - and closes it (corpus/inbox.py). It is a file, not a tracker, because a file is diffed, gated and read by a build with no token: the company's site copies it and holds the copy with `wherefore check upstream`.",
  "items": [
   {
    "id": "docs",
@@ -24,8 +24,83 @@
    "state": "later",
    "name": "Your things, in one place",
    "words": "An app you log in to and see every repository you connected: what each builds, what is held, and what is drifting.",
-   "issue": "https://github.com/wherefore-build/wherefore/issues/12",
-   "asked_by": "zakholdsworth"
+   "issues": [
+    "https://github.com/wherefore-build/wherefore/issues/12"
+   ],
+   "asked_by": "zakholdsworth",
+   "plan": "A reader, never a source: the app shows every connected repository with what each builds, what is held and what is drifting, read from each corpus's own gate, scan and published checks. Its first screen is the field test's findings drawn across repositories. A design round with the owner comes first; the engine stays the thing that knows."
+  },
+  {
+   "id": "pins",
+   "state": "shipped",
+   "since": "0.12.1",
+   "feature": "pins",
+   "name": "Releases that reach every client",
+   "words": "When the engine ships, every repository that pins it gets a pull request moving its pin, and the checks say what it still has to describe."
+  },
+  {
+   "id": "scan2",
+   "state": "shipped",
+   "since": "0.13.0",
+   "feature": "scan2",
+   "name": "Scan two repositories at once",
+   "words": "Point the scan at your site and your app together, and see every value they both state and where the two disagree."
+  },
+  {
+   "id": "report-title",
+   "state": "shipped",
+   "since": "0.14.0",
+   "feature": "report",
+   "name": "One report, with a title",
+   "words": "One command for all feedback, with a title and a body, instead of choosing bug, ask or feature.",
+   "issues": [
+    "https://github.com/wherefore-build/wherefore/issues/15"
+   ],
+   "asked_by": "zakholdsworth",
+   "plan": "Drop the kinds: whether a thing is a bug or a missing feature is the maintainers' judgment, made in triage. Take --title and put the words in the body, so several points stay several points. Add --link, which prints the issue for the person to send and never sends. Never quote the engine's error, which names a path. One report per topic; the agent may draft the words and the person approves them."
+  },
+  {
+   "id": "skill-field",
+   "state": "shipped",
+   "since": "0.15.0",
+   "feature": "skill",
+   "name": "The skill learns from the field",
+   "words": "The start guide rewritten from the first session on a stranger's company.",
+   "issues": [
+    "https://github.com/wherefore-build/wherefore/issues/17",
+    "https://github.com/wherefore-build/wherefore/issues/18",
+    "https://github.com/wherefore-build/wherefore/issues/19",
+    "https://github.com/wherefore-build/wherefore/issues/21"
+   ],
+   "asked_by": "zakholdsworth",
+   "plan": "Scan before you ask, and begin the interview from what the scan found. Find where each fact is decided before choosing the repository: the one the agent was opened in may only be a reader. Say what the scan cannot see and read each finding where it was found. Say what to do when a fact lives in an app's source code: read the owner at run time, else keep it once in the language's own terms, generate source last."
+  },
+  {
+   "id": "scan-read",
+   "state": "shipped",
+   "since": "0.16.0",
+   "feature": "scan-read",
+   "name": "The scan says what it read",
+   "words": "Beside the result, what each place contributed and what it left unread; an app's own words; a table set apart; the colours a site states.",
+   "issues": [
+    "https://github.com/wherefore-build/wherefore/issues/19",
+    "https://github.com/wherefore-build/wherefore/issues/20"
+   ],
+   "asked_by": "zakholdsworth",
+   "plan": "Under the first line, for each place, how many files of each kind were read and the kinds seen and not read, so \"0 things in common\" is never mistaken for agreement. Read string literals out of source code, so an app's own words count. Report two values said in the same files alike as a table, not a disagreement. Count the colours a site states and group the ones within a shade of each other, before any brand is declared."
+  },
+  {
+   "id": "published",
+   "state": "shipped",
+   "since": "0.17.0",
+   "feature": "published",
+   "name": "A page you publish but cannot build",
+   "words": "A page nobody builds, declared with the facts it states; read live, failing when it says otherwise.",
+   "issues": [
+    "https://github.com/wherefore-build/wherefore/issues/22"
+   ],
+   "asked_by": "zakholdsworth",
+   "plan": "A published section names each page nobody here builds - its address, why, and the facts it states as templates with the value in braces. wherefore check published reads the page live and fails when it says otherwise, quoting the page; a schedule is the client's choice; declaring the page counts as reach. An intermediate step: a copy until it is built from the source."
   }
  ]
 }

@@ -7,6 +7,39 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.18.0 (2026-11-06)
+
+**The inbox, held.** Six issues were answered by four releases on 6 November
+and nothing wrote back to them: no plan when they were taken on, no word when
+they shipped, no link from the feature that answered them, and the roadmap
+items that carried two of them vanished the release they shipped. GitHub's
+"Closes" line closed the issues; nothing of ours did. The owner's rule: this
+is the engine's to hold, so it is not missed again.
+
+- **The roadmap is the ledger.** An item no longer leaves when it ships: its
+  state becomes `shipped`, with `since` the release and `feature` the
+  feature that answers it. An item that answers issues names them
+  (`issues`), who asked, and its `plan` - the design intent, written when it
+  is taken on. The engine's own tests hold the chain: a shipped item's
+  feature names the same issues; a feature's `issues` appear in the ledger;
+  a release's `answers` equal the ledger's; and a changelog entry that names
+  an issue the ledger does not have fails, which is the case that caught
+  nobody on 0.14.0.
+- **The release writes back.** `corpus/inbox.py` carries the ledger to the
+  issues: on a push to main, the plan onto each issue an open item answers;
+  on a release, what shipped onto each issue it answers - the feature, its
+  details, how to install, where to read more, and a line an agent reads -
+  and then closes the issue. Once each, by a marker in the comment; the
+  first run catches up every issue answered before this existed.
+- **Every feature has details**: the paragraph a person reads when they open
+  it, beside the line they read in a list, and the issues it answers. The
+  company's site shows both.
+- **The skill** tells an agent that filed a report where to read what became
+  of it.
+
+The ledger is backfilled for 0.12.1 through 0.17.0; this release's own run
+of the inbox writes the six issues their closing notes.
+
 ## 0.17.0 (2026-11-06)
 
 **A page you publish but cannot build** (wherefore-build/wherefore#22). A

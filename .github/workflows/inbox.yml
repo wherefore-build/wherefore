@@ -1,0 +1,24 @@
+# THE INBOX, WRITTEN BACK. roadmap.json is the ledger: an item that answers an
+# issue carries its plan. On every push to main, the plan is written onto each
+# such issue, once - a marker in the comment keeps it to once. What shipped is
+# written by release.yml, on the release, and closes the issue.
+name: inbox
+
+on:
+  push:
+    branches: [main]
+    paths: [roadmap.json, src/wherefore/features.json, corpus/inbox.py]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  planned:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: The plan, on each issue the roadmap answers
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 corpus/inbox.py --planned

@@ -62,6 +62,36 @@ class EveryReleaseIsSaid(unittest.TestCase):
             self.assertIn(f["since"], cut, f"{f['id']} says it arrived in {f['since']}, a release never cut")
 
 
+class EveryIssueARelaseAnswersIsInTheLedger(unittest.TestCase):
+    """A release that closes an issue says so in `answers`, and the ledger
+    (roadmap.json) says the same: a shipped item with that issue, since that
+    release. A changelog entry that names an issue number is the usual way a
+    fix closes one in passing - and that is exactly what must not pass."""
+
+    def test_answers_match_the_ledger_and_the_changelog_names_nothing_else(self):
+        import re as _re
+        roadmap = json.loads((ENGINE / "roadmap.json").read_text(encoding="utf-8"))["items"]
+        log = (ENGINE / "CHANGELOG.md").read_text(encoding="utf-8")
+        entries = dict(_re.findall(r"^## (\d+\.\d+\.\d+) \(\d{4}-\d\d-\d\d\)\n(.*?)(?=^## |\Z)", log, _re.M | _re.S))
+        for r in releases():
+            by_ledger = {url for it in roadmap if it["state"] == "shipped" and it.get("since") == r["version"]
+                         for url in it.get("issues", [])}
+            self.assertEqual(set(r.get("answers", [])), by_ledger,
+                             f"{r['version']}: releases.json `answers` and the shipped roadmap items for it name different issues")
+            named = {f"https://github.com/wherefore-build/wherefore/issues/{n}"
+                     for n in _re.findall(r"wherefore-build/wherefore#(\d+)|wherefore/issues/(\d+)", entries.get(r["version"], ""))
+                     for n in n if n}
+            self.assertLessEqual(named, by_ledger | {u for it in roadmap for u in it.get("issues", [])},
+                                 f"{r['version']}: CHANGELOG.md names an issue the ledger does not have: put it on the "
+                                 f"roadmap with its plan, shipped since {r['version']}, and name it in `answers`")
+            closing = named - by_ledger
+            for url in closing:
+                self.assertTrue(any(it.get("state") != "shipped" and url in it.get("issues", []) for it in roadmap),
+                                f"{r['version']}: CHANGELOG.md names {url} and this release does not answer it: "
+                                f"if it closes the issue, the ledger says so (a shipped item since {r['version']}); "
+                                f"if it only mentions it, the issue is still open on the roadmap")
+
+
 class TheNewestPictureIsTrue(unittest.TestCase):
     """The picture of this release is run again: a change that moves what the
     command prints fails here until the picture says what it now prints."""

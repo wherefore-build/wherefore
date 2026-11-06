@@ -248,6 +248,13 @@ signed in, or prints a link), or run it with `--link`, which never sends and
 prints a link that opens the issue filled in: the person reads it there and
 sends it themselves, which is the approval.
 
+**What became of it, the issue says.** When the makers take a report on, a
+comment gives the plan and names the roadmap item; when it ships, a comment
+says the release and the feature, with a line you can read -
+`wherefore-inbox: shipped version=0.16.0 feature=scan-read` - and the issue
+is closed. When the person asks what happened to a report, read the issue,
+tell them, and move the pin to that release when they say.
+
 ## Releases are a person's
 
 If the repository versions what it ships (drafts, releases, a write-once

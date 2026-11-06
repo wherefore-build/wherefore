@@ -2,6 +2,19 @@
  "note": "Every release of the engine, newest first, said once as data: its version, its date, a title and a sentence, and a picture of it working. A client that tells people about the product - the company's changelog page - reads this from the release it pins, so the page lists every release and cannot list one that was never cut. CHANGELOG.md is the long account of each release; tests/test_releases.py holds its headings to the versions and dates here, every feature's `since` (features.json) to a release here, and the newest release to the version pyproject.toml states. `shows` is what the release printed when it was run: `run` is typed in a fresh git repository named fernhollow (shown as ~/fernhollow), holding `files` if any, or a copy of the fixture company if `fixture` is true; `output` is what it printed, in order, with a line of just … where lines are left out. The test runs the newest release's again, on every change, so the picture of the current release cannot drift from what it does; an older one's is history, true of the release that printed it.",
  "releases": [
   {
+   "version": "0.18.0",
+   "date": "2026-11-06",
+   "title": "The inbox, held",
+   "says": "The roadmap is the inbox's ledger: a request's plan, who asked, and what shipped are written there, held by the engine's own tests, and written back onto each issue by the release, which then closes it. Every feature carries the details a person reads when they open it.",
+   "shows": {
+    "fixture": false,
+    "run": "wherefore --version",
+    "output": [
+     "wherefore 0.18.0"
+    ]
+   }
+  },
+  {
    "version": "0.17.0",
    "date": "2026-11-06",
    "title": "A page you publish but cannot build",
@@ -17,7 +30,10 @@
      "…",
      "0 statements on 1 published page still say what the source says; 1 page did not answer, and passed for the reason each gives. A published page is a copy until it is built from the source: holding it by reading is the step before that."
     ]
-   }
+   },
+   "answers": [
+    "https://github.com/wherefore-build/wherefore/issues/22"
+   ]
   },
   {
    "version": "0.16.1",
@@ -55,7 +71,11 @@
      "…",
      "  DIFFER  \"start your {} day free\"  site: 14 (1x) · app: 30 (1x)"
     ]
-   }
+   },
+   "answers": [
+    "https://github.com/wherefore-build/wherefore/issues/19",
+    "https://github.com/wherefore-build/wherefore/issues/20"
+   ]
   },
   {
    "version": "0.15.0",
@@ -68,7 +88,13 @@
     "output": [
      "wherefore 0.15.0"
     ]
-   }
+   },
+   "answers": [
+    "https://github.com/wherefore-build/wherefore/issues/17",
+    "https://github.com/wherefore-build/wherefore/issues/18",
+    "https://github.com/wherefore-build/wherefore/issues/19",
+    "https://github.com/wherefore-build/wherefore/issues/21"
+   ]
   },
   {
    "version": "0.14.0",
@@ -85,7 +111,10 @@
      "--link: nothing was sent. This link opens the issue, filled in, for the person to read and send:",
      "…"
     ]
-   }
+   },
+   "answers": [
+    "https://github.com/wherefore-build/wherefore/issues/15"
+   ]
   },
   {
    "version": "0.13.0",
