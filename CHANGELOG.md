@@ -7,6 +7,36 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.17.0 (2026-11-06)
+
+**A page you publish but cannot build** (wherefore-build/wherefore#22). A
+public site on a hosted CMS that marketing edits in a form states the
+company's facts and nobody builds it from the source; it is a copy, edited
+where it is published, and it drifts like any copy. The corpus can now say
+so and hold it:
+
+- A `published` section names each such page - its address, why nobody here
+  builds it, and the facts it states, each with how it appears there: a
+  template with the value in braces (`"{} day free trial"`, or several), a
+  bare value, or `each` for a list every item of which must appear.
+- `wherefore check published` reads each page live, as a person reads it,
+  and fails SAYS OTHERWISE when the page states the template with another
+  value - quoting the page - NOT SAID when it states nothing like it, and
+  UNREACHABLE when it does not answer, unless the entry says why that should
+  not stop the corpus. It goes to the network, so it is never part of the
+  gate, the build or the hook: run it before a deploy, and on a schedule if
+  the client wants one, since the drift it catches happens on the other side,
+  when nobody is deploying.
+- `reach` counts a fact named here as reaching that page by declaration, and
+  says so (`pub`) instead of calling the fact dead.
+- The gate validates the section offline, every reason present, and reads no
+  page.
+
+This is the opposite of `upstream`, and an intermediate step: a published
+page is a copy until it is built from the source, and the check says so each
+time it runs. The skill's section on such pages is now the real instruction.
+Off the roadmap, where it was `published`.
+
 ## 0.16.1 (2026-11-06)
 
 **A colour quoted in code is not paint.** The company's site shows the

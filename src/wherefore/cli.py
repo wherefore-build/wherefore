@@ -149,7 +149,7 @@ def _prove(args):
 
 
 # The checks `wherefore check` runs, in the order commands.json lists them.
-CHECKS = ("retired", "reach", "claims", "upstream", "palette")
+CHECKS = ("retired", "reach", "claims", "upstream", "palette", "published")
 
 
 def _check(args):
@@ -177,6 +177,9 @@ def _check(args):
     if name == "palette":
         from . import palette
         return palette.main(cfg, rest)
+    if name == "published":
+        from . import published
+        return published.main(cfg, rest)
     print(f"::error::no check called {name!r}: {', '.join(CHECKS)}")
     return 1
 

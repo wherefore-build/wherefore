@@ -54,6 +54,10 @@
    "does": "every colour anywhere is one the brand's source holds, or the file says, with why, whose colours they are"
   },
   {
+   "usage": "wherefore check published",
+   "does": "every page you publish but cannot build - a site on a hosted CMS - still states the source's facts, read live; a copy held by reading until it can be built"
+  },
+  {
    "usage": "wherefore hook install",
    "does": "a pre-push hook: no push leaves the corpus stale"
   },

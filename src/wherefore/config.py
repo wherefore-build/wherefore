@@ -215,6 +215,9 @@ def validate(cfg):
                 raise ConfigError("`palette.read` is a list of globs, the files to read")
             for rel, why in (pal.get("not_ours") or {}).items():
                 _why(why, f"palette.not_ours[{rel!r}]")
+    if d.get("published") is not None:
+        from . import published
+        published.validate(d)
     seen = set()
     for i, g in enumerate(d.get("generators", [])):
         where = f"generators[{i}]"

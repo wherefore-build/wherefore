@@ -41,6 +41,7 @@ wherefore gate              # is every tracked file classified and current?
 wherefore graph             # what builds what: which script makes each file, from what
 wherefore check palette     # every colour anywhere is one the brand's source holds, or excused with why
 wherefore scan site app     # what two places state in common, and where they disagree; needs no corpus
+wherefore check published   # every page you publish but cannot build still states the source's facts, read live
 ```
 
 `wherefore graph` is for seeing the chain before you change it: which sources a
@@ -66,6 +67,13 @@ colour said anywhere else that the source does not hold, unless the file is in
 `not_ours` with why. A corpus with no brand declines it: `{"none": why}`. The
 gate says when colours are said in several of the files the build made and
 nothing is declared, reading nothing for it that it did not read to judge.
+
+A page the company publishes but cannot build - a site on a hosted CMS - is
+declared in `published` with the facts it states, and `wherefore check
+published` reads it live and fails when it says otherwise. It goes to the
+network: before a deploy, never in the gate. A published page is a copy until
+it is built from the source; `start.md` says how to declare one and when to
+stop needing to.
 
 `wherefore.json` and any file a section includes are where every exemption
 lives, and **every exemption carries a `why`**. The engine refuses an entry

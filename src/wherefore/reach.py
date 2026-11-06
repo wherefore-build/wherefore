@@ -172,6 +172,7 @@ UNCONSUMED = {}
 # names a different set of files - which is the whole difference between a
 # dimension and a drawing of one.
 PROBES = []             # [(name, path, what it must reach, [files])]
+PUBLISHED = {}          # dotted fact -> the published page that states it, which nothing built need move
 
 
 def watched():
@@ -537,6 +538,14 @@ def configure_from(cfg):
               _C.Comparators(cfg.doc.get("compare", [])), sweep_fn, nudge_fn,
               r.get("exempt"), r.get("unconsumed"), probes, r.get("audience"),
               cfg.doc.get("messages", {}).get("reach_ok"))
+    # A FACT STATED ON A PUBLISHED PAGE REACHES IT BY DECLARATION: nothing the
+    # corpus builds need move for it, because the page is held by reading -
+    # `wherefore check published` - until it can be built. The declaration is
+    # the reach, and the probe says so rather than calling the fact dead.
+    PUBLISHED.clear()
+    for pname, page in (cfg.doc.get("published") or {}).items():
+        for st in page.get("states", []):
+            PUBLISHED.setdefault(st["fact"], pname)
 
 
 def _attr(root, ref):
@@ -619,13 +628,17 @@ def main(argv=None):
                 put_back(kept, wrote, listed)
                 attempt = round(attempt / 2, 6)
             hits = moved(tmp / "before") + [f"{g} refused to build" for g, _ in refused]
-            mark = "ok  " if hits else "FAIL"
+            published = not hits and what in PUBLISHED
+            mark = "ok  " if hits else "pub " if published else "FAIL"
             note = f"   {refused[0][0]} refused" if refused and not moved(tmp / "before") else ""
             if backoff:
                 note += f"   (backed off from {', '.join(backoff)})"
+            if published:
+                note += (f"   stated on the published page {PUBLISHED[what]}, which nothing here builds: "
+                         f"held by `wherefore check published`")
             print(f"  {mark} {what:44} {was} -> {value}   "
                   f"{len(hits):2} files{note}")
-            if not hits:
+            if not hits and not published:
                 fails.append(f"{what} moved from {was} to {value} and "
                              f"NOTHING {AUDIENCE} receives changed. Either a "
                              f"generator should read it and does not, or it is "

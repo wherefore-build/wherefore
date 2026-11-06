@@ -84,6 +84,14 @@
    ]
   },
   {
+   "id": "published",
+   "name": "A page you publish but cannot build",
+   "since": "0.17.0",
+   "commands": [
+    "wherefore check published"
+   ]
+  },
+  {
    "id": "palette",
    "name": "One palette",
    "since": "0.10.0",
