@@ -7,6 +7,42 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.15.0 (2026-11-06)
+
+**The skill learns from the field.** The first session on a stranger's
+company - an app that decided none of the plans it showed, a public site on
+a hosted CMS with 17 pricing tables, 14 of them disagreeing with the other 3
+and with the app - came back as six reports (wherefore-build/wherefore#17 to
+#22), and `start.md` and `SKILL.md` are rewritten from them. The engine's
+code does not move; the words that start every corpus do.
+
+- **Scan before you ask** (#18). The start guide now opens with the scan,
+  shows the person what it found, and begins the interview from the
+  findings: which value is true and who decides it, then what the scan
+  missed.
+- **Find where each fact is decided before choosing the repository** (#17).
+  A new step before the first fact: search the organisation for the phrases
+  the scan found, name the repository or system that decides each, and start
+  the corpus there. The repository the agent was opened in may only be a
+  reader.
+- **What the scan cannot see, and reading each finding where it was found**
+  (#19). Names, lists and wording; a value alone on its line; an app's words
+  in its source code; pages nothing links to. Two values tied on every page
+  are a table, not a stale copy. Report only what you have read.
+- **Two places at once, and "0 things in common"** (#20). Both files cover
+  the two-place scan and its `DIFFER` and `agree` lines, and say that
+  "0 things in common" is not agreement until what each place contributed
+  has been read.
+- **Facts that live in application code** (#21). Three cases in order:
+  something owns the fact already, so the app reads it at run time; nothing
+  does, so keep it once in the language's own terms and hold the module as
+  authored; generate source only when neither works.
+- **A page you publish but cannot build** (#22). What to do today - scan it
+  with the built surfaces, retire old values, write down that it is a copy -
+  and that it is the opposite of `upstream`, which the engine has no check
+  for yet. That check, and the scan saying what it read, are on the roadmap,
+  each naming its issue and who asked.
+
 ## 0.14.0 (2026-11-06)
 
 **One report, with a title** (wherefore-build/wherefore#15). The first real

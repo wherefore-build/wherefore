@@ -5,32 +5,109 @@ declares nothing but this skill. The goal of the first session is small and
 complete: **one fact, said once, compiled into one asset, held by the gate.**
 Everything after that is the same move, repeated.
 
-## Ask before you write anything
+## Count before you ask anything
+
+Start with **`wherefore scan`**, before the interview and before you write
+anything. It needs no setup and writes nothing, and it answers the first
+question an owner is usually asked and cannot answer from memory - what does
+the company say in more than one place? Point it at what the company
+publishes: the built site, the docs folder, exported deck notes, or a live
+address. Where there are two places - a site and an app, the docs and the
+deck - point it at both at once:
+
+```
+wherefore scan https://www.example.com app
+```
+
+Read in one place, it reports every value stated in words more than one way:
+"start your {} day free trial": 14 in three places, 30 in one. Read in two,
+it also says what the places state in common, which of those they disagree
+on (`DIFFER`), and which they agree on. That is the count in its plainest
+form, and the reason to do any of this.
+
+**Show the person what it found before you ask them anything.** The interview
+is better for it: instead of listing facts from memory, they answer about the
+ones in front of them - which value is true, and who decides it.
+
+### What the scan cannot see
+
+The scan reports a number that has words on both sides of it within one
+block of text, read from pages, Markdown and plain text. Know what that
+leaves out, and look there by other means:
+
+- **Names, lists and wording.** A plan's feature list with one item swapped
+  for another is a disagreement the scan cannot see. Read the pages that
+  state the same thing side by side.
+- **A value alone on its line** - a price on a pricing card with no words to
+  its left - has no statement to match. Read the cards.
+- **An app's own words,** typed in its source code. The scan reads what a
+  person reads, not `.elm`, `.tsx` or `.py`; it will have read the app's
+  READMEs and icons and none of its strings. Pull the string literals out
+  by other means and read those.
+- **Pages nothing links to.** A live address is crawled by its links, at
+  most `--max-pages` of them.
+
+### Read each finding where it was found
+
+A finding is a claim to check, not a result to report. Two values tied on
+every page - each said exactly as often as the other, on every page - are a
+table of two plans, not a stale copy. Two customers' results are two
+customers. Open the page, find the statement, and say what it is before you
+count it. Report only what you have read.
+
+### "0 things in common" is not agreement
+
+When two places are read together and the scan says they state nothing in
+common, check what each place contributed before believing it: how many files
+it read, of which kinds, and whether those are the files that say anything.
+A checkout whose readable files are vendored packages' READMEs and SVG icons
+contributed nothing of the company's; its words are in source files the scan
+did not read. Until the two sides have been read, there is no count.
+
+## Ask, starting from what the scan found
 
 Interview the owner. One question at a time, and write the answers down:
-they become the `why` beside each source and each rule.
+they become the `why` beside each source and each rule. Begin with the
+findings, then widen:
 
-1. **What does the company say in more than one place?** Names (the product,
-   its features, its plans), numbers (limits, dimensions, versions), claims
-   (where it is made, what it is certified for) and statuses (what has
-   shipped, what is in beta, what was retired).
-2. **Where is each one said?** The site, the docs, the deck, the emails, the
-   app's own strings, a video's script. Which of those live in this
-   repository, and which only in someone's drive?
-3. **Does a system already own any of it?** Billing owns prices, feature flags
-   own what is live, a CMS may own the copy. That system stays the source of
-   truth. Do not copy its values into a facts file by hand and call the copy
-   the source: tell the owner, and leave that fact for later.
+1. **Of what the scan found, which value is true, and who decides it?** A
+   finding with two values has an owner somewhere; the answer names them.
+2. **What did the scan miss?** Names (the product, its features, its plans),
+   numbers it cannot see (a price alone on a card), claims (where it is made,
+   what it is certified for) and statuses (what has shipped, what is in beta,
+   what was retired). Where else is each said - the site, the docs, the deck,
+   the emails, the app's own strings, a video's script? Which of those live
+   in a repository, and which only in someone's drive?
+3. **Does a system already own any of it?** Billing owns prices, feature
+   flags own what is live, a CMS may own the copy. That system stays the
+   source of truth. Do not copy its values into a facts file by hand and call
+   the copy the source: tell the owner, and leave that fact for later.
 4. **Who decides, and who releases?** You may work inside a draft. You never
    cut, tag or publish a release unless the owner has authorized that one.
 
-## Count before you change anything
+## Find where each fact is decided before choosing the repository
 
-Start with **`wherefore scan`** over what the company publishes - the built
-site, the docs folder, exported notes, or a live site's address. It needs no
-setup, and it reports every statement whose copies disagree ("start your {}
-day free trial": 14 in three places, 30 in one), which is the count in its
-plainest form.
+The repository you were opened in may only be a reader. An app that shows the
+company's plans may decide none of them: it reads prices at run time from the
+billing system and holds its own copy of the plans' features, typed from
+somewhere else. Starting the corpus there compiles a copy.
+
+So, before the interview ends and before anything is written, for each fact
+the scan found: **search for where it is decided.** One search across the
+organisation's repositories for the phrases the scan found - the feature's
+name, the trial's wording - names the repository that holds the plans, and
+the billing code that holds the prices. Then:
+
+- the corpus starts in the repository that decides the fact, and the
+  readers pin it from there (see "Every surface that describes the
+  product", below);
+- a fact decided by a system (billing, flags, a CMS) is read from that
+  system at run time, never copied into a facts file;
+- the repository you were opened in gets its corpus when its turn comes, as
+  a reader of the ones that decide.
+
+Say which repository decides what, and get the owner's yes, before the first
+fact.
 
 Then, for each fact the owner named, search the repository for every place it
 is stated - every spelling, and every old value they remember. Report it
@@ -39,8 +116,8 @@ plainly, before proposing anything:
 > The product name appears in 41 files, spelled three ways. Two pages still
 > give the old upload limit.
 
-That count is the reason to do any of this. It is also how you choose where
-to start: **the fact with the most copies, in the asset people read most.**
+That is how you choose where to start: **the fact with the most copies, in
+the asset people read most.**
 
 ## One fact, end to end
 
@@ -201,6 +278,61 @@ So a feature that ships reaches every page that tells people about the
 product, or that page's build stops, and the pull request that moves the pin
 is where the page catches up. Prove it the way every check is proved: remove
 one feature's words and require the build to fail, naming it.
+
+## Facts that live in application code
+
+Every example above is a script writing a document. An app is different: its
+copy of a fact is typed in its own language - a module with the plans' names
+and feature lists, an upload-limit message typed beside each of a dozen size
+constants - and generating that source from a JSON file is rarely the right
+move. Three cases, in order:
+
+1. **Something owns the fact already.** Billing owns the prices, a flag
+   service owns what is live. The app reads it from there at run time, and
+   its own copy goes. Nothing to generate; the corpus holds the pages, and the
+   app reads the owner.
+2. **Nothing owns it, and the app is where it lives.** Keep it once, in the
+   language's own terms: one module that states the limit and builds each
+   message from it, so the number is typed once and the messages cannot
+   disagree with it. The corpus holds that module as authored - with its
+   `why` - and the retired register and a claim rule hold what the app says
+   against it (`wherefore check retired`, `wherefore check claims`).
+3. **Generate source only when neither works:** when the fact is decided
+   outside the app and nothing serves it at run time. Then a generator writes
+   the module from the source, like any asset, and the gate holds it.
+
+Where an app decides a fact that other surfaces state - its features, its
+limits - it is the source for them: it ships the list as data, and the site
+and the docs read that list, as "Every surface that describes the product"
+says. The app is the one place; the others are readers.
+
+## A page you publish but cannot build
+
+Some surfaces the company publishes are built by nobody: a public site on a
+hosted CMS, a listing on someone else's marketplace. The owner may rule out
+changing how it is made. It still states the company's own facts - the same
+plan features the app states - and it drifts like any copy.
+
+This is the opposite of `upstream`. An upstream is a copy the corpus took
+from elsewhere, held to the place it was taken from; `wherefore check
+upstream` fails when that place moves. Here the corpus is the source and the
+page is the copy, and the engine has no check for that direction yet
+(wherefore-build/wherefore#22 asks for one: read the page live, compare it
+with the source, and fail when it differs). Until then:
+
+- **Scan it with the surfaces the corpus builds,** both at once, on every
+  change that moves a fact: `wherefore scan https://www.example.com site`.
+  The `DIFFER` lines are the page's drift from the source, read live.
+- **Hold the page's values in the retired register.** When a fact changes,
+  retire the old value in the same change; `wherefore check retired` names
+  any page in the corpus that still says it, and the scan names the published
+  page.
+- **Write down who changes the page,** and that it is a copy, in the
+  corpus: a captured group with no files, or a note beside the source, with
+  the address and the facts it states.
+
+Do not take the page's words into the corpus as if they were the source.
+They are a copy, and the source is here.
 
 ## What stays written by hand
 

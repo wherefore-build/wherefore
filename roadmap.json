@@ -8,6 +8,22 @@
    "words": "The product's docs, compiled from the release they describe."
   },
   {
+   "id": "scan-read",
+   "state": "next",
+   "name": "The scan says what it read",
+   "words": "Each place's count of files read, by kind, and the kinds it saw and did not read, beside the result; string literals read out of source code, so an app's own words count; two values tied on every page reported as a table, not a disagreement; and the colours a site states, with no brand declared, so the first scan finds the greys nobody can list.",
+   "issue": "https://github.com/wherefore-build/wherefore/issues/20",
+   "asked_by": "zakholdsworth"
+  },
+  {
+   "id": "published",
+   "state": "next",
+   "name": "A page you publish but cannot build",
+   "words": "A published group names a page nobody builds - a site on a hosted CMS - and the facts it states; wherefore check published reads it live and fails when it differs from the source, the way check upstream fails when a copy's source moved.",
+   "issue": "https://github.com/wherefore-build/wherefore/issues/22",
+   "asked_by": "zakholdsworth"
+  },
+  {
    "id": "launch",
    "state": "later",
    "name": "Launches that wait",
