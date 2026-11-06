@@ -58,6 +58,10 @@
    "does": "every page you publish but cannot build - a site on a hosted CMS - still states the source's facts, read live; a copy held by reading until it can be built"
   },
   {
+   "usage": "wherefore check drift",
+   "does": "every value said by hand in two or more files that no source holds, named with its files and counted; fails when more drift than wherefore.json allows, and asks for the allowance to come down when fewer do"
+  },
+  {
    "usage": "wherefore hook install",
    "does": "a pre-push hook: no push leaves the corpus stale"
   },

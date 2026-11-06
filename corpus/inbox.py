@@ -14,8 +14,9 @@ asked - and the agent that filed the report for them - reads it there:
     python3 corpus/inbox.py --planned --show   say what would be posted; send nothing
 
 ONCE. Every comment carries a marker naming the item and the step, and an
-issue that already has that marker is left alone, so a re-run posts nothing
-twice and the first run after this script arrives catches up every issue
+issue that already has that marker is left alone - except that a shipped note
+written before the clips existed gains the Watch line, once - so a re-run
+posts nothing twice and the first run after this script arrives catches up every issue
 that was answered before it existed. The shipped comment ends with a line an
 agent reads:
 
@@ -59,10 +60,16 @@ def planned_comment(item):
             f"{marker(item, 'planned')}")
 
 
+def watch(feature):
+    """The feature's clip on the company's site: what shipped, in motion."""
+    return f"**Watch:** https://wherefore.build/motion/{feature['id']}/"
+
+
 def shipped_comment(item, feature):
     return (f"Shipped in Wherefore {item['since']} as **{feature['name']}**: {item['words']}\n\n"
             f"**What was planned, and built:** {item.get('plan', '')}\n\n"
             f"**The feature now:** {feature.get('details', '')}\n\n"
+            f"{watch(feature)}\n\n"
             f"Install: `pip install -U wherefore-build=={item['since']}` · "
             f"Details: {SITE}#{feature['id']} · "
             f"Release notes: https://github.com/{REPO}/releases/tag/v{item['since']}\n\n"
@@ -93,10 +100,14 @@ class GitHub:
             page += 1
 
     def said(self, n, mark):
-        return any(mark in c.get("body", "") for c in self.comments(n))
+        """The comment carrying `mark`, or None."""
+        return next((c for c in self.comments(n) if mark in c.get("body", "")), None)
 
     def comment(self, n, body):
         self.call("POST", f"/repos/{REPO}/issues/{n}/comments", {"body": body})
+
+    def edit(self, comment_id, body):
+        self.call("PATCH", f"/repos/{REPO}/issues/comments/{comment_id}", {"body": body})
 
     def close(self, n):
         self.call("PATCH", f"/repos/{REPO}/issues/{n}", {"state": "closed", "state_reason": "completed"})
@@ -134,7 +145,13 @@ def ship(gh, show):
                 print(f"would say on #{n}, if not said, and close it: shipped {it['id']} in {it['since']}\n"
                       + "\n".join("  | " + l for l in body.splitlines()))
                 continue
-            if gh.said(n, marker(it, "shipped")):
+            earlier = gh.said(n, marker(it, "shipped"))
+            if earlier:
+                # Said before the clips existed: the note gains the line, once.
+                if "/motion/" not in earlier.get("body", ""):
+                    gh.edit(earlier["id"], earlier["body"].replace("\n\nInstall: ", f"\n\n{watch(f)}\n\nInstall: ", 1))
+                    done += 1
+                    print(f"added the clip to the note on #{n}: shipped {it['id']} in {it['since']} as {f['id']}")
                 continue
             gh.comment(n, body)
             gh.close(n)

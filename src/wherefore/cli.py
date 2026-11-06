@@ -39,8 +39,11 @@ def _init(args):
     from . import skill
     skill.write(target)
     places = " and ".join(f"{p}/ ({agent})" for agent, p in skill.INTO.items())
+    watch = write_watch(target)
     print(f"wrote {path}\nwrote {places}: the skill a coding agent here "
-          f"reads\n\nCommit them. Then ask your agent to set up Wherefore: the skill's "
+          f"reads\nwrote {watch}: this repository's own watch for the engine's releases - every few "
+          f"hours it asks PyPI, moves the pin, and opens a draft pull request. Two settings in its "
+          f"header are yours to make\n\nCommit them. Then ask your agent to set up Wherefore: the skill's "
           f"start.md is how.\nFrom the first build on, the skill is regenerated from the "
           f"release this repository pins.\n\n`wherefore gate` names every tracked file "
           f"nobody has accounted for, and each one is a decision:\ngenerated, authored or "
@@ -48,6 +51,21 @@ def _init(args):
           f"described - a site, the docs, another repository - pins\nthe one that decides "
           f"it, and fails its build on a feature it does not say: start.md, \"Every surface\".")
     return 0
+
+
+WATCH = ".github/workflows/wherefore-pin.yml"
+
+
+def write_watch(target):
+    """The workflow that watches PyPI for the engine's releases and opens the
+    pull request that moves the pin: written once by init, the client's own
+    from then on. No token from the engine's makers, no list of clients."""
+    from importlib.resources import files
+    dest = pathlib.Path(target) / WATCH
+    if not dest.exists():
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text((files("wherefore") / "workflows/wherefore-pin.yml").read_text(encoding="utf-8"), encoding="utf-8")
+    return WATCH
 
 
 def _handed_over(cfg, command, args):
@@ -149,7 +167,7 @@ def _prove(args):
 
 
 # The checks `wherefore check` runs, in the order commands.json lists them.
-CHECKS = ("retired", "reach", "claims", "upstream", "palette", "published")
+CHECKS = ("retired", "reach", "claims", "upstream", "palette", "published", "drift")
 
 
 def _check(args):
@@ -180,6 +198,9 @@ def _check(args):
     if name == "published":
         from . import published
         return published.main(cfg, rest)
+    if name == "drift":
+        from . import drift
+        return drift.main(cfg, rest)
     print(f"::error::no check called {name!r}: {', '.join(CHECKS)}")
     return 1
 

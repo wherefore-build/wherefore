@@ -13,13 +13,13 @@ Wherefore is open source, under Apache-2.0 (`LICENSE`). It is on PyPI as
 3. **It uploads to PyPI** by trusted publishing, so no PyPI token is stored
    anywhere - and only while the repository variable `PUBLISH_TO_PYPI` is
    `true`.
-4. **It tells every client.** Once the upload is done, each repository that
-   pins the engine is sent `engine-released` with the version, and the
-   client's own workflow moves its pin and opens a draft pull request whose
-   checks say what it still has to describe. This takes `CLIENTS_TOKEN`, a
-   fine-grained token with contents write on each client, saved in this
-   repository's secrets; without it the job says so and does nothing. The
-   clients are listed in `release.yml`; the first is `wherefore-build/web`.
+4. **It tells nobody, and nobody needs telling.** Every repository that pins
+   the engine carries a workflow `wherefore init` wrote
+   (`src/wherefore/workflows/wherefore-pin.yml`) that asks PyPI for the
+   newest release every few hours, moves its own pin, rebuilds, and opens a
+   draft pull request whose checks say what it still has to describe. No
+   token from here, no list of clients here; a client needs nobody's
+   permission to be one.
 
 ## Setting up PyPI, once
 

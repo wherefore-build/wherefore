@@ -17,14 +17,10 @@
 # by setting it (PUBLISHING.md). It uploads by PyPI's trusted publishing: PyPI
 # trusts this workflow in this repository, so no PyPI token is stored anywhere.
 #
-# AND EVERY CLIENT IS TOLD. Once the release is on PyPI, each repository that
-# pins the engine is sent `engine-released` with the version, and its own
-# workflow moves its pin, regenerates what the release lets through, and opens
-# a draft pull request whose checks say what it still has to describe. Nothing
-# merges by itself. Telling another repository takes a token that may write to
-# it - CLIENTS_TOKEN, a fine-grained token the owner makes - and while there is
-# none, the job says so and does nothing. The pendulum is not on the list: its
-# pin moves by hand, deliberately, as its own requirements-engine.txt says.
+# AND NOBODY IS TOLD, because nobody needs to be: every repository that pins
+# the engine watches PyPI for it with a workflow `wherefore init` writes
+# (src/wherefore/workflows/wherefore-pin.yml), moves its own pin, and opens
+# its own draft pull request. No token from here, no list of clients here.
 name: release
 
 on:
@@ -117,21 +113,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python3 corpus/inbox.py --shipped
-
-  clients:
-    needs: [publish, pypi]
-    runs-on: ubuntu-latest
-    env:
-      GH_TOKEN: ${{ secrets.CLIENTS_TOKEN }}
-      VERSION: ${{ needs.publish.outputs.version }}
-    steps:
-      - name: Tell every repository that pins the engine
-        run: |
-          if [ -z "$GH_TOKEN" ]; then
-            echo "::notice::No CLIENTS_TOKEN, so no client is told of $VERSION. Make a fine-grained token with contents write on each client, and save it as CLIENTS_TOKEN in this repository's secrets."
-            exit 0
-          fi
-          for client in wherefore-build/web; do
-            gh api -X POST "repos/$client/dispatches" -f event_type=engine-released -f "client_payload[version]=$VERSION"
-            echo "told $client: wherefore-build $VERSION is on PyPI"
-          done

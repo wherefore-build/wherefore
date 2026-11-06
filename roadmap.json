@@ -17,9 +17,12 @@
   },
   {
    "id": "drift",
-   "state": "later",
+   "state": "shipped",
    "name": "Drift, on the map",
-   "words": "What the scan finds - a value stated in several places that no source holds - drawn on the map beside the files that say it, so what is not yet tracked is seen, and seen shrinking."
+   "words": "What the scan finds - a value stated in several places that no source holds - drawn on the map beside the files that say it, so what is not yet tracked is seen, and seen shrinking.",
+   "since": "0.20.0",
+   "feature": "drift",
+   "plan": "The scan turned on the corpus's own hand-written files: a value stated in two or more of them that no source holds is drift. The check names each with its files and counts them; the map draws them beside the files with the count in its legend; a declared allowance fails the check when exceeded and asks to come down when not, so it only falls."
   },
   {
    "id": "app",

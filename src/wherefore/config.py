@@ -218,6 +218,9 @@ def validate(cfg):
     if d.get("published") is not None:
         from . import published
         published.validate(d)
+    if d.get("drift") is not None:
+        from . import drift
+        drift.validate(d)
     seen = set()
     for i, g in enumerate(d.get("generators", [])):
         where = f"generators[{i}]"
@@ -352,6 +355,8 @@ def starter(name):
                     "derived by running the generators; this declares the rest.",
             "authored": {"rules": [
                 [NAME, "this file: what the corpus is, and why each exemption exists"],
+                [".github/workflows/wherefore-pin.yml", "the watch for the engine's releases: written by "
+                                                         "wherefore init, this repository's since"],
             ]},
             "captured": {"groups": {}},
         },

@@ -245,14 +245,26 @@ def model(name, tracked, wrote, reads, failures):
         mine = sorted(r for r, f in files.items() if f["kind"] == "authored" and f["rule"] == rule[0])
         authored.append({"rule": rule[0], "why": rule[1], "files": mine})
 
+    # DRIFT, ON THE MAP: what the scan finds in the hand-written files - a
+    # value said in two or more of them that no source holds - drawn beside
+    # the files that say it, with the count in the legend (drift.py).
+    from . import config as cfgmod, drift as driftmod
+    try:
+        found = driftmod.find(cfgmod.load(os.environ.get("WHEREFORE_ROOT") or None))
+    except Exception as e:                           # the map is drawn either way; the check says why
+        found = {"values": [], "read": 0, "held": 0, "error": f"{type(e).__name__}: {e}"}
     kinds = [f["kind"] for f in files.values()]
     counts = {"files": len(files), "generated": kinds.count("generated"),
               "authored": kinds.count("authored"), "captured": kinds.count("captured"),
               "unknown": kinds.count("unknown"), "generators": len(gens),
               "code": sum(1 for r, f in files.items() if f["kind"] == "authored" and r.endswith(".py")),
-              "reads": traced, "failed": len(failures)}
+              "reads": traced, "failed": len(failures), "drifting": len(found["values"])}
+    allow = (cfgmod.load(os.environ.get("WHEREFORE_ROOT") or None).doc.get("drift") or {}).get("allow") \
+        if "error" not in found else None
     return {"schema": SCHEMA, "engine": __version__, "repository": name, "counts": counts,
-            "generators": gens, "files": files, "captured": capt, "authored": authored}
+            "generators": gens, "files": files, "captured": capt, "authored": authored,
+            "drift": {"values": found["values"], "read": found["read"], "held": found["held"],
+                      "allow": allow, "error": found.get("error")}}
 
 
 def summary(m, wrote_to=None):
@@ -265,6 +277,8 @@ def summary(m, wrote_to=None):
     s += f"; {c['reads']} {'read' if c['reads'] == 1 else 'reads'} traced"
     if c["failed"]:
         s += f"; {c['failed']} {'generator' if c['failed'] == 1 else 'generators'} FAILED"
+    if c.get("drifting"):
+        s += f"; {c['drifting']} {'value drifts' if c['drifting'] == 1 else 'values drift'}"
     if wrote_to:
         s += f"; wrote {wrote_to}"
     return s
@@ -445,7 +459,7 @@ code { font: 0.9em var(--mono); }
 .legend b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
 .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
 .k-generated { background: var(--gen); } .k-captured { background: var(--capt); }
-.k-authored { background: var(--hand); } .k-unknown { background: var(--unk); }
+.k-authored { background: var(--hand); } .k-unknown { background: var(--unk); } .k-drift { background: var(--capt); }
 .failures { border: 1px solid var(--bad); border-radius: var(--r); padding: 12px 14px; margin-bottom: 18px; }
 .failures h2 { font: 600 15px var(--sans); color: var(--bad); margin: 0 0 6px; }
 .failures pre { font: 12px/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; margin: 4px 0 10px; color: var(--muted); }
@@ -525,6 +539,11 @@ footer.wrap p { max-width: 70ch; margin: 0; }
     <p>Everything else is written - by a person, or by an agent - and never built: nothing regenerates it, so it is current only while someone keeps it so. Every rule that says so carries its reason.</p>
     <div class="rules" id="hand"></div>
   </section>
+  <section class="more" id="driftSec">
+    <h2>Drift</h2>
+    <p>A value said by hand in two or more files that no source holds: a copy nobody is keeping current. Each is drawn beside the files that say it, and <code>wherefore check drift</code> holds the count to what the corpus allows, so it is seen, and seen shrinking.</p>
+    <div class="rules" id="drift"></div>
+  </section>
   <section class="more" id="unknownSec" hidden>
     <h2>Unclassified</h2>
     <p>Nothing wrote these during the run and nothing declares them. The gate fails each one.</p>
@@ -584,7 +603,8 @@ function summary() {
       <span><i class="dot k-captured"></i><b>${c.captured}</b> captured and stamped</span>
       <span><i class="dot k-authored"></i><b>${c.authored}</b> written, not built, with a reason</span>
       ${c.unknown ? `<span><i class="dot k-unknown"></i><b>${c.unknown}</b> unclassified</span>` : ""}
-      <span><b>${c.reads}</b> ${c.reads === 1 ? "read" : "reads"} traced</span></div>`;
+      <span><b>${c.reads}</b> ${c.reads === 1 ? "read" : "reads"} traced</span>
+      <span><i class="dot k-drift"></i><b>${c.drifting || 0}</b> ${c.drifting === 1 ? "value drifts" : "values drift"}${M.drift && M.drift.allow != null ? `, ${M.drift.allow} allowed` : ""}</span></div>`;
   const bad = M.generators.filter(g => g.failure);
   $("#failures").innerHTML = bad.length ? `<div class="failures" role="alert"><h2>${plural(bad.length, "generator")} failed, so what ${bad.length === 1 ? "it reads and makes is" : "they read and make is"} not all here</h2>${
     bad.map(g => `<code>${esc(g.name)}</code><pre>${esc(g.failure)}</pre>`).join("")}</div>` : "";
@@ -679,6 +699,13 @@ function rules() {
     const b = $("#showall"); if (b) b.onclick = () => show(all.length);
   };
   show(8);
+  const D = M.drift || {values: []};
+  $("#drift").innerHTML = D.error ? `<p>Not read: <code>${esc(D.error)}</code></p>`
+    : D.values.length ? D.values.map(v => `<details class="rule"><summary><span class="p">${esc(v.value)}</span>
+      <span class="w">${esc(v.says.replace("{}", v.value))}</span><span class="c">${plural(v.files.length, "file")}, ${v.count}x</span></summary>
+      <div class="body"><ul>${v.files.map(f => `<li>${esc(f)}</li>`).join("")}</ul></div></details>`).join("")
+      + `<p class="none">${plural(D.values.length, "value")} held by no source, in ${plural(D.read, "hand-written file")} read${D.allow != null ? `; ${D.allow} allowed` : ""}.</p>`
+    : `<p>None: every value said by hand in two or more of ${plural(D.read, "hand-written file")} is held by a source.</p>`;
   const unknown = Object.keys(M.files).filter(r => M.files[r].kind === "unknown");
   if (unknown.length) { $("#unknownSec").hidden = false;
     $("#unknown").innerHTML = `<details class="rule" open><summary><span class="w">${plural(unknown.length, "file")}</span></summary><div class="body"><ul>${unknown.map(f => `<li>${esc(f)}</li>`).join("")}</ul></div></details>`; }
