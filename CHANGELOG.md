@@ -7,6 +7,19 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.23.0 (2026-11-06)
+
+**Where it stands, in one read.** `wherefore status` says where a repository
+stands: what each file is, how many values drift, where every launch stands,
+and which engine release it pins. It judges nothing new: it puts the
+answers of the gate, drift and launch in one place, as a few lines for a
+person or as JSON for anything else. Nothing runs unless asked; with
+`--gate` the gate runs first and its verdict and counts are in the
+document, and `--out` writes it to a file, which is how a repository's CI
+keeps it for the app to read. A repository with no `wherefore.json` is
+scanned instead. A corpus that hands its gate to its own script gets that
+script's verdict.
+
 ## 0.22.0 (2026-11-06)
 
 **Many ladders, one by default.** A `launch` section was one ladder: one set

@@ -198,6 +198,15 @@
     "wherefore check launch [--json]"
    ],
    "details": "Release is not launch: code ships any day, and what waits is the moment a thing is said to be ready. Every thing with a stage - a feature in beta, a site launched, a roadmap item shipped - has it as a fact in a source; the stages are named once, in order, and each names what must be true from then on: a help doc, a line in the changelog, the name on the feature page. What must not be said before a stage is declared too, so nothing public names a feature still being built. A pull request that moves a thing to a stage it does not have everything for is red, and the check says what is missing in the corpus's own words; for every other thing it says what the next stage still waits on. One ladder is the default; things that move differently - features through building, beta and live, the site through draft and launched - each get a ladder of their own, by name."
+  },
+  {
+   "id": "status",
+   "name": "Where it stands, in one read",
+   "since": "0.23.0",
+   "commands": [
+    "wherefore status [--gate] [--json] [--out PATH]"
+   ],
+   "details": "One command says where a repository stands: what each file is, how many values drift, where every launch stands, and which engine release it pins - the answers the gate, drift and launch already give, in one place, as a few lines or as JSON. Nothing runs unless asked: with --gate the gate runs first and its verdict is in the document. CI writes the JSON on every push and keeps it, which is what the app reads. A repository not set up yet is scanned instead, so even its first read says something."
   }
  ]
 }

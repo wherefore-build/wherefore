@@ -230,9 +230,14 @@ def _scan(args):
     return scan.main(args)
 
 
+def _status(args):
+    from . import status
+    return status.main(args)
+
+
 COMMANDS = {"init": _init, "list": _list, "build": _build, "gate": _gate,
             "graph": _graph, "prove": _prove, "check": _check, "hook": _hook,
-            "scan": _scan, "report": _report}
+            "scan": _scan, "report": _report, "status": _status}
 
 
 def commands():
