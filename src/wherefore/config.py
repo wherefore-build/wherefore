@@ -221,6 +221,9 @@ def validate(cfg):
     if d.get("motion") is not None:
         from . import motion
         motion.validate(d)
+    if d.get("drift") is not None:
+        from . import drift
+        drift.validate(d)
     seen = set()
     for i, g in enumerate(d.get("generators", [])):
         where = f"generators[{i}]"

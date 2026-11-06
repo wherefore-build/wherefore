@@ -40,6 +40,7 @@ hold your app, website and docs. [How it is built](https://wherefore.build/#case
 - **Scan any number of repositories at once** (since 0.13.0): point the scan at your site, your app, your backend and your docs together: every place is tagged with where it came from, and the scan says what they state in common and where any two disagree - drift between teams, with nothing installed
 - **The scan says what it read** (since 0.16.0): beside the result, what each place contributed - how many files of each kind, and the kinds seen and not read; an app's own words, read out of its source; a table set apart from the stale copies; and the colours a site states, with the ones within a shade of each other, before any brand is declared
 - **Every feature, in motion** (since 0.20.0): a short clip for each feature, compiled from the ledger - the version, who asked, the command, what it printed, the claim, the install line - as a page in motion that plays in any frame; --show opens one. `wherefore motion [ID ...] [--out DIR] [--show]`
+- **Drift, on the map** (since 0.21.0): every value said by hand in two or more files that no source holds, named with its files and counted; fails when more drift than wherefore.json allows, and asks for the allowance to come down when fewer do. `wherefore check drift`
 
 ## The principles it enforces
 
@@ -87,6 +88,7 @@ wherefore check claims                                                          
 wherefore check upstream                                                              # every copy taken from elsewhere still matches where it was taken from, read there now
 wherefore check palette                                                               # every colour anywhere is one the brand's source holds, or the file says, with why, whose colours they are
 wherefore check published                                                             # every page you publish but cannot build - a site on a hosted CMS - still states the source's facts, read live; a copy held by reading until it can be built
+wherefore check drift                                                                 # every value said by hand in two or more files that no source holds, named with its files and counted; fails when more drift than wherefore.json allows, and asks for the allowance to come down when fewer do
 wherefore hook install                                                                # a pre-push hook: no push leaves the corpus stale
 wherefore hook pre-push                                                               # what the installed hook runs before a push; not for typing
 wherefore report --title TITLE WORDS ... [--from FILE] [--show | --link]              # feedback for the engine's makers - a bug, a question or a request, one topic each - with a title and the words, the release, the corpus's shape and the output given, nothing private; opened as an issue, or shown, or a link for the person to send

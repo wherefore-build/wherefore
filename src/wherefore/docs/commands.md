@@ -227,6 +227,28 @@ $ wherefore check published
 nothing here is published without being built: every page a visitor receives is the corpus's own
 ```
 
+## wherefore check drift
+
+```
+wherefore check drift
+```
+
+Of the files a person writes by hand - authored, or captured - which state
+a value in two or more of them that no source holds? A generated file
+restates its sources by construction; a hand-written file that states a
+value also stated in another, with no source behind either, is a copy
+nobody is keeping current. The check names each such value with the files
+that say it and counts them. A `drift` section declares how many the corpus
+still allows, with why, and which third-party files are not read; the check
+fails when more drift than that, and when fewer do it asks for the number
+to come down. Without a section it reports and passes: the first run says
+what there is to declare. The map draws the same values beside the files.
+
+```
+$ wherefore check drift
+ok   nothing drifts: every value said by hand in two or more of 2 files is held by a source
+```
+
 ## wherefore hook
 
 ```

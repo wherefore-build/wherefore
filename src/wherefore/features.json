@@ -209,6 +209,16 @@
    ],
    "details": "For each feature the engine ships, one short clip compiled from the ledger: the version, who asked, the command typed, what it printed, the claim, the install line. Every word is a fact the engine already states, and nothing is written for the clip. A clip is a page whose motion is CSS, so it plays on the feature's card in any frame and the checks that judge a page judge it; a renderer steps it frame by frame into a video that goes on the release and the issue it answered. The engine's tests hold every clip to a reading speed, a length, a command that exists and output the command prints.",
    "claim": "Every feature, in motion, every word a fact."
+  },
+  {
+   "id": "drift",
+   "name": "Drift, on the map",
+   "since": "0.21.0",
+   "commands": [
+    "wherefore check drift"
+   ],
+   "details": "Of the files a person writes by hand, which state a value in two or more of them that no source holds? A generated file restates its sources by construction; a hand-written file that states a value also stated in another, with no source behind either, is a copy nobody is keeping current. The check names each such value with the files that say it and counts them; the map draws them beside those files with the count in its legend. A drift section declares how many the corpus still allows, the check fails when more drift than that, and when fewer do it asks for the number to come down, so the allowance only ever falls.",
+   "claim": "What no source holds, seen on the map, and seen shrinking."
   }
  ]
 }

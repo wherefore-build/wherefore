@@ -221,6 +221,22 @@ from `--ground`, `--surface`, `--line`, `--ink`, `--muted`, `--accent`,
 (default Wherefore), `install` the install line with `{version}` where the
 version goes, and `site` where the feature pages are.
 
+## drift
+
+How much drift the corpus still allows, and what is not read for it, all optional:
+
+```json
+"drift": {"allow": 4,
+          "why": "the two docs' limits, tracked next",
+          "ignore": {"brand/fonts/**": "third-party licences, unchanged"}}
+```
+
+`allow` is the number of values said by hand in two or more files with no
+source behind them that `wherefore check drift` still passes; `why` says
+what they are and what will track them. `ignore` maps a glob of files not
+read for drift to the reason. Without the section the check reports and
+passes.
+
 ## proofs
 
 Where the corpus's proofs are: `{"glob": "proofs/*_proof.py"}`. `wherefore

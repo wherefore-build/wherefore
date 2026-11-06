@@ -82,7 +82,9 @@ class TheGraphIsTheGatesClassification(unittest.TestCase):
         d = self.data
         self.assertEqual(d["schema"], 1)
         self.assertEqual(set(d), {"schema", "engine", "repository", "counts", "generators",
-                                  "files", "captured", "authored"})
+                                  "files", "captured", "authored", "drift"})
+        self.assertEqual(set(d["drift"]), {"values", "read", "held", "allow", "error"})
+        self.assertEqual(d["counts"]["drifting"], len(d["drift"]["values"]))
         import wherefore
         self.assertEqual(d["engine"], wherefore.__version__)
         self.assertEqual(d["repository"], "fernhollow-kettles")

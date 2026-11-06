@@ -7,6 +7,19 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.21.0 (2026-11-06)
+
+**Drift, on the map.** The scan, turned on a corpus's own hand-written
+files: a value stated in two or more of them that no source holds is drift,
+a copy nobody is keeping current. `wherefore check drift` names each such
+value with the files that say it and counts them, and the map draws them
+beside those files with the count in its legend, so what is not yet
+tracked is seen. A `drift` section in wherefore.json declares how many the
+corpus still allows, with why, and which third-party files are not read;
+the check fails when more drift than that, and when fewer do it asks for
+the number to come down, so the allowance only ever falls. Off the roadmap,
+where it was `drift`.
+
 ## 0.20.0 (2026-11-06)
 
 **Every feature, in motion.** A short clip for each feature the engine

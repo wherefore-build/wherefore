@@ -29,7 +29,7 @@ PAGES = [
 # configuration page to this list, and this list to config.py by hand.
 CONFIG_SECTIONS = ("wherefore", "name", "sources", "generators", "not_a_generator", "inventory", "compare",
                    "surfaces", "retired", "reach", "claims", "palette", "published", "proofs", "hook",
-                   "entry", "messages", "observer", "temp_prefix", "units", "motion")
+                   "entry", "messages", "observer", "temp_prefix", "units", "motion", "drift")
 EXAMPLE = re.compile(r"^```\n\$ (wherefore [^\n]*)\n(.*?)^```", re.M | re.S)
 
 
