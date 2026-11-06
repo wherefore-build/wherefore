@@ -189,6 +189,15 @@
     "wherefore check drift"
    ],
    "details": "Of the files a person writes by hand, which state a value in two or more of them that no source holds? A generated file restates its sources by construction; a hand-written file that states a value also stated in another, with no source behind either, is a copy nobody is keeping current. The check names each such value with the files that say it and counts them; the map draws them beside those files with the count in its legend. A drift section declares how many the corpus still allows, the check fails when more drift than that, and when fewer do it asks for the number to come down, so the allowance only ever falls."
+  },
+  {
+   "id": "launch",
+   "name": "Launches that wait",
+   "since": "0.21.0",
+   "commands": [
+    "wherefore check launch [--json]"
+   ],
+   "details": "Release is not launch: code ships any day, and what waits is the moment a thing is said to be ready. Every thing with a stage - a feature in beta, a site launched, a roadmap item shipped - has it as a fact in a source; the stages are named once, in order, and each names what must be true from then on: a help doc, a line in the changelog, the name on the feature page. What must not be said before a stage is declared too, so nothing public names a feature still being built. A pull request that moves a thing to a stage it does not have everything for is red, and the check says what is missing in the corpus's own words; for every other thing it says what the next stage still waits on."
   }
  ]
 }

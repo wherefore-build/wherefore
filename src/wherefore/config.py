@@ -221,6 +221,9 @@ def validate(cfg):
     if d.get("drift") is not None:
         from . import drift
         drift.validate(d)
+    if d.get("launch") is not None:
+        from . import launch
+        launch.validate(d)
     seen = set()
     for i, g in enumerate(d.get("generators", [])):
         where = f"generators[{i}]"

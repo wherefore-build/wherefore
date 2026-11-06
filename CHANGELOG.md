@@ -7,6 +7,23 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.21.0 (2026-11-06)
+
+**Launches that wait.** Release is not launch: code ships any day, and what
+waits is the moment a thing is said to be ready. A `launch` section in
+wherefore.json names where each thing's stage lives - a feature's in a
+source, a site's own, a roadmap item's - and the stages in order, and what
+each stage needs from then on: a field the thing has, a file that exists,
+words a page says. It names what must not be said before a stage, too, so
+nothing public names a feature still being built. `wherefore check launch`
+fails a thing at a stage it does not have everything for, in the words the
+section gave each requirement, and for every other thing says what its next
+stage still waits on; `--json` prints the same for a reader that draws it.
+The engine holds its own roadmap to it: an item is later, then next, then
+shipped, and a shipped item names its release, its feature and its
+changelog entry. One repository first; across repositories, and a person's
+sign-off, are the app's. Off the roadmap, where it was `launch`.
+
 ## 0.20.1 (2026-11-06)
 
 **A stopped build says why, in the pull request.** The watch `wherefore

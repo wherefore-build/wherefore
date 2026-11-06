@@ -103,5 +103,47 @@
  },
  "proofs": {
   "glob": "corpus/*_proof.py"
+ },
+ "launch": {
+  "why": "the roadmap's own ladder: an item is later, then next, then shipped, and moves only with what each stage needs",
+  "of": {
+   "path": "roadmap.json",
+   "at": "items",
+   "id": "id",
+   "stage": "state"
+  },
+  "stages": [
+   "later",
+   "next",
+   "shipped"
+  ],
+  "needs": {
+   "later": [
+    {
+     "has": "name",
+     "why": "a name"
+    },
+    {
+     "has": "words",
+     "why": "a line saying what it is"
+    }
+   ],
+   "shipped": [
+    {
+     "has": "since",
+     "why": "the release it shipped in"
+    },
+    {
+     "in": "src/wherefore/features.json",
+     "says": "\"id\": \"{feature}\"",
+     "why": "the feature it became, in that release"
+    },
+    {
+     "in": "CHANGELOG.md",
+     "says": "## {since} (",
+     "why": "that release in the changelog"
+    }
+   ]
+  }
  }
 }

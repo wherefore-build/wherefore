@@ -254,6 +254,28 @@ $ wherefore check drift
 ok   nothing drifts: every value said by hand in two or more of 2 files is held by a source
 ```
 
+## wherefore check launch
+
+```
+wherefore check launch [--json]
+```
+
+Every thing with a stage - a feature in beta, a site launched, a roadmap
+item shipped - held to what its stage needs. The `launch` section names
+where each thing's stage lives, the stages in order, what each needs from
+then on, and what must not be said before it. The check fails a thing at a
+stage it does not have everything for, naming the stage and what is
+missing in the section's own words, and for every other thing says what
+the next stage still waits on. So a pull request that moves a stage is red
+until the stage is earned. `--json` prints every thing, its stage, and each
+requirement held or not, for a reader that draws it. Without a section it
+says so and passes.
+
+```
+$ wherefore check launch
+ok   no launch section: nothing here waits on a stage. Declare one in wherefore.json - where each thing's stage lives, the stages in order, and what each needs
+```
+
 ## wherefore hook
 
 ```

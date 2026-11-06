@@ -31,12 +31,16 @@ prove one.
   allows are said by hand in two or more files with no source behind them.
   It fails naming each value and its files, and when fewer drift than
   allowed it asks for the allowance to come down.
+- **Launch** (`wherefore check launch`): every thing with a stage has what
+  its stage needs, and nothing says what may not be said before it. It
+  fails naming the thing, the stage and what is missing, and for every
+  other thing says what the next stage still waits on.
 - **Your own checks**: a script in the corpus that reads the tree and exits
   1 with a reason, run by CI beside the engine's. The company's site has a
   dozen: every control pressed cold on a phone, every page fitting a phone's
   width, every text colour readable on its ground.
 
-The gate, reach, retired, claims, palette and drift read nothing outside the
+The gate, reach, retired, claims, palette, drift and launch read nothing outside the
 repository, so the same tree always gives the same answer, and they run on
 every push and in the pre-push hook. Upstream and published go to the
 network, so they run before a deploy, and on a schedule if the client wants

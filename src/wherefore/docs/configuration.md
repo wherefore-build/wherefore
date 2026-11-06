@@ -215,6 +215,31 @@ what they are and what will track them. `ignore` maps a glob of files not
 read for drift to the reason. Without the section the check reports and
 passes.
 
+## launch
+
+Where each thing's stage lives, the stages in order, and what each needs:
+
+```json
+"launch": {"of": {"source": "facts", "at": "features", "id": "id", "stage": "stage"},
+           "stages": ["building", "beta", "live"],
+           "needs": {"beta": [{"file": "docs/{id}.md", "why": "a help doc"}],
+                     "live": [{"in": "site/features/index.html", "says": "{name}",
+                               "why": "the feature page"}]},
+           "until": {"beta": [{"in": "site/**", "lacks": "{name}",
+                               "why": "nothing public names it"}]}}
+```
+
+`of` names a source by name or a JSON file by `path`; `at`, the list or
+object of things inside it; `id` and `stage`, each thing's fields. Without
+`at` there is one thing, the corpus itself, whose stage is the field
+`stage` names - a site's `site.status`. `needs` holds from the stage it is
+under onward, so what beta needs live needs too, said once; `until` holds
+before the stage it is under. A requirement is one of `has` (the thing's
+own field, not empty), `file` (a tracked file matching a glob), `says` or
+`lacks` (text a tracked file matching `in` says, or does not), and says
+`why`, which is what the check prints when it is missing. `{field}` is the
+thing's own field; `{id}` and `{stage}` always exist.
+
 ## proofs
 
 Where the corpus's proofs are: `{"glob": "proofs/*_proof.py"}`. `wherefore

@@ -39,7 +39,7 @@ def main():
     with Edit("docs/README.template.md") as p:
         planted(p, "```\nwherefore check spelling\n```")
         check(r, "a check that does not exist, in the README's template", CHECK, True,
-              ["docs/README.template.md:", "`wherefore check spelling` - check takes claims, drift, palette, published, reach, retired, upstream"])
+              ["docs/README.template.md:", "`wherefore check spelling` - check takes claims, drift, launch, palette, published, reach, retired, upstream"])
     with Edit("src/wherefore/skills/wherefore/SKILL.md") as p:
         planted(p, "`from wherefore import prove` gives a proof its harness.")
         check(r, "a module named, not a command - must not fire", CHECK, False, [PASS])

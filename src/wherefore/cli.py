@@ -167,7 +167,7 @@ def _prove(args):
 
 
 # The checks `wherefore check` runs, in the order commands.json lists them.
-CHECKS = ("retired", "reach", "claims", "upstream", "palette", "published", "drift")
+CHECKS = ("retired", "reach", "claims", "upstream", "palette", "published", "drift", "launch")
 
 
 def _check(args):
@@ -201,6 +201,9 @@ def _check(args):
     if name == "drift":
         from . import drift
         return drift.main(cfg, rest)
+    if name == "launch":
+        from . import launch
+        return launch.main(cfg, rest)
     print(f"::error::no check called {name!r}: {', '.join(CHECKS)}")
     return 1
 

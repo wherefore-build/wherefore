@@ -11,9 +11,12 @@
   },
   {
    "id": "launch",
-   "state": "later",
+   "state": "shipped",
    "name": "Launches that wait",
-   "words": "A launch that holds until its page, docs and demo agree."
+   "words": "A launch that holds until its page, docs and demo agree: each thing's stage a fact, each stage naming what it needs, and a stage that moves only when those are there.",
+   "since": "0.21.0",
+   "feature": "launch",
+   "plan": "Stages named once, in order, over things whose stage is a fact in a source: needs from a stage on, and what may not be said until a stage. A requirement is a field the thing has, a file that exists, text a file says or lacks, each with why. The check fails a thing at a stage it lacks something for, says what the next stage waits on, and prints JSON for the app to draw. One repository first; across repositories, and sign-off by a person, are the app's."
   },
   {
    "id": "drift",
