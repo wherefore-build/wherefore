@@ -180,7 +180,10 @@ def storyboard(feature, release=None, item=None, examples=(), settings=None):
     add("ask", 4.0, 5.5, eyebrow=eyebrow, headline=feature["name"])
     typed, printed = _picture(feature, release, examples)
     if typed:
-        add("command", 4.0, 5.0, eyebrow="the command", typed=typed)
+        # Long enough to type it, a line at a time, and read it once typed.
+        import math
+        typing = math.ceil((0.6 + 0.07 * len(typed) + 0.2 * (len(typed_lines(typed)) - 1) + 1.5) * 2) / 2
+        add("command", max(4.0, typing), max(5.0, typing), eyebrow="the command", typed=typed)
     lines = _answer(printed)
     if lines:
         add("answer", 4.0, 10.0, eyebrow="the answer", lines=lines)
@@ -276,7 +279,7 @@ def page(board, css=None, vars=None):
             t0, lines = sc["start"] + 0.6, []
             for k, part in enumerate(parts):
                 n = len(part)
-                t1 = min(sc["end"] - 0.8, t0 + n * 0.07)
+                t1 = t0 + n * 0.07
                 rules.append(f"@keyframes type{i}_{k}{{0%,{_pct(t0, total)}{{width:0}}{_pct(t1, total)},100%{{width:{n}ch}}}}")
                 prompt = '<span class="prompt">$ </span>' if k == 0 else '<span class="prompt">&gt; </span>'
                 lines.append(f'<code class="ln">{prompt}<span class="typed" style="animation-name:type{i}_{k};'
