@@ -27,7 +27,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 COMMANDS = ROOT / "src/wherefore/commands.json"
-READ = ("README.md", "CHANGELOG.md", "src/wherefore/skills/*/*.md", "docs/*.md")
+READ = ("README.md", "CHANGELOG.md", "src/wherefore/skills/*/*.md", "src/wherefore/docs/*.md", "docs/*.md")
 
 FENCED = re.compile(r"```.*?```", re.S)
 INLINE = re.compile(r"`[^`\n]+`")

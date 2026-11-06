@@ -7,6 +7,25 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.19.0 (2026-11-06)
+
+**Docs from each release.** The product's docs, compiled from the release
+they describe: five pages ship inside the release as data, beside the
+commands, the features and the releases, and `wherefore.docs` hands them to
+any client. Start is the skill's own start guide, so the person and their
+agent read one text. Commands has a section per command with a worked
+example on the example company. Configuration has a section per section of
+wherefore.json the engine reads. Checks and proofs says what each check
+holds, how it fails, and how to prove one. Reporting says what a report
+carries and what becomes of it.
+
+The engine's tests hold the pages to the code: every command has its
+section and every section is a command; every section of the configuration
+the engine reads is documented; every `wherefore` command a page names
+exists; and every example is run again and must print what the page says, in
+order, so a page cannot show output a command no longer prints. Off the
+roadmap, where it was `docs`.
+
 ## 0.18.1 (2026-11-06)
 
 **Scan any number of repositories at once.** The scan has taken any number of places

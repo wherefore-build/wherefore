@@ -3,9 +3,11 @@
  "items": [
   {
    "id": "docs",
-   "state": "next",
+   "state": "shipped",
    "name": "Docs from each release",
-   "words": "The product's docs, compiled from the release they describe."
+   "words": "The product's docs, compiled from the release they describe.",
+   "since": "0.19.0",
+   "feature": "docs"
   },
   {
    "id": "launch",
