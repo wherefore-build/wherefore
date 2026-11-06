@@ -7,6 +7,34 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.16.0 (2026-11-06)
+
+**The scan says what it read** (wherefore-build/wherefore#19, #20, and the
+owner's ask for colours). The first field session trusted a scan that had
+read icons and vendored READMEs and none of an app's 4,329 source files, and
+reported six disagreements that were pricing tables. Four changes to
+`wherefore scan`, none of them to what it asks of you:
+
+- **What each place contributed,** under the first line: for every place,
+  how many files of each kind were read, and the kinds it saw and did not
+  read, so "0 things in common" comes with "not read: 3357 .elm" beside it,
+  or does not.
+- **An app's own words.** Source code in the common languages is read for
+  its string literals - what a program says to a person, typed whole - and
+  nothing else of it. A site and its app can now disagree in the scan.
+- **A table is not a stale copy.** Two values said in exactly the same files
+  - a pricing table's two columns, on every page that has it - are reported
+  as tied, apart from the disagreements, and do not fail the scan.
+- **The colours a site states,** before any brand is declared: how many
+  distinct colours its stylesheets, its pages' style blocks and attributes and
+  its drawings state, and which are within a shade of one another - the
+  greys that were meant to be one grey. A live site's own stylesheets are
+  fetched for it, each a fetch like any other against `--max-pages`. Prose
+  is never read for colours, where #bad is a word.
+
+The skill's words for the scan follow. Off the roadmap, where it was
+`scan-read`.
+
 ## 0.15.0 (2026-11-06)
 
 **The skill learns from the field.** The first session on a stranger's

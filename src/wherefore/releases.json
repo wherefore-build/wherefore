@@ -2,6 +2,31 @@
  "note": "Every release of the engine, newest first, said once as data: its version, its date, a title and a sentence, and a picture of it working. A client that tells people about the product - the company's changelog page - reads this from the release it pins, so the page lists every release and cannot list one that was never cut. CHANGELOG.md is the long account of each release; tests/test_releases.py holds its headings to the versions and dates here, every feature's `since` (features.json) to a release here, and the newest release to the version pyproject.toml states. `shows` is what the release printed when it was run: `run` is typed in a fresh git repository named fernhollow (shown as ~/fernhollow), holding `files` if any, or a copy of the fixture company if `fixture` is true; `output` is what it printed, in order, with a line of just … where lines are left out. The test runs the newest release's again, on every change, so the picture of the current release cannot drift from what it does; an older one's is history, true of the release that printed it.",
  "releases": [
   {
+   "version": "0.16.0",
+   "date": "2026-11-06",
+   "title": "The scan says what it read",
+   "says": "Beside the result, what each place contributed and what it left unread; an app's own words, read out of its source; a table set apart from the stale copies; and the colours a site states, with the greys that were meant to be one grey.",
+   "shows": {
+    "fixture": false,
+    "run": "wherefore scan site app",
+    "files": {
+     "site/index.html": "<link rel=\"stylesheet\" href=\"style.css\">\n<p>Start your 14 day free trial today. Plans from 9 dollars a month.</p>\n",
+     "site/style.css": "body { color: #0b0c0e } .muted { color: #5f6269 } .muted2 { color: #606370 }\n",
+     "app/Main.elm": "welcome = \"Start your 30 day free trial today. Plans from 9 dollars a month.\"\n",
+     "app/data.json": "{}\n"
+    },
+    "output": [
+     "  read  site: 1 .html, 1 .css",
+     "  read  app: 1 .elm · not read: 1 .json",
+     "…",
+     "3 colours stated in 1 file; 1 group within a shade of one another",
+     "  #5f6269 · #606370   site/style.css",
+     "…",
+     "  DIFFER  \"start your {} day free\"  site: 14 (1x) · app: 30 (1x)"
+    ]
+   }
+  },
+  {
    "version": "0.15.0",
    "date": "2026-11-06",
    "title": "The skill learns from the field",

@@ -288,5 +288,119 @@ class TwoPlacesAtOnce(unittest.TestCase):
         self.assertEqual(code, 0, "the site agrees with itself")
 
 
+class WhatItRead(unittest.TestCase):
+    """0.16.0: the scan says what each place contributed, reads an app's own
+    words out of its source, sets a table apart from a stale copy, and counts
+    the colours a site states (wherefore-build/wherefore#19, #20)."""
+
+    def places(self):
+        return corpus({
+            "site/index.html": '<html><head><link rel="stylesheet" href="style.css"><style>.a{color:#0b0c0e}</style></head>'
+                               '<body><p style="color:#0B0C0F">Start your 14 day free trial today. Plans from 9 dollars a '
+                               'month.</p><table><tr><td>Basic $10 per month for 50 members</td>'
+                               '<td>Team $40 per month for 250 members</td></tr></table></body></html>\n',
+            "site/pricing.html": "<p>Start your 14 day free trial today.</p><table><tr><td>Basic $10 per month for 50 "
+                                 "members</td><td>Team $40 per month for 250 members</td></tr></table>\n",
+            "site/style.css": "body { background: #ffffff; color: rgb(11, 12, 14); } a { color: #c3ff0f }\n"
+                              ".muted { color: #5f6269 } .muted2 { color: #606370 }\n",
+            "app/src/Main.elm": 'module Main exposing (..)\n\nwelcome =\n    "Start your 30 day free trial today. '
+                                'Plans from 9 dollars a month."\n',
+            "app/src/data.json": "{}\n",
+            "app/icons/a.svg": '<svg><path fill="#0b0c0e" d="M0 0"/></svg>\n',
+            "app/node_modules/x/README.md": "Start your 99 day free trial today.\n",
+        })
+
+    def test_it_says_what_each_place_contributed_and_what_it_left(self):
+        root = self.places()
+        code, out = run(root, "site", "app")
+        self.assertIn("  read  site: 2 .html, 1 .css", out)
+        self.assertIn("  read  app: 1 .svg, 1 .elm · not read: 1 .json", out)
+        self.assertNotIn("node_modules", out)
+        d = json.loads(run(root, "site", "app", "--json")[1])
+        self.assertEqual(d["read"]["app"], {"read": {".svg": 1, ".elm": 1}, "not_read": {".json": 1}})
+
+    def test_an_apps_own_words_are_read_out_of_its_source(self):
+        root = self.places()
+        code, out = run(root, "site", "app")
+        self.assertEqual(code, 1, out)
+        self.assertIn('DIFFER  "start your {} day free"  site: 14 (2x) · app: 30 (1x)', out)
+        self.assertIn("app/src/Main.elm:4", out)
+
+    def test_a_table_on_every_page_alike_is_set_apart_from_the_stale_copies(self):
+        root = self.places()
+        code, out = run(root, "site")
+        self.assertEqual(code, 0, out)
+        self.assertIn('1 statement says two things in the same files alike - a table, not a stale copy: '
+                      '"month for {} members"', out)
+        d = json.loads(run(root, "site", "--json")[1])
+        self.assertEqual(d["disagree"], [])
+        self.assertEqual(d["tied"][0]["values"], ["50", "250"])
+        self.assertEqual(d["tied"][0]["files"], ["site/index.html", "site/pricing.html"])
+
+    def test_the_colours_a_site_states_and_which_are_within_a_shade(self):
+        root = self.places()
+        code, out = run(root, "site")
+        self.assertIn("6 colours stated in 2 files; 2 groups within a shade of one another", out)
+        self.assertIn("  #0b0c0e · #0b0c0f   site/index.html, site/style.css", out)
+        self.assertIn("  #5f6269 · #606370   site/style.css", out)
+        d = json.loads(run(root, "site", "--json")[1])
+        self.assertEqual(d["colours"]["distinct"], 6)
+        self.assertEqual(d["colours"]["near"], [["0b0c0e", "0b0c0f"], ["5f6269", "606370"]])
+        self.assertEqual(d["colours"]["where"]["0b0c0e"], ["site/index.html", "site/style.css"])
+
+    def test_a_word_in_prose_is_not_a_colour(self):
+        root = corpus({"a.md": "The #bad idea and the #cafe at #10.\n", "b.html": "<p>#face</p>"})
+        d = json.loads(run(root, ".", "--json")[1])
+        self.assertNotIn("colours", d)
+
+    def test_colours_in_code_are_not_read_only_its_words_are(self):
+        root = corpus({"app.py": 'GREY = "#5f6269"\nprint("Start your 14 day free trial today")\n'})
+        d = json.loads(run(root, ".", "--json")[1])
+        self.assertNotIn("colours", d)
+        self.assertEqual(d["stated"], 1)
+
+
+class ALiveSitesColours(unittest.TestCase):
+    def serve(self, pages):
+        asked = []
+
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):
+                asked.append(self.path)
+                status, headers, body = pages.get(self.path, (404, {}, "not here"))
+                self.send_response(status)
+                for k, v in headers.items():
+                    self.send_header(k, v)
+                self.end_headers()
+                self.wfile.write(body.encode())
+
+            def log_message(self, *args):
+                pass
+
+        server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        return f"http://127.0.0.1:{server.server_port}", asked
+
+    def test_a_sites_stylesheets_are_read_for_colours_and_count_toward_the_limit(self):
+        pages = {
+            "/": (200, {"Content-Type": "text/html"},
+                  '<link rel="stylesheet" href="/a.css"><link rel="stylesheet" href="https://cdn.example/b.css">'
+                  '<p style="color:#0b0c0e">Start your 14 day free trial today.</p><a href="/more.html">More</a>'),
+            "/a.css": (200, {"Content-Type": "text/css"}, "a { color: #0b0c0f } b { color: #c3ff0f }"),
+            "/more.html": (200, {"Content-Type": "text/html"}, "<p>Start your 14 day free trial today.</p>"),
+        }
+        base, asked = self.serve(pages)
+        result = scan.scan([base + "/"])
+        self.assertEqual(sorted(asked), ["/", "/a.css", "/more.html"])
+        self.assertEqual(result["read"][base.split("//")[1]], {"read": {"pages": 2, "stylesheets": 1}, "not_read": {}})
+        self.assertEqual(result["colours"]["near"], [["0b0c0e", "0b0c0f"]])
+        self.assertEqual(result["sources"], 2, "a stylesheet is read for colours, not for statements")
+        base, asked = self.serve(pages)
+        scan.scan([base + "/"], max_pages=2)
+        self.assertEqual(len(asked), 2, "a stylesheet is a fetch like any other")
+
+
 if __name__ == "__main__":
     unittest.main()

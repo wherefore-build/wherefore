@@ -40,6 +40,23 @@ more than one root, and which of those the roots disagree on. "Both say
 teams, which no one repository's own checks can see; it is the first thing
 the Team layer shows, with nothing installed.
 
+WHAT IT READ is said beside the result: for every place, how many files of
+each kind it read, and the kinds it saw and did not read, so "0 things in
+common" between a site and a checkout of icons and vendored READMEs is never
+mistaken for agreement. An app's own words count: the scan reads the string
+literals out of source code in the common languages - what a program says
+to a person - and nothing else of the code.
+
+A TABLE IS NOT A STALE COPY. Two values said on every page alike - a pricing
+table with two plans, each column on every page - are two things, not one
+thing said two ways; they are reported as tied, apart from the disagreements.
+
+COLOURS are a brand nobody can list. The scan reads the colours a site states -
+in its stylesheets, its pages' style blocks and attributes, its drawings - and
+says how many there are, and which are within a shade of one another: the
+greys that were meant to be one grey. Nothing is declared for it; declaring
+the brand, and holding every colour to it, is `wherefore check palette`.
+
 Exit status: 0 when every statement says one thing everywhere, 1 when some
 disagree, 2 for a line it cannot act on.
 """
@@ -53,6 +70,12 @@ import urllib.parse
 import urllib.request
 
 TEXT = {".html", ".htm", ".md", ".mdx", ".markdown", ".txt", ".rst", ".svg"}
+# Source code, read for the strings a program says to a person, and nothing else.
+CODE = {".py", ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".elm", ".rb", ".go", ".java", ".kt", ".swift",
+        ".php", ".rs", ".cs", ".vue", ".svelte", ".dart", ".scala", ".ex", ".exs", ".clj", ".hs", ".ml",
+        ".c", ".cc", ".cpp", ".h", ".m"}
+# Stylesheets, read for their colours and nothing else.
+STYLE = {".css", ".scss", ".sass", ".less"}
 SKIP_DIRS = {".git", "node_modules", ".venv", "venv", "__pycache__", ".next", ".wherefore-engine",
              ".tox", ".mypy_cache", ".pytest_cache"}
 HISTORY_FILE = re.compile(r"(?i)^(changelog|changes|history|news|releases?|release[-_]notes|revisions?)\b")
@@ -88,7 +111,7 @@ class _Visible(html.parser.HTMLParser):
 
     def __init__(self, svg=False):
         super().__init__(convert_charrefs=True)
-        self.lines, self.cur, self.dead, self.svg, self.intext, self.links = [], [], 0, svg, 0, []
+        self.lines, self.cur, self.dead, self.svg, self.intext, self.links, self.styles = [], [], 0, svg, 0, [], []
 
     def flush(self):
         line = re.sub(r"\s+", " ", "".join(self.cur)).strip()
@@ -102,6 +125,8 @@ class _Visible(html.parser.HTMLParser):
             self.dead += 1
         if tag == "a" and a.get("href"):
             self.links.append(a["href"])
+        if tag == "link" and "stylesheet" in str(a.get("rel", "")).lower().split() and a.get("href"):
+            self.styles.append(a["href"])
         if tag == "meta" and (a.get("name") == "description"
                               or str(a.get("property", "")).startswith("og:")) and a.get("content"):
             self.lines.append(a["content"])
@@ -131,13 +156,15 @@ class _Visible(html.parser.HTMLParser):
         self.cur.append(data)
 
 
-def read_markup(src, svg=False):
-    """(lines, links) of a page: numbered blocks of what a person reads."""
+def read_markup(src, svg=False, styles=False):
+    """(lines, links) of a page: numbered blocks of what a person reads; with
+    styles, (lines, links, stylesheets) - the sheets the page links to."""
     v = _Visible(svg=svg)
     v.feed(src)
     v.close()
     v.flush()
-    return list(enumerate(v.lines, 1)), v.links
+    lines = list(enumerate(v.lines, 1))
+    return (lines, v.links, v.styles) if styles else (lines, v.links)
 
 
 def read_text(src):
@@ -150,6 +177,108 @@ def read_text(src):
         if not fenced and line.strip():
             out.append((n, re.sub(r"`[^`]*`", " ", line)))
     return out
+
+
+STRING = re.compile(r'"((?:[^"\\\n]|\\.)*)"|\'((?:[^\'\\\n]|\\.)*)\'|`((?:[^`\\\n]|\\.)*)`')
+
+
+def read_code(src):
+    """Numbered string literals of a source file that have words in them: what
+    the program says to a person. A line too long to be anything but minified
+    code is left alone."""
+    out = []
+    for n, line in enumerate(src.splitlines(), 1):
+        if len(line) > 1000:
+            continue
+        for m in STRING.finditer(line):
+            text = next(g for g in m.groups() if g is not None)
+            if len(re.findall(r"[A-Za-z]{2,}", text)) >= 2:
+                out.append((n, text))
+    return out
+
+
+HEX = re.compile(r"(?<![\w-])#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![\w-])")
+FUNC = re.compile(r"\b(rgba?|hsla?)\(\s*([^)]{3,80})\)")
+STYLE_BLOCK = re.compile(r"<style\b[^>]*>(.*?)</style>", re.S | re.I)
+STYLE_ATTR = re.compile(r"""\bstyle\s*=\s*(?:"([^"]*)"|'([^']*)')""", re.I)
+SVG_PAINT = re.compile(r"""\b(?:fill|stroke|stop-color|flood-color|lighting-color|color)\s*=\s*(?:"([^"]*)"|'([^']*)')""", re.I)
+
+
+def _channel(v, scale=255):
+    v = v.strip()
+    if v.endswith("%"):
+        return max(0, min(255, round(float(v[:-1]) * 255 / 100)))
+    return max(0, min(255, round(float(v) * (255 / scale) if scale != 255 else float(v))))
+
+
+def colours(text):
+    """Every colour stated in a stretch of style, as six lowercase hex digits,
+    alpha dropped: the brand as it was typed, not as it was meant."""
+    out = []
+    for m in HEX.finditer(text):
+        h = m.group(1).lower()
+        if len(h) in (3, 4):
+            h = "".join(c * 2 for c in h[:3])
+        out.append(h[:6])
+    for m in FUNC.finditer(text):
+        fn, args = m.group(1).lower(), re.split(r"[,\s/]+", m.group(2).strip())
+        args = [a for a in args if a]
+        if len(args) < 3:
+            continue
+        try:
+            if fn.startswith("rgb"):
+                r, g, b = (_channel(a) for a in args[:3])
+            else:
+                import colorsys
+                hdeg = float(re.sub(r"[a-z]+$", "", args[0]))
+                sat, lig = (float(a.rstrip("%")) / 100 for a in args[1:3])
+                r, g, b = (round(x * 255) for x in colorsys.hls_to_rgb((hdeg % 360) / 360, lig, sat))
+        except ValueError:
+            continue
+        out.append(f"{r:02x}{g:02x}{b:02x}")
+    return out
+
+
+def colours_in(src, suffix):
+    """The colours a file states, read where colours are typed - a stylesheet
+    whole; a page's style blocks and style attributes; a drawing's paint - and
+    never from prose, where #bad is a word."""
+    if suffix in STYLE:
+        return colours(src)
+    found = []
+    for m in STYLE_BLOCK.finditer(src):
+        found += colours(m.group(1))
+    for m in STYLE_ATTR.finditer(src):
+        found += colours(m.group(1) or m.group(2) or "")
+    if suffix == ".svg":
+        for m in SVG_PAINT.finditer(src):
+            found += colours(m.group(1) or m.group(2) or "")
+    return found
+
+
+def _near(a, b, shade=16):
+    return all(abs(int(a[i:i + 2], 16) - int(b[i:i + 2], 16)) <= shade for i in (0, 2, 4))
+
+
+def shades(hexes):
+    """Groups of colours within a shade of one another - every channel within
+    16 of 256 - each group sorted, darkest first; a colour alone is no group."""
+    hexes = sorted(set(hexes))
+    parent = {h: h for h in hexes}
+
+    def find(h):
+        while parent[h] != h:
+            parent[h] = parent[parent[h]]
+            h = parent[h]
+        return h
+    for i, a in enumerate(hexes):
+        for b in hexes[i + 1:]:
+            if _near(a, b):
+                parent[find(a)] = find(b)
+    groups = collections.defaultdict(list)
+    for h in hexes:
+        groups[find(h)].append(h)
+    return sorted((sorted(g) for g in groups.values() if len(g) > 1), key=lambda g: (-len(g), g))
 
 
 def _norm(kind, raw):
@@ -186,15 +315,29 @@ def statements(lines):
 
 
 def _files(root, everything):
+    """[(file, how)] for every file under root outside the directories nobody
+    reads: how is "text", "code", "style", or None for a kind the scan does not
+    read - which is counted, so the report can say what was left."""
     root = pathlib.Path(root)
     found = [root] if root.is_file() else sorted(p for p in root.rglob("*") if p.is_file())
-    return [f for f in found
-            if f.suffix.lower() in TEXT
-            and not (set(f.parts) & SKIP_DIRS)
-            and (everything or not HISTORY_FILE.search(f.name))]
+    out = []
+    for f in found:
+        if set(f.parts) & SKIP_DIRS:
+            continue
+        suffix = f.suffix.lower()
+        if suffix in TEXT:
+            out.append((f, "text" if everything or not HISTORY_FILE.search(f.name) else None))
+        elif suffix in CODE:
+            out.append((f, "code"))
+        elif suffix in STYLE:
+            out.append((f, "style"))
+        else:
+            out.append((f, None))
+    return out
 
 
 HTML = ("text/html", "application/xhtml+xml")
+CSS = ("text/css",)
 
 
 class OffHost(Exception):
@@ -214,13 +357,14 @@ class _SameHost(urllib.request.HTTPRedirectHandler):
 _OPENER = urllib.request.build_opener(_SameHost)
 
 
-def _fetch(url, timeout=15):
-    """(content type, text): text is None for an answer that is not HTML, which
-    is not read past its headers."""
+def _fetch(url, timeout=15, want=HTML):
+    """(content type, text): text is None for an answer that is not of a kind
+    wanted - HTML for a page, CSS for a stylesheet - which is not read past its
+    headers."""
     req = urllib.request.Request(url, headers={"User-Agent": "wherefore-scan"})
     with _OPENER.open(req, timeout=timeout) as r:
         kind = r.headers.get_content_type()
-        if kind not in HTML:
+        if kind not in want:
             return kind, None
         return kind, r.read(2_000_000).decode(r.headers.get_content_charset() or "utf-8", "replace")
 
@@ -232,25 +376,28 @@ def crawl(start, max_pages=50):
     of downloads costs no more than max_pages requests - and a redirect to
     another host is refused, and reported as not read."""
     host = urllib.parse.urlsplit(start).netloc
-    queue, seen, out, fetched = [start], {start}, [], 0
+    queue, seen, out, fetched = [(start, "page")], {start}, [], 0
     while queue and fetched < max_pages:
-        url = queue.pop(0)
+        url, what = queue.pop(0)
         fetched += 1
         try:
-            kind, body = _fetch(url)
+            kind, body = _fetch(url, want=CSS if what == "style" else HTML)
         except Exception as e:                        # noqa: BLE001 - every failure is reported the same way
-            out.append((url, None, str(e) if isinstance(e, OffHost) else f"{type(e).__name__}: {e}"))
+            out.append((url, None, str(e) if isinstance(e, OffHost) else f"{type(e).__name__}: {e}", "", what))
             continue
         if body is None:
             continue
-        lines, links = read_markup(body)
-        out.append((url, lines, None))
-        for href in links:
+        if what == "style":
+            out.append((url, None, None, body, "style"))
+            continue
+        lines, links, styles = read_markup(body, styles=True)
+        out.append((url, lines, None, body, "page"))
+        for href, kind in [(h, "page") for h in links] + [(h, "style") for h in styles]:
             nxt = urllib.parse.urldefrag(urllib.parse.urljoin(url, href))[0]
             if urllib.parse.urlsplit(nxt).netloc == host and nxt not in seen \
                     and urllib.parse.urlsplit(nxt).scheme in ("http", "https"):
                 seen.add(nxt)
-                queue.append(nxt)
+                queue.append((nxt, kind))
     return out
 
 
@@ -258,25 +405,52 @@ def scan(targets, everything=False, max_pages=50):
     """{"sources": n, "stated": n, "unread": [...], "disagree": [group, ...]}."""
     seen = collections.defaultdict(list)
     sources, unread, read = 0, [], []
+    contributed = {}                               # root -> what was read there, and what was not
+    painted = collections.defaultdict(set)         # colour -> the files that state it
+    painted_in = collections.defaultdict(set)      # root -> the colours stated there
     for t in targets:
         root = _root(t)
+        got = contributed.setdefault(root, {"read": collections.Counter(), "not_read": collections.Counter()})
         if re.match(r"^https?://", t):
-            for url, lines, err in crawl(t, max_pages):
+            for url, lines, err, body, what in crawl(t, max_pages):
                 if err:
                     unread.append(f"{url}: {err}")
                     continue
+                if what == "style":
+                    got["read"]["stylesheets"] += 1
+                    for c in colours_in(body, ".css"):
+                        painted[c].add(url)
+                        painted_in[root].add(c)
+                    continue
                 sources += 1
                 read.append(root)
+                got["read"]["pages"] += 1
+                for c in colours_in(body, ".html"):
+                    painted[c].add(url)
+                    painted_in[root].add(c)
                 for key, value, n, raw in statements(lines):
                     seen[key].append((value, url, n, raw, root))
             continue
         if not pathlib.Path(t).exists():
             unread.append(f"{t}: no such file or directory")
             continue
-        for f in _files(t, everything):
+        for f, how in _files(t, everything):
+            suffix = f.suffix.lower() or f.name
+            if how is None:
+                got["not_read"][suffix] += 1
+                continue
             src = f.read_text(encoding="utf-8", errors="replace")
-            if f.suffix.lower() in (".html", ".htm", ".svg"):
-                lines = read_markup(src, svg=f.suffix.lower() == ".svg")[0]
+            got["read"][suffix] += 1
+            if how in ("style",) or suffix in (".html", ".htm", ".svg"):
+                for c in colours_in(src, suffix):
+                    painted[c].add(str(f))
+                    painted_in[root].add(c)
+            if how == "style":
+                continue
+            if how == "code":
+                lines = read_code(src)
+            elif suffix in (".html", ".htm", ".svg"):
+                lines = read_markup(src, svg=suffix == ".svg")[0]
             else:
                 lines = read_text(src)
             sources += 1
@@ -300,13 +474,22 @@ def scan(targets, everything=False, max_pages=50):
             agree = len({v for cnt in by_root.values() for v in cnt}) == 1
             shared.append({"says": says, "kind": kind, "roots": each, "agree": agree})
         shared.sort(key=lambda g: (g["agree"], -sum(c["count"] for cs in g["roots"].values() for c in cs), g["says"]))
-    groups = []
+    groups, tied = [], []
     for (kind, left, right), occ in seen.items():
         counts = collections.Counter(v for v, *_ in occ).most_common()
         if len(counts) < 2 or len({where for _, where, *_ in occ}) < 2:
             continue
-        # A STALE COPY, NOT A TABLE: at most three values, the commonest said
-        # at least as often as all the others together. Many values, each said
+        says = " ".join(list(left) + ["{}"] + list(right))
+        # A TABLE, NOT A STALE COPY: every value said in exactly the same files
+        # - a pricing table's two columns, on every page that has the table -
+        # is two things side by side, not one thing said two ways.
+        files_of = {v: {w for vv, w, *_ in occ if vv == v} for v, _ in counts}
+        if len({frozenset(f) for f in files_of.values()}) == 1:
+            tied.append({"says": says, "kind": kind, "values": [v for v, _ in counts],
+                         "files": sorted(files_of[counts[0][0]])})
+            continue
+        # A STALE COPY, NOT A LIST: at most three values, the commonest said at
+        # least as often as all the others together. Many values, each said
         # often, is a list of different things that happen to share their words.
         if len(counts) > 3 or sum(c for _, c in counts[1:]) > counts[0][1]:
             continue
@@ -314,10 +497,18 @@ def scan(targets, everything=False, max_pages=50):
         for v, c in counts:
             where = [{"in": w, "at": n, "as": raw, "root": r} for vv, w, n, raw, r in occ if vv == v]
             values.append({"value": v, "count": c, "where": where})
-        groups.append({"says": " ".join(list(left) + ["{}"] + list(right)), "kind": kind, "values": values})
+        groups.append({"says": says, "kind": kind, "values": values})
     groups.sort(key=lambda g: (-sum(v["count"] for v in g["values"]), g["says"]))
+    tied.sort(key=lambda g: (-len(g["files"]), g["says"]))
     out = {"sources": sources, "stated": sum(len(o) for o in seen.values()),
-           "unread": unread, "disagree": groups}
+           "unread": unread, "disagree": groups, "tied": tied,
+           "read": {r: {"read": dict(c["read"].most_common()), "not_read": dict(c["not_read"].most_common())}
+                    for r, c in contributed.items()}}
+    if painted:
+        out["colours"] = {"distinct": len(painted), "files": len({f for fs in painted.values() for f in fs}),
+                          "near": shades(painted), "where": {c: sorted(fs) for c, fs in sorted(painted.items())}}
+        if len(contributed) > 1:
+            out["colours"]["by_root"] = {r: sorted(painted_in[r]) for r in contributed if painted_in[r]}
     if len(roots) > 1:
         out["roots"] = roots
         out["shared"] = shared
@@ -337,6 +528,13 @@ def report(result, limit=20):
     d = result["disagree"]
     lines.append(f"{result['stated']} stated values in {result['sources']} files or pages; "
                  f"{len(d)} statement{'s' if len(d) != 1 else ''} whose copies disagree")
+    # WHAT EACH PLACE CONTRIBUTED, so a quiet result is read for what it read.
+    for root, got in result.get("read", {}).items():
+        read = ", ".join(f"{n} {k}" for k, n in got["read"].items()) or "nothing"
+        left = list(got["not_read"].items())
+        skipped = (" · not read: " + ", ".join(f"{n} {k}" for k, n in left[:6])
+                   + (f", and {len(left) - 6} more kinds" if len(left) > 6 else "")) if left else ""
+        lines.append(f"  read  {root}: {read}{skipped}")
     for g in d[:limit]:
         total = sum(v["count"] for v in g["values"])
         lines.append(f"\n  \"{g['says']}\"  - said {total} times, {len(g['values'])} ways")
@@ -346,6 +544,23 @@ def report(result, limit=20):
             lines.append(f"     {v['value']:<12} {v['count']}x   {shown}")
     if len(d) > limit:
         lines.append(f"\n  ... and {len(d) - limit} more; --json lists every one")
+    tied = result.get("tied", [])
+    if tied:
+        names = ", ".join('"' + g["says"] + '"' for g in tied[:5]) + (f", and {len(tied) - 5} more" if len(tied) > 5 else "")
+        lines.append(f"\n{len(tied)} statement{'s' if len(tied) != 1 else ''} say{'' if len(tied) != 1 else 's'} "
+                     f"{'two or more' if any(len(g['values']) > 2 for g in tied) else 'two'} things in the same files "
+                     f"alike - a table, not a stale copy: {names}")
+    c = result.get("colours")
+    if c:
+        near = c["near"]
+        lines.append(f"\n{c['distinct']} colour{'s' if c['distinct'] != 1 else ''} stated in {c['files']} "
+                     f"file{'s' if c['files'] != 1 else ''}; {len(near)} group{'s' if len(near) != 1 else ''} within a shade of one another")
+        for g in near[:limit]:
+            files = sorted({f for h in g for f in c["where"][h]})
+            shown = ", ".join(files[:3]) + (f", and {len(files) - 3} more" if len(files) > 3 else "")
+            lines.append("  " + " · ".join("#" + h for h in g) + f"   {shown}")
+        if len(near) > limit:
+            lines.append(f"  ... and {len(near) - limit} more; --json lists every one")
     if "shared" in result:
         shared = result["shared"]
         split = [g for g in shared if not g["agree"]]
