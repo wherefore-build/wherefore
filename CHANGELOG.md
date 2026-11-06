@@ -9,7 +9,7 @@ and `tests/test_version.py` holds the three together until they are one fact.
 
 ## 0.18.1 (2026-11-06)
 
-**Scan every repository at once.** The scan has taken any number of places
+**Scan any number of repositories at once.** The scan has taken any number of places
 since 0.13.0 - `wherefore scan site app backend docs` reads all four, tags
 each statement with where it came from, and says where any two disagree -
 and every word about it said two. The feature, the roadmap's ledger, the

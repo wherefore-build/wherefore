@@ -43,7 +43,7 @@
    "state": "shipped",
    "since": "0.13.0",
    "feature": "scan2",
-   "name": "Scan every repository at once",
+   "name": "Scan any number of repositories at once",
    "words": "Point the scan at your site, your app, your backend and your docs together, and see every value they state in common and where any two disagree."
   },
   {

@@ -4,7 +4,7 @@
   {
    "version": "0.18.1",
    "date": "2026-11-06",
-   "title": "Scan every repository at once",
+   "title": "Scan any number of repositories at once",
    "says": "The scan always took any number of places; the words said two. Now they say what it does: the site, the app, the backend and the docs together, and where any two disagree.",
    "shows": {
     "fixture": false,
