@@ -32,8 +32,8 @@ WHAT IT CANNOT SEE: which copy is right. It says which value most places state
 and lists every place; deciding is a person's, and once decided the fact belongs
 in a source that every copy is built from - which is the rest of Wherefore.
 
-TWO REPOSITORIES AT ONCE. Given more than one place - the site and the app,
-the docs and the deck - every place is tagged with the root it came from, and
+EVERY REPOSITORY AT ONCE. Given more than one place - the site, the app, the
+backend, the docs, the deck - every place is tagged with the root it came from, and
 the scan also says what the roots STATE IN COMMON: every statement said in
 more than one root, and which of those the roots disagree on. "Both say
 'start your {} day free trial': site 14, app 30" is the drift between two
