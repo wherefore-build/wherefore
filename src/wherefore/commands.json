@@ -62,6 +62,10 @@
    "does": "every value said by hand in two or more files that no source holds, named with its files and counted; fails when more drift than wherefore.json allows, and asks for the allowance to come down when fewer do"
   },
   {
+   "usage": "wherefore check launch [--json]",
+   "does": "every thing with a stage - a feature, a site, a roadmap item - held to what its stage needs and to what must not be said before; fails naming what is missing, and says what each next stage still waits on; --json for a reader that draws it"
+  },
+  {
    "usage": "wherefore hook install",
    "does": "a pre-push hook: no push leaves the corpus stale"
   },
