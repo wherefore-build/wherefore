@@ -23,6 +23,8 @@ class Init(unittest.TestCase):
         watch = root / ".github/workflows/wherefore-pin.yml"
         self.assertTrue(watch.is_file(), "init writes the watch")
         self.assertIn("pypi.org/pypi/wherefore-build/json", watch.read_text(encoding="utf-8"))
+        # a stopped build is quoted in its own words, not the gate's list of files it left unwritten
+        self.assertIn('if [ "$BUILT" = "0" ]; then SAID=gate.txt; else SAID=build.txt; fi', watch.read_text(encoding="utf-8"))
         self.assertNotIn("wherefore-pin.yml is unclassified", out, "the starter declares the watch")
 
     def test_init_does_not_overwrite(self):
