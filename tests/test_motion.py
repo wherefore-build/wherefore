@@ -83,7 +83,15 @@ class EveryStoryboardHolds(unittest.TestCase):
             html = motion.page(b)
             for s in b["scenes"]:
                 for t in motion.texts(s):
+                    if s["kind"] == "command" and t == s["typed"]:
+                        # typed a line at a time; a long one broken with the shell's backslash
+                        self.assertEqual(" ".join(l.rstrip(" \\") for l in motion.typed_lines(t)), t)
+                        for part in motion.typed_lines(t):
+                            self.assertLessEqual(len(part), motion.TYPED_LINE + 2, f"{b['id']}: a typed line too long for a frame")
+                            self.assertIn(motion.html.escape(part), html, f"{b['id']}: the page drops `{part}`")
+                        continue
                     self.assertIn(motion.html.escape(t), html, f"{b['id']}/{s['kind']}: the page drops `{t}`")
+            self.assertIn('<pre class="term">', html) if any(s["kind"] in ("command", "answer") for s in b["scenes"]) else None
             self.assertIn(f'data-duration="{b["duration"]}"', html)
             self.assertIn("html.still", html, "a renderer can pause the page at --t")
 

@@ -219,6 +219,23 @@ def storyboards(ids=None, root=None, settings=None):
 
 # --- the page ---------------------------------------------------------------
 
+TYPED_LINE = 28          # characters of a typed command per line, in a portrait frame
+
+
+def typed_lines(typed):
+    """A command in lines of at most TYPED_LINE characters, broken at spaces,
+    every line but the last ending in the shell's backslash."""
+    words, lines, cur = typed.split(), [], ""
+    for w in words:
+        if cur and len(cur) + 1 + len(w) + 2 > TYPED_LINE:
+            lines.append(cur + " \\")
+            cur = w
+        else:
+            cur = f"{cur} {w}" if cur else w
+    lines.append(cur)
+    return lines
+
+
 def _pct(t, total):
     return f"{t / total * 100:.3f}%"
 
@@ -253,21 +270,27 @@ def page(board, css=None, vars=None):
             inner = (f'<div class="eye">{html.escape(sc["eyebrow"])}</div>'
                      f'<div class="big">{html.escape(sc["headline"])}</div>')
         elif sc["kind"] == "command":
-            n = len(sc["typed"])
-            t0, t1 = sc["start"] + 0.6, min(sc["end"] - 0.8, sc["start"] + 0.6 + n * 0.07)
-            rules.append(f"@keyframes type{i}{{0%,{_pct(t0, total)}{{width:0}}{_pct(t1, total)},100%{{width:{n}ch}}}}")
-            inner = (f'<div class="eye">{html.escape(sc["eyebrow"])}</div>'
-                     f'<div class="term"><span class="ln"><span class="prompt">$ </span>'
-                     f'<span class="typed" style="animation-name:type{i};animation-timing-function:steps({n})">'
-                     f'{html.escape(sc["typed"])}</span></span></div>')
+            # Typed a line at a time, a long command broken shell-style with a
+            # trailing backslash, so no line outruns a portrait frame.
+            parts = typed_lines(sc["typed"])
+            t0, lines = sc["start"] + 0.6, []
+            for k, part in enumerate(parts):
+                n = len(part)
+                t1 = min(sc["end"] - 0.8, t0 + n * 0.07)
+                rules.append(f"@keyframes type{i}_{k}{{0%,{_pct(t0, total)}{{width:0}}{_pct(t1, total)},100%{{width:{n}ch}}}}")
+                prompt = '<span class="prompt">$ </span>' if k == 0 else '<span class="prompt">&gt; </span>'
+                lines.append(f'<code class="ln">{prompt}<span class="typed" style="animation-name:type{i}_{k};'
+                             f'animation-timing-function:steps({n})">{html.escape(part)}</span></code>')
+                t0 = t1 + 0.2
+            inner = f'<div class="eye">{html.escape(sc["eyebrow"])}</div><pre class="term">{"".join(lines)}</pre>'
         elif sc["kind"] == "answer":
             lines = []
             for j, l in enumerate(sc["lines"]):
                 t0 = sc["start"] + 0.4 + 0.5 * j
                 rules.append(f"@keyframes line{i}_{j}{{0%,{_pct(t0, total)}{{opacity:0}}{_pct(t0 + 0.2, total)},100%{{opacity:1}}}}")
                 hi = " hi" if j == len(sc["lines"]) - 1 else ""
-                lines.append(f'<span class="ln{hi}" style="animation-name:line{i}_{j}">{html.escape(l)}</span>')
-            inner = f'<div class="eye">{html.escape(sc["eyebrow"])}</div><div class="term">{"".join(lines)}</div>'
+                lines.append(f'<code class="ln{hi}" style="animation-name:line{i}_{j}">{html.escape(l)}</code>')
+            inner = f'<div class="eye">{html.escape(sc["eyebrow"])}</div><pre class="term">{"".join(lines)}</pre>'
         elif sc["kind"] == "more":
             inner = f'<div class="eye">{html.escape(sc["eyebrow"])}</div><div class="claim">{html.escape(sc["text"])}</div>'
         elif sc["kind"] == "claim":
@@ -283,14 +306,15 @@ html,body{{margin:0;height:100%;overflow:hidden;background:{var['ground']};color
 .scene{{position:absolute;inset:0;padding:8cqmin 9cqmin;display:flex;flex-direction:column;justify-content:center;gap:3cqmin;opacity:0;animation:{total}s linear infinite;animation-delay:calc(var(--t) * -1s)}}
 .scene>*{{max-width:120cqmin}}
 .typed,.answer .ln{{animation:{total}s linear infinite;animation-delay:calc(var(--t) * -1s)}}
+.typed{{font:inherit}}
 html.still .scene,html.still .typed,html.still .answer .ln{{animation-play-state:paused}}
 @media (prefers-reduced-motion:reduce){{.scene,.typed,.answer .ln{{animation-play-state:paused}}}}
 .mark{{font:400 17cqmin/1 {var['font-display']};letter-spacing:-0.02em}}
 .ver{{font:500 4cqmin/1 {var['font-mono']};color:{var['ground']};background:{var['accent']};padding:1.6cqmin 2.6cqmin;border-radius:999px;align-self:flex-start}}
 .eye{{font:500 3.3cqmin/1.3 {var['font-mono']};letter-spacing:0.06em;text-transform:uppercase;color:{var['muted']}}}
 .big{{font:400 11.5cqmin/1.05 {var['font-display']};text-wrap:balance}}
-.term{{font:400 4.2cqmin/1.6 {var['font-mono']};background:{var['surface']};border:1px solid {var['line']};border-radius:3cqmin;padding:4cqmin;display:grid;gap:1.2cqmin}}
-.term .ln{{display:block;white-space:pre-wrap;overflow-wrap:anywhere}}
+.term{{margin:0;font:400 4.2cqmin/1.6 {var['font-mono']};background:{var['surface']};border:1px solid {var['line']};border-radius:3cqmin;padding:4cqmin;display:grid;gap:1.2cqmin;white-space:normal}}
+.term .ln{{display:block;font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}}
 .term .ln.hi{{color:{var['accent']}}}
 .term .prompt{{color:{var['muted']}}}
 .typed{{display:inline-block;white-space:nowrap;overflow:hidden;vertical-align:bottom;width:0;border-right:0.5cqmin solid {var['accent']}}}
