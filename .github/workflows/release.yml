@@ -39,6 +39,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   publish:
@@ -96,6 +97,26 @@ jobs:
           python3 -m build
       - name: Upload it to PyPI, by trusted publishing
         uses: pypa/gh-action-pypi-publish@release/v1
+
+  # AND EVERY ISSUE THE RELEASE ANSWERS IS TOLD, AND CLOSED. roadmap.json says
+  # which (a shipped item, since this release, naming its issues), and
+  # corpus/inbox.py writes what shipped onto each, once, with a line the
+  # person's agent can read, then closes it.
+  inbox:
+    needs: publish
+    if: needs.publish.outputs.tagged == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.publish.outputs.sha }}
+      - name: What shipped, on each issue it answers, and the issue closed
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 corpus/inbox.py --shipped
 
   clients:
     needs: [publish, pypi]

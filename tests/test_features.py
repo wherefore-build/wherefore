@@ -46,6 +46,23 @@ class EveryFeatureIsSaid(unittest.TestCase):
             self.assertTrue(bool(f.get("commands")) != bool(f.get("says", "").strip()),
                             f"{f['id']} needs its words from exactly one place: commands, or says")
 
+    def test_each_feature_has_details_and_names_only_issues_the_ledger_answers_with_it(self):
+        import re as _re
+        roadmap = json.loads((SRC.parents[1] / "roadmap.json").read_text(encoding="utf-8"))["items"]
+        answered = {}
+        for it in roadmap:
+            if it["state"] == "shipped":
+                for url in it.get("issues", []):
+                    answered.setdefault(url, set()).add(it["feature"])
+        for f in features():
+            self.assertTrue(len(f.get("details", "").strip()) >= 80,
+                            f"{f['id']} has no details: a paragraph a person reads when they open the feature")
+            for url in f.get("issues", []):
+                self.assertRegex(url, r"^https://github\.com/wherefore-build/wherefore/issues/\d+$", f["id"])
+                self.assertIn(f["id"], answered.get(url, set()),
+                              f"{f['id']} says it answers {url}, and no shipped roadmap item says so: the ledger "
+                              f"(roadmap.json) is where a request becomes a feature")
+
     def test_the_readme_lists_every_feature(self):
         readme = README.read_text(encoding="utf-8")
         for f in features():
