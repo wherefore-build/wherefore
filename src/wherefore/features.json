@@ -125,6 +125,12 @@
    "name": "Scan two repositories at once",
    "since": "0.13.0",
    "says": "point the scan at your site and your app together: every place is tagged with where it came from, and the scan says what both state and where the two disagree - the drift between teams, with nothing installed"
+  },
+  {
+   "id": "scan-read",
+   "name": "The scan says what it read",
+   "since": "0.16.0",
+   "says": "beside the result, what each place contributed - how many files of each kind, and the kinds seen and not read; an app's own words, read out of its source; a table set apart from the stale copies; and the colours a site states, with the ones within a shade of each other, before any brand is declared"
   }
  ]
 }

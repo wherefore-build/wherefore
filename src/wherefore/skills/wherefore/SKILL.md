@@ -91,17 +91,21 @@ which of those they disagree on:
 ```
 
 A `DIFFER` line is drift between two teams, which no one repository's checks
-can see; it exits 1, so a deploy can run it. Three things before you act on
-what it says:
+can see; it exits 1, so a deploy can run it. Under the first line, a `read`
+line per place says what it contributed - how many files of each kind, and
+the kinds it saw and did not read - and source code is read for its strings,
+so an app's own words count. It also counts the colours a site states and
+groups the ones within a shade of each other, and sets a table - two values
+said in the same files alike - apart from the stale copies. Three things
+before you act on what it says:
 
-- **It cannot see** names, lists, a value alone on its line, an app's words
-  in its source code, or a page nothing links to. `start.md` says where to
-  look instead.
-- **Read each finding where it was found.** Two values tied on every page are
-  a table, not a stale copy.
-- **"0 things in common" is not agreement** until you know what each place
-  contributed: a checkout whose readable files are vendored READMEs and icons
-  contributed nothing of the company's.
+- **It cannot see** names, lists, a value alone on its line, what a program
+  assembles at run time, or a page nothing links to. `start.md` says where
+  to look instead.
+- **Read each finding where it was found.** The tied ones are tables; a
+  disagreement is a claim until you have read it on the page.
+- **"0 things in common" is not agreement** until the `read` lines say both
+  places contributed something of the company's.
 
 ## Changing a fact
 

@@ -40,29 +40,42 @@ leaves out, and look there by other means:
   state the same thing side by side.
 - **A value alone on its line** - a price on a pricing card with no words to
   its left - has no statement to match. Read the cards.
-- **An app's own words,** typed in its source code. The scan reads what a
-  person reads, not `.elm`, `.tsx` or `.py`; it will have read the app's
-  READMEs and icons and none of its strings. Pull the string literals out
-  by other means and read those.
+- **What an app assembles at run time.** The scan reads the string literals
+  out of source code in the common languages - what a program says to a
+  person, typed whole - but not a message built from pieces, or a value
+  that arrives from a database or a billing system. Read the module that
+  builds the message.
 - **Pages nothing links to.** A live address is crawled by its links, at
   most `--max-pages` of them.
 
 ### Read each finding where it was found
 
-A finding is a claim to check, not a result to report. Two values tied on
-every page - each said exactly as often as the other, on every page - are a
-table of two plans, not a stale copy. Two customers' results are two
-customers. Open the page, find the statement, and say what it is before you
-count it. Report only what you have read.
+A finding is a claim to check, not a result to report. Two values said in
+exactly the same files - a pricing table's two columns, on every page that
+has the table - are two things, and the scan sets them apart as tied, under
+"a table, not a stale copy". Two customers' results are two customers. Open
+the page, find the statement, and say what it is before you count it. Report
+only what you have read.
 
 ### "0 things in common" is not agreement
 
 When two places are read together and the scan says they state nothing in
-common, check what each place contributed before believing it: how many files
-it read, of which kinds, and whether those are the files that say anything.
-A checkout whose readable files are vendored packages' READMEs and SVG icons
-contributed nothing of the company's; its words are in source files the scan
-did not read. Until the two sides have been read, there is no count.
+common, read the `read` lines under the first line before believing it: for
+each place, how many files of each kind were read, and the kinds seen and
+not read. A checkout whose readable files were icons and vendored packages'
+READMEs contributed nothing of the company's. The scan reads source code for
+its strings, so an app's words count; a kind it names as not read - a
+spreadsheet, a database dump, a format of its own - is where to look by
+other means. Until the two sides have been read, there is no count.
+
+### The colours, which nobody can list
+
+A site states its brand in colours as it states its prices in numbers, and
+the scan counts them: how many distinct colours its stylesheets, style
+blocks and drawings state, and which are within a shade of one another -
+the greys that were meant to be one grey. That is drift nobody listed and
+everybody can see. Show it with the rest; declaring the brand once, and
+holding every colour to it, is `wherefore check palette`, later.
 
 ## Ask, starting from what the scan found
 
