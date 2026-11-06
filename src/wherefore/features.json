@@ -138,6 +138,13 @@
    ]
   },
   {
+   "id": "docs",
+   "name": "Docs from each release",
+   "since": "0.19.0",
+   "says": "the docs ship inside each release as data - start, commands, configuration, checks and proofs, reporting - held to the code by the engine's tests, so a client renders the docs of the release it pins and nothing describes a release it does not run",
+   "details": "Five pages ship inside each release: the start guide, every command with a worked example, every section of wherefore.json, what each check holds and how to prove one, and how to report back. The engine's tests hold them to the code: every command has its section, every section of the configuration the engine reads is documented, every command a page names exists, and every example is run again on the example company and must print what the page says. The company's site renders the docs of the release it pins."
+  },
+  {
    "id": "report",
    "name": "Tell us",
    "since": "0.12.0",
