@@ -7,6 +7,17 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.21.1 (2026-11-06)
+
+**A stopped build says why, this time truly.** 0.20.1 had the watch quote
+the build when the build failed, and the gate when it did not. But a build
+exits 1 whenever a release moves a generated file, which is every release,
+so the pull request still quoted moved pages: the 0.21.0 pin on the
+company's own site opened that way, with the generators' reasons further
+up. The watch now quotes each stopped generator's own words, and the gate's
+last lines only when nothing stopped. A client with the watch already makes
+the same change in its own copy, or takes the template again.
+
 ## 0.21.0 (2026-11-06)
 
 **Launches that wait.** Release is not launch: code ships any day, and what
