@@ -280,6 +280,6 @@ speed, a length, a command that exists and output the command prints.
 
 ```
 $ wherefore motion published
-  published    7 scenes  29.0 s  A page you publish but cannot build
+  published    7 scenes  32.0 s  A page you publish but cannot build
 wrote motion/: 1 clip, a page in motion, played by the frame it is shown in
 ```

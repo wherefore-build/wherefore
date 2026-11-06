@@ -134,6 +134,10 @@ class EveryStoryboardHolds(unittest.TestCase):
             html = motion.page(b)
             for s in b["scenes"]:
                 for t in motion.texts(s):
+                    if s["kind"] == "claim" and t == s["text"]:
+                        for word in t.split():               # set word by word
+                            self.assertIn(motion.html.escape(word), html, f"{b['id']}: the page drops `{word}`")
+                        continue
                     if s["kind"] == "command" and t == s["typed"]:
                         # typed a line at a time; a long one broken with the shell's backslash
                         self.assertEqual(" ".join(l.rstrip(" \\") for l in motion.typed_lines(t)), t)
@@ -145,7 +149,8 @@ class EveryStoryboardHolds(unittest.TestCase):
             self.assertIn('<pre class="term">', html) if any(s["kind"] in ("command", "answer") for s in b["scenes"]) else None
             self.assertIn(f'data-duration="{b["duration"]}"', html)
             self.assertIn("html.still", html, "a renderer can pause the page at --t")
-            self.assertIn("prefers-reduced-motion:reduce){.scene,.typed,.answer .ln{animation:none}.scene{opacity:0}.scene.claim{opacity:1}", html,
+            self.assertIn("prefers-reduced-motion:reduce){.scene,.typed,.answer .ln,.mark .l,.ver,.claim .w,.close .w{animation:none}"
+                          ".scene{opacity:0}.scene.claim,.mark .l,.ver,.claim .w,.close .w{opacity:1}", html,
                           "less motion shows the claim, not a blank frame")
 
     def test_the_brand_comes_from_a_stylesheet_when_one_is_given_and_plain_colours_otherwise(self):
@@ -161,6 +166,22 @@ class EveryStoryboardHolds(unittest.TestCase):
             self.assertIn(v, plain)
 
 
+class TheClose(unittest.TestCase):
+    def test_the_tagline_comes_out_of_the_source_and_the_icon_is_linked_from_the_page(self):
+        root = repo({"wherefore.json": {"wherefore": 1, "name": "t", "sources": {"facts": {"path": "facts.json", "why": "x"}},
+                                        "motion": {"out": "site/motion", "icon": "site/brand/icon.svg",
+                                                   "tagline": {"fact": "line"}}},
+                     "facts.json": {"line": "Kettles, compiled."}, "site/brand/icon.svg": "<svg xmlns='http://www.w3.org/2000/svg'/>\n"})
+        code, out = wherefore(root, "motion", "gate")
+        self.assertEqual(code, 0, out)
+        close = json.loads((root / "site/motion/gate/storyboard.json").read_text(encoding="utf-8"))["scenes"][-1]
+        self.assertEqual(close["tagline"], "Kettles, compiled.")
+        page = (root / "site/motion/gate/index.html").read_text(encoding="utf-8")
+        self.assertIn('<img class="icon" src="../../brand/icon.svg" alt="">', page)
+        self.assertIn("Kettles, compiled.", page)
+        self.assertIn("pip install wherefore-build<", page, "the install line names no version unless asked")
+
+
 class TheCommand(unittest.TestCase):
     def test_it_writes_a_page_and_a_storyboard_per_feature_and_says_so(self):
         root = repo({"wherefore.json": {"wherefore": 1, "name": "t", "sources": {},
@@ -174,6 +195,7 @@ class TheCommand(unittest.TestCase):
             board = json.loads((root / "clips" / fid / "storyboard.json").read_text(encoding="utf-8"))
             self.assertEqual(board["id"], fid)
             self.assertEqual(board["scenes"][0]["name"], "Fernhollow")
+            self.assertNotIn("tagline", board["scenes"][-1], "no tagline unless one is given")
         self.assertFalse((root / "clips" / "scan").exists(), "only the ids named")
         code, out = wherefore(root, "motion", "docs", "--storyboards", "boards")
         self.assertEqual(code, 0, out)
@@ -203,7 +225,7 @@ class TheCommand(unittest.TestCase):
 
     def test_the_section_is_checked_before_anything_runs(self):
         for bad, said in (({"motion": {"outt": "x"}}, "does not take"),
-                          ({"motion": {"install": "pip install it"}}, "{version}"),
+                          ({"motion": {"tagline": {"source": "facts"}}}, "motion.tagline"),
                           ({"motion": {"vars": {"accent": "accent"}}}, "CSS variable"),
                           ({"motion": "clips"}, "is an object")):
             root = repo({"wherefore.json": dict({"wherefore": 1, "name": "t", "sources": {}}, **bad)})

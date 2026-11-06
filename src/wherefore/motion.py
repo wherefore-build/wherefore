@@ -30,9 +30,12 @@ what a command printed, out of it), `css` (a
 stylesheet the clip links for the brand's variables and fonts, relative to the
 corpus root; without one the clip carries plain colours), `vars` (the
 variable each role reads, when the stylesheet names them differently), `name`
-(the product's, default Wherefore), `install` (the install line, {version}
-for the version), `site` (where the feature's page is), `roadmap` (the
-corpus's copy of the engine's ledger, so the ask scene can say who asked).
+(the product's, default Wherefore), `install` (the install line, with
+{version} where the version goes if it should name one), `site` (where the
+feature's page is), `roadmap` (the corpus's copy of the engine's ledger, so
+the ask scene can say who asked), `icon` (the brand's mark, shown at the
+close) and `tagline` (the line under the address at the close: a string, or
+a fact out of the source, so the clip says what the site says).
 
 THE MECHANISM SCENE (mechanism.py): what the feature does, drawn from the
 corpus the clip is made in - its own file counts, pages, sources and ledger -
@@ -50,15 +53,17 @@ from . import __version__
 HERE = pathlib.Path(__file__).resolve().parent
 ELIDED = "…"
 CLAIM_WORDS = 12
-WORDS_PER_SECOND = 3.0
+WORDS_PER_SECOND = 3.0   # a headline
+CAPTION_WORDS_PER_SECOND = 2.5   # a caption, or printed lines
+TYPE_SECONDS = 0.055            # a character typed
 MIN_SECONDS = 16.0
-MAX_SECONDS = 32.0
+MAX_SECONDS = 34.0
 LINE_WORDS = 14          # an output line longer than this is cut at a clause, with … to say so
 ANSWER_LINES = 4
 ANSWER_WORDS = 28
-FIELDS = ("out", "storyboards", "css", "vars", "name", "install", "site", "roadmap")
+FIELDS = ("out", "storyboards", "css", "vars", "name", "install", "site", "roadmap", "icon", "tagline")
 ROLES = ("ground", "surface", "line", "ink", "muted", "accent", "font-display", "font-body", "font-mono")
-DEFAULTS = {"out": "motion", "name": "Wherefore", "install": "pip install wherefore-build=={version}",
+DEFAULTS = {"out": "motion", "name": "Wherefore", "install": "pip install wherefore-build",
             "site": "https://wherefore.build/"}
 # Without a brand stylesheet, the clip's own plain colours: a terminal's black,
 # paper, and one green that means a passing build.
@@ -173,10 +178,10 @@ def _answer(lines, short=False):
     return kept
 
 
-def _seconds(text_words, least, most):
-    """Long enough to read at WORDS_PER_SECOND, in half seconds, within bounds."""
+def _seconds(text_words, least, most, rate=WORDS_PER_SECOND):
+    """Long enough to read at `rate` words a second, in half seconds, within bounds."""
     import math
-    return max(least, min(most, math.ceil(text_words / WORDS_PER_SECOND * 2) / 2))
+    return max(least, min(most, math.ceil(text_words / rate * 2) / 2))
 
 
 def storyboard(feature, release=None, item=None, examples=(), settings=None, mechanics=None):
@@ -190,7 +195,8 @@ def storyboard(feature, release=None, item=None, examples=(), settings=None, mec
     def add(kind, least, most, **text):
         start = scenes[-1]["end"] if scenes else 0.0
         sc = dict(kind=kind, start=start, end=0.0, **text)
-        sc["end"] = round(start + _seconds(sum(words(t) for t in texts(sc)), least, most), 2)
+        rate = CAPTION_WORDS_PER_SECOND if kind in ("answer", "mechanism", "more") else WORDS_PER_SECOND
+        sc["end"] = round(start + _seconds(sum(words(t) for t in texts(sc)), least, most, rate), 2)
         scenes.append(sc)
 
     add("open", 2.0, 2.0, name=s["name"], version=version)
@@ -203,7 +209,7 @@ def storyboard(feature, release=None, item=None, examples=(), settings=None, mec
     if typed:
         # Long enough to type it, a line at a time, and read it once typed.
         import math
-        typing = math.ceil((0.6 + 0.07 * len(typed) + 0.2 * (len(typed_lines(typed)) - 1) + 1.5) * 2) / 2
+        typing = math.ceil((0.6 + TYPE_SECONDS * len(typed) + 0.2 * (len(typed_lines(typed)) - 1) + 1.5) * 2) / 2
         add("command", max(4.0, typing), max(5.0, typing), eyebrow="the command", typed=typed)
     from . import mechanism
     kind = feature.get("mechanism")
@@ -220,10 +226,14 @@ def storyboard(feature, release=None, item=None, examples=(), settings=None, mec
             caption=mechanism.caption(kind, mech))
     add("claim", 4.0, 4.0, text=feature["claim"])
     home = s["site"].replace("https://", "").replace("http://", "").rstrip("/")
-    # The last frame is the one that stays: the address, large, then how to
-    # install, then where this feature's page is (owner, 6 November 2026).
-    add("close", 3.5, 3.5, home=home, install=s["install"].format(version=version),
-        url=f"{home}/features/#{feature['id']}")
+    # The last frame is the one that stays: the mark, the address, the line
+    # under it, then how to install and where this feature's page is.
+    close = dict(home=home, install=s["install"].format(version=version), url=f"{home}/features/#{feature['id']}")
+    if s.get("tagline"):
+        close["tagline"] = s["tagline"]
+    if s.get("icon"):
+        close["icon"] = s["icon"]
+    add("close", 4.0, 4.5, **close)
     return {"id": feature["id"], "name": feature["name"], "version": version,
             "duration": scenes[-1]["end"], "frames": ["portrait", "landscape"], "scenes": scenes}
 
@@ -231,7 +241,7 @@ def storyboard(feature, release=None, item=None, examples=(), settings=None, mec
 def texts(scene):
     """Every string a scene shows, in reading order."""
     out = []
-    for k in ("name", "version", "eyebrow", "headline", "typed", "text", "caption", "home", "install", "url"):
+    for k in ("name", "version", "eyebrow", "headline", "typed", "text", "caption", "home", "tagline", "install", "url"):
         if scene.get(k):
             out.append(scene[k])
     out += scene.get("lines", [])
@@ -278,10 +288,24 @@ def _pct(t, total):
     return f"{t / total * 100:.3f}%"
 
 
-def _window(name, start, end, total, fade=0.3):
-    a, b = start + fade, max(start + fade, end - fade)
-    return (f"@keyframes {name}{{0%,{_pct(start, total)}{{opacity:0}}{_pct(a, total)}{{opacity:1}}"
-            f"{_pct(b, total)}{{opacity:1}}{_pct(end, total)},100%{{opacity:0}}}}")
+def _window(name, start, end, total, fade_in=0.3, fade_out=0.3, rise=False):
+    """A scene's window: in at `start`, out at `end`. A fade of 0 is a cut - a
+    terminal does not fade. `rise` brings the scene up into place as it comes."""
+    a, b = start + fade_in, max(start + fade_in, end - fade_out)
+    up = ";transform:translateY(4cqmin)" if rise else ""
+    flat = ";transform:none" if rise else ""
+    return (f"@keyframes {name}{{0%,{_pct(start, total)}{{opacity:0{up}}}{_pct(a, total)}{{opacity:1{flat}}}"
+            f"{_pct(b, total)}{{opacity:1{flat}}}{_pct(end, total)},100%{{opacity:0{flat}}}}}")
+
+
+def _staggered(prefix, i, parts, t0, step, total, rules, cls="w", tag="span"):
+    """`parts` as elements, each arriving `step` after the last from `t0`."""
+    out = []
+    for j, part in enumerate(parts):
+        rules.append(f"@keyframes {prefix}{i}_{j}{{0%,{_pct(t0 + step * j, total)}{{opacity:0}}"
+                     f"{_pct(t0 + step * j + 0.25, total)},100%{{opacity:1}}}}")
+        out.append(f'<{tag} class="{cls}" style="animation-name:{prefix}{i}_{j}">{html.escape(part)}</{tag}>')
+    return out
 
 
 def page(board, css=None, vars=None):
@@ -297,13 +321,26 @@ def page(board, css=None, vars=None):
         root = ":root{--t:0;" + ";".join(f"{v[r]}:{PLAIN[r]}" for r in ROLES) + "}"
         link = ""
     rules, body = [], []
+    kinds = [sc["kind"] for sc in board["scenes"]]
     for i, sc in enumerate(board["scenes"]):
         name = f"w{i}"
-        rules.append(_window(name, sc["start"], sc["end"], total))
+        # CUTS BY TYPE: the command cuts to its answer, as a terminal does; the
+        # mechanism rises into place as a result; everything else fades.
+        after = kinds[i + 1] if i + 1 < len(kinds) else None
+        rules.append(_window(name, sc["start"], sc["end"], total,
+                             fade_in=0 if sc["kind"] == "answer" and kinds[i - 1] == "command" else 0.3,
+                             fade_out=0 if sc["kind"] == "command" and after == "answer" else 0.3,
+                             rise=sc["kind"] == "mechanism"))
         inner = ""
         if sc["kind"] == "open":
-            inner = (f'<div class="mark">{html.escape(sc["name"])}</div>'
-                     f'<div class="ver">{html.escape(sc["version"])}</div>')
+            # THE ONE FLOURISH: the wordmark sets itself, a letter at a time,
+            # then the version chip stamps in, the way a build goes green.
+            letters = _staggered("set", i, list(sc["name"]), sc["start"] + 0.2, 0.06, total, rules, cls="l")
+            t1 = sc["start"] + 0.2 + 0.06 * len(sc["name"]) + 0.3
+            rules.append(f"@keyframes stamp{i}{{0%,{_pct(t1, total)}{{opacity:0;transform:scale(1.2)}}"
+                         f"{_pct(t1 + 0.25, total)},100%{{opacity:1;transform:none}}}}")
+            inner = (f'<div class="mark" aria-label="{html.escape(sc["name"])}">{"".join(letters)}</div>'
+                     f'<div class="ver" style="animation-name:stamp{i}">{html.escape(sc["version"])}</div>')
         elif sc["kind"] == "ask":
             inner = (f'<div class="eye">{html.escape(sc["eyebrow"])}</div>'
                      f'<div class="big">{html.escape(sc["headline"])}</div>')
@@ -314,7 +351,7 @@ def page(board, css=None, vars=None):
             t0, lines = sc["start"] + 0.6, []
             for k, part in enumerate(parts):
                 n = len(part)
-                t1 = t0 + n * 0.07
+                t1 = t0 + n * TYPE_SECONDS
                 rules.append(f"@keyframes type{i}_{k}{{0%,{_pct(t0, total)}{{width:0}}{_pct(t1, total)},100%{{width:{n}ch}}}}")
                 prompt = '<span class="prompt">$ </span>' if k == 0 else '<span class="prompt">&gt; </span>'
                 lines.append(f'<code class="ln">{prompt}<span class="typed" style="animation-name:type{i}_{k};'
@@ -336,11 +373,19 @@ def page(board, css=None, vars=None):
             inner = (f'<div class="eye">{html.escape(sc["eyebrow"])}</div>{mechanism.render(sc, i, total, rules)}'
                      f'<p class="mech-cap">{html.escape(sc["caption"])}</p>')
         elif sc["kind"] == "claim":
-            inner = f'<div class="claim">{html.escape(sc["text"])}</div>'
+            # Set word by word, a beat behind the last.
+            inner = f'<div class="claim">{" ".join(_staggered("wd", i, sc["text"].split(), sc["start"] + 0.3, 0.08, total, rules))}</div>'
         elif sc["kind"] == "close":
-            inner = (f'<div class="home">{html.escape(sc["home"])}</div>'
-                     f'<div class="install">{html.escape(sc["install"])}</div>'
-                     f'<div class="url">{html.escape(sc["url"])}</div>')
+            parts = []
+            if sc.get("icon"):
+                parts.append(f'<img class="icon" src="{html.escape(sc["icon"])}" alt="">')
+            parts.append(f'<div class="home">{html.escape(sc["home"])}</div>')
+            if sc.get("tagline"):
+                parts.append(f'<div class="tag">{html.escape(sc["tagline"])}</div>')
+            parts.append(f'<div class="install">{html.escape(sc["install"])}</div>'
+                         f'<div class="url">{html.escape(sc["url"])}</div>')
+            close = _staggered("cl", i, [""] * len(parts), sc["start"] + 0.2, 0.3, total, rules, tag="div")
+            inner = "".join(c.replace('></div>', f'>{p}</div>') for c, p in zip(close, parts))
         body.append(f'<div class="scene {sc["kind"]}" style="animation-name:{name}">{inner}</div>')
     from . import mechanism
     style = f"""{root}
@@ -351,10 +396,13 @@ html,body{{margin:0;height:100%;overflow:hidden;background:{var['ground']};color
 .scene>*{{max-width:120cqmin}}
 .typed,.answer .ln{{animation:{total}s linear infinite;animation-delay:calc(var(--t) * -1s)}}
 .typed{{font:inherit}}
-html.still .scene,html.still .typed,html.still .answer .ln{{animation-play-state:paused}}
-@media (prefers-reduced-motion:reduce){{.scene,.typed,.answer .ln{{animation:none}}.scene{{opacity:0}}.scene.claim{{opacity:1}}}}
+html.still .scene,html.still .typed,html.still .answer .ln,html.still .mark .l,html.still .ver,html.still .claim .w,html.still .close .w{{animation-play-state:paused}}
+@media (prefers-reduced-motion:reduce){{.scene,.typed,.answer .ln,.mark .l,.ver,.claim .w,.close .w{{animation:none}}.scene{{opacity:0}}.scene.claim,.mark .l,.ver,.claim .w,.close .w{{opacity:1}}}}
 .mark{{font:400 17cqmin/1 {var['font-display']};letter-spacing:-0.02em}}
-.ver{{font:500 4cqmin/1 {var['font-mono']};color:{var['ground']};background:{var['accent']};padding:1.6cqmin 2.6cqmin;border-radius:999px;align-self:flex-start}}
+.mark .l,.claim .w,.close .w{{opacity:0;animation:{total}s linear infinite;animation-delay:calc(var(--t) * -1s)}}
+.close .icon{{width:14cqmin;height:14cqmin;display:block;margin-bottom:2cqmin}}
+.tag{{font:italic 400 5.2cqmin/1.2 {var['font-display']};color:{var['muted']}}}
+.ver{{font:500 4cqmin/1 {var['font-mono']};color:{var['ground']};background:{var['accent']};padding:1.6cqmin 2.6cqmin;border-radius:999px;align-self:flex-start;opacity:0;animation:{total}s linear infinite;animation-delay:calc(var(--t) * -1s)}}
 .eye{{font:500 3.3cqmin/1.3 {var['font-mono']};letter-spacing:0.06em;text-transform:uppercase;color:{var['muted']}}}
 .big{{font:400 11.5cqmin/1.05 {var['font-display']};text-wrap:balance}}
 .term{{margin:0;font:400 4.2cqmin/1.6 {var['font-mono']};background:{var['surface']};border:1px solid {var['line']};border-radius:3cqmin;padding:4cqmin;display:grid;gap:1.2cqmin;white-space:normal}}
@@ -380,11 +428,22 @@ html.still .scene,html.still .typed,html.still .answer .ln{{animation-play-state
 # --- the command -------------------------------------------------------------
 
 def settings_from(cfg):
-    """The `motion` section, checked; {} when there is none."""
+    """The `motion` section, checked, with a tagline named as a fact read out of
+    the source; {} when there is none."""
     doc = cfg.doc if cfg else {}
     m = doc.get("motion")
     if m is None:
         return {}
+    m = _checked(m)
+    if isinstance(m.get("tagline"), dict):
+        from . import sources
+        name, src = cfg.source(m["tagline"].get("source"))
+        d = json.loads((cfg.root / src["path"]).read_text(encoding="utf-8"))
+        m = dict(m, tagline=str(sources.value(d, m["tagline"]["fact"], src.get("adapter", "leaves"))))
+    return m
+
+
+def _checked(m):
     from .config import ConfigError
     if not isinstance(m, dict):
         raise ConfigError("`motion` is an object: out, css, vars, name, install, site - all optional")
@@ -392,7 +451,7 @@ def settings_from(cfg):
     if unknown:
         raise ConfigError(f"`motion` has {', '.join(sorted(unknown))}, which it does not take: {', '.join(FIELDS)}")
     for k in FIELDS:
-        if k == "vars":
+        if k in ("vars", "tagline"):
             continue
         if k in m and not (isinstance(m[k], str) and m[k].strip()):
             raise ConfigError(f"`motion.{k}` is a string")
@@ -401,27 +460,31 @@ def settings_from(cfg):
                 not all(isinstance(x, str) and x.startswith("--") for x in m["vars"].values()):
             raise ConfigError(f"`motion.vars` maps a role to the CSS variable the stylesheet names it by: "
                               f"{', '.join(ROLES)}")
-    if "install" in m and "{version}" not in m["install"]:
-        raise ConfigError("`motion.install` says the install line with {version} where the version goes")
+    if "tagline" in m and not (isinstance(m["tagline"], str) or
+                               (isinstance(m["tagline"], dict) and isinstance(m["tagline"].get("fact"), str))):
+        raise ConfigError("`motion.tagline` is the line under the address at the close: a string, or "
+                          "{\"fact\": a dotted path into the source, \"source\": its name if not the first}")
     return m
 
 
 def validate(doc):
-    class _C:
-        pass
-    c = _C()
-    c.doc = doc
-    settings_from(c)
+    if doc.get("motion") is not None:
+        _checked(doc["motion"])
 
 
-def write(boards, out, css=None, vars=None, storyboards=None):
+def write(boards, out, css=None, vars=None, storyboards=None, root=None):
     """out/<id>/index.html for each, and <id>/storyboard.json beside it or
-    under `storyboards`; [paths written]."""
+    under `storyboards`; [paths written]. `root` is what the stylesheet and
+    the icon are relative to - the corpus - so the page links them from
+    where it is."""
     paths = []
     for b in boards:
         d = out / b["id"]
         d.mkdir(parents=True, exist_ok=True)
         rel = css and os.path.relpath(css, d).replace(os.sep, "/")
+        for sc in b["scenes"]:
+            if sc["kind"] == "close" and sc.get("icon") and root is not None:
+                sc["icon"] = os.path.relpath(root / sc["icon"], d).replace(os.sep, "/")
         (d / "index.html").write_text(page(b, rel, vars), encoding="utf-8")
         j = (storyboards or out) / b["id"]
         j.mkdir(parents=True, exist_ok=True)
@@ -467,7 +530,7 @@ def main(cfg, args):
     boards = storyboards(ids or None, root, s, cfg)
     for b in boards:
         print(f"  {b['id']:<12} {len(b['scenes'])} scenes  {b['duration']:>4.1f} s  {b['name']}")
-    write(boards, out, css, s.get("vars"), boards_dir)
+    write(boards, out, css, s.get("vars"), boards_dir, root)
     shown = typed_out.rstrip("/") if typed_out else os.path.relpath(out, pathlib.Path.cwd()).replace(os.sep, "/")
     print(f"wrote {shown}/: {len(boards)} clip{'s' if len(boards) != 1 else ''}, "
           f"{'each ' if len(boards) != 1 else ''}a page in motion, played by the frame it is shown in")

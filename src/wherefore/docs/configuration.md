@@ -209,8 +209,11 @@ Where the feature clips go, and the brand they take, all optional:
            "css": "site/brand.css",
            "vars": {"accent": "--brand-accent"},
            "name": "Wherefore",
-           "install": "pip install wherefore-build=={version}",
-           "site": "https://wherefore.build/"}
+           "install": "pip install wherefore-build",
+           "site": "https://wherefore.build/",
+           "roadmap": "facts/roadmap.json",
+           "icon": "site/brand/icon.svg",
+           "tagline": {"fact": "compiled.heading"}}
 ```
 
 `out` is the directory the clips are written to (default `motion/`), and
@@ -222,8 +225,12 @@ variables and fonts; without one the clip carries plain colours. `vars`
 names the variable a role reads when the stylesheet names it differently
 from `--ground`, `--surface`, `--line`, `--ink`, `--muted`, `--accent`,
 `--font-display`, `--font-body` and `--font-mono`. `name` is the product's
-(default Wherefore), `install` the install line with `{version}` where the
-version goes, and `site` where the feature pages are.
+(default Wherefore), `install` the install line, with `{version}` where the
+version goes if it should name one, and `site` where the feature pages are.
+`roadmap` is the corpus's copy of the engine's ledger, so the ask scene says
+who asked; `icon` the brand's mark, shown at the close; `tagline` the line
+under the address at the close, a string or a fact out of the source, so the
+clip says what the site says.
 
 ## proofs
 
