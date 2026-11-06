@@ -40,6 +40,7 @@ wherefore list              # what each generator writes, right now
 wherefore gate              # is every tracked file classified and current?
 wherefore graph             # what builds what: which script makes each file, from what
 wherefore check palette     # every colour anywhere is one the brand's source holds, or excused with why
+wherefore scan site app     # what two places state in common, and where they disagree; needs no corpus
 ```
 
 `wherefore graph` is for seeing the chain before you change it: which sources a
@@ -75,6 +76,32 @@ Python: each command runs the script named there, and **that script** is where
 the generator list, the comparators and the exemptions live, with their
 reasons. Edit them there. Do not copy them into `wherefore.json`, which refuses
 them anyway, because that would be one fact in two places.
+
+## Scanning, one place or two
+
+`wherefore scan` reads what a person reads - pages, Markdown, plain text - in
+a folder or at a live address, and reports every value stated in words more
+than one way. Given two places, it also says what they state in common and
+which of those they disagree on:
+
+```
+2 places read together - site, app - state 2 things in common; they disagree on 1
+  DIFFER  "start your {} day free"  site: 14 (2x) · app: 30 (1x)
+  agree   "plans from {} dollars a"  site: 9 (1x) · app: 9 (1x)
+```
+
+A `DIFFER` line is drift between two teams, which no one repository's checks
+can see; it exits 1, so a deploy can run it. Three things before you act on
+what it says:
+
+- **It cannot see** names, lists, a value alone on its line, an app's words
+  in its source code, or a page nothing links to. `start.md` says where to
+  look instead.
+- **Read each finding where it was found.** Two values tied on every page are
+  a table, not a stale copy.
+- **"0 things in common" is not agreement** until you know what each place
+  contributed: a checkout whose readable files are vendored READMEs and icons
+  contributed nothing of the company's.
 
 ## Changing a fact
 
