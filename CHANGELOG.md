@@ -21,6 +21,16 @@ the number to come down, so the allowance only ever falls. Code is not
 read: a string in a script is the script's business, and a generator that
 restates a source is reach's. Off the roadmap, where it was `drift`.
 
+**Pins are the client's own.** A release reached a client because the
+engine's release workflow told it, with a token the engine's makers held and
+a list of clients they kept - one company's plumbing, described as a
+feature. Now `wherefore init` writes the client a workflow of its own that
+asks PyPI for the newest release every few hours, moves the pin, rebuilds,
+and opens the draft pull request; the engine tells nobody and keeps no list,
+and a client needs nobody's permission to be one. The release workflow's
+`clients` job and CLIENTS_TOKEN are gone. A hard change, made while nobody
+depends on the old way.
+
 The inbox's closing note on an issue now links the feature's clip on the
 company's site, which plays what shipped.
 

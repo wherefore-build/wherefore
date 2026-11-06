@@ -160,8 +160,8 @@
    "id": "pins",
    "name": "Releases that reach every client",
    "since": "0.8.0",
-   "says": "when the engine ships, every repository that pins it gets a pull request moving its pin, opened by the release itself, and the client's checks say what it still has to describe before it can build",
-   "details": "When the engine ships, every repository that pins it is told, and its own workflow moves the pin, regenerates what the release lets through, and opens a draft pull request whose checks say what it still has to describe. Nothing merges by itself."
+   "says": "when the engine ships, every repository that pins it finds the release itself: a workflow wherefore init writes watches PyPI, moves the pin, rebuilds, and opens a draft pull request whose checks say what it still has to describe - no token from the engine's makers, no list of clients",
+   "details": "Every repository that pins the engine carries a workflow wherefore init wrote, its own from then on: every few hours, and whenever a person runs it, it asks PyPI for the newest release, and when that is newer than the pin it moves the pin, rebuilds what the release lets through, and opens a draft pull request whose checks say what the corpus still has to describe. A feature the release ships with no words there stops the build, and the pull request quotes it. Nothing merges by itself, no token comes from the engine's makers, and no list of clients exists anywhere: a client needs nobody's permission to be one."
   },
   {
    "id": "scan2",

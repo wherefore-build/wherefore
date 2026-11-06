@@ -1,0 +1,148 @@
+# A RELEASE REACHES THIS REPOSITORY BY A PULL REQUEST IT OPENS ITSELF.
+# Written by `wherefore init`, and yours from then on. Every few hours, and
+# whenever a person runs it, this asks PyPI for the newest release of the
+# engine; when it is newer than the one requirements-engine.txt pins, it
+# moves the pin, rebuilds what the release lets through, and opens a draft
+# pull request whose checks say what this corpus still has to describe: a
+# feature the release ships with no words here stops the build, and the
+# pull request quotes it. Nothing merges by itself; a person does.
+#
+# No token from the engine's makers, and no list of clients anywhere: a
+# repository that pins the engine watches for it on its own.
+#
+# Two settings are this repository's to make, once:
+#   - Settings > Actions > General: "Allow GitHub Actions to create and
+#     approve pull requests", so the workflow's own token may open the pull
+#     request.
+#   - A branch pushed with the workflow's own token runs no checks (GitHub's
+#     rule), so after the push this starts your checks by name, below
+#     (CHECKS); a workflow_dispatch run is the one event the token may start.
+#     Give CHECKS the file name of the workflow that judges a pull request
+#     here, and give that workflow a `workflow_dispatch` trigger if it lacks
+#     one. Or save a fine-grained token with contents and pull requests write
+#     as CLIENT_TOKEN, and the push itself runs them.
+name: wherefore-pin
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: the engine release to pin (default, the newest on PyPI)
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+concurrency:
+  group: wherefore-pin
+  cancel-in-progress: false
+
+env:
+  CHECKS: corpus.yml
+
+jobs:
+  pin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Which release, and whether the pin is already there
+        id: which
+        env:
+          ASKED: ${{ inputs.version }}
+        run: |
+          V="$ASKED"
+          if [ -z "$V" ]; then
+            V=$(curl -fsS https://pypi.org/pypi/wherefore-build/json | python3 -c 'import json, sys; print(json.load(sys.stdin)["info"]["version"])')
+          fi
+          NOW=$(sed -n 's/^wherefore-build==\(.*\)$/\1/p' requirements-engine.txt)
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          if [ "$V" = "$NOW" ]; then
+            echo "pinned to $V already - nothing to open"
+            echo "move=false" >> "$GITHUB_OUTPUT"
+          elif git ls-remote --exit-code --heads origin "engine/$V" >/dev/null; then
+            echo "a branch engine/$V is already pushed - its pull request is the one to finish"
+            echo "move=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "moving the pin from $NOW to $V"
+            echo "move=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Move the pin, and rebuild what the release lets through
+        if: steps.which.outputs.move == 'true'
+        id: build
+        env:
+          V: ${{ steps.which.outputs.version }}
+        run: |
+          sed -i "s/^wherefore-build==.*$/wherefore-build==$V/" requirements-engine.txt
+          rm -rf .wherefore-engine
+          # PyPI serves a release a little after it is published: ask again,
+          # for up to ten minutes, before calling it missing.
+          for attempt in $(seq 1 60); do
+            if python3 -m pip install --quiet --no-deps --no-cache-dir --target .wherefore-engine -r requirements-engine.txt 2>pip.err; then
+              break
+            fi
+            if [ "$attempt" = "60" ]; then
+              cat pip.err
+              echo "::error::PyPI did not serve wherefore-build==$V within ten minutes"
+              exit 1
+            fi
+            echo "PyPI does not serve $V yet (attempt $attempt); asking again in ten seconds"
+            sleep 10
+          done
+          rm -f pip.err
+          export PYTHONPATH="$PWD/.wherefore-engine"
+          # build regenerates; the gate is the judge, and passes only if every
+          # generator ran and what they made is what is now in the tree. A
+          # generator the release stops fails it, in its own words.
+          python3 -m wherefore build || true
+          set +e
+          python3 -m wherefore gate > gate.txt 2>&1
+          STATUS=$?
+          set -e
+          cat gate.txt
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+          {
+            echo "said<<WHEREFORE"
+            grep -v '^\s*$' gate.txt | tail -n 30
+            echo "WHEREFORE"
+          } >> "$GITHUB_OUTPUT"
+          rm -rf gate.txt .wherefore-engine
+      - name: Open the pull request, and start the checks on it
+        if: steps.which.outputs.move == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.CLIENT_TOKEN || github.token }}
+          OWN: ${{ secrets.CLIENT_TOKEN == '' }}
+          V: ${{ steps.which.outputs.version }}
+          STATUS: ${{ steps.build.outputs.status }}
+          SAID: ${{ steps.build.outputs.said }}
+        run: |
+          git config user.name "Wherefore release"
+          git config user.email "noreply@wherefore.build"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git checkout -b "engine/$V"
+          git add -A
+          if [ "$STATUS" = "0" ]; then
+            git commit -q -m "Wherefore $V" -m "The engine pin moves to $V, on PyPI, and everything is rebuilt against it. Opened by this repository's own watch (.github/workflows/wherefore-pin.yml)."
+            NOTE="**It builds.** Everything is rebuilt against $V; the checks here judge it as they judge any change."
+          else
+            git commit -q -m "Wherefore $V: the pin moves, and there are words to add" -m "The engine pin moves to $V, on PyPI. The build stopped, so nothing is rebuilt yet; the pull request says what this corpus has to describe first. Opened by this repository's own watch (.github/workflows/wherefore-pin.yml)."
+            NOTE="**The build stopped.** The release ships something this corpus does not describe yet, or a file did not rebuild. Say it where the facts live, regenerate, and push here. What the build said:"$'\n\n```\n'"$SAID"$'\n```'
+          fi
+          git push -u origin "engine/$V"
+          {
+            echo "Wherefore $V is on PyPI, and this moves the pin to it. Opened by this repository's own watch, not by a person; draft, and nothing merges by itself."
+            echo
+            echo "$NOTE"
+            echo
+            echo "Release notes: https://github.com/wherefore-build/wherefore/releases/tag/v$V"
+          } > body.md
+          gh pr create --draft --base "${GITHUB_REF_NAME}" --head "engine/$V" --title "Wherefore $V" --body-file body.md
+          if [ "$OWN" = "true" ] && [ -n "$CHECKS" ] && [ -f ".github/workflows/$CHECKS" ]; then
+            gh workflow run "$CHECKS" --ref "engine/$V" && echo "started $CHECKS on engine/$V" || echo "::warning::could not start $CHECKS on engine/$V: give it a workflow_dispatch trigger, or save CLIENT_TOKEN"
+          fi

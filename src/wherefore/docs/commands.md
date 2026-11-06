@@ -40,11 +40,16 @@ Every statement found says one thing everywhere it is said.
 wherefore init [DIR]
 ```
 
-Writes a `wherefore.json` that declares nothing yet, and the skill where
-Claude Code and Codex read it, in the directory given or the current one. It
-refuses a directory that already has a `wherefore.json`. The skill's
-`start.md` is how the first fact is compiled; from the first build on, the
-skill is regenerated from the release the repository pins.
+Writes a `wherefore.json` that declares nothing yet, the skill where Claude
+Code and Codex read it, and `.github/workflows/wherefore-pin.yml`, the
+repository's own watch for the engine's releases, in the directory given or
+the current one. It refuses a directory that already has a `wherefore.json`.
+The skill's `start.md` is how the first fact is compiled; from the first
+build on, the skill is regenerated from the release the repository pins. The
+watch is the repository's from then on: every few hours it asks PyPI for the
+newest release, moves the pin, rebuilds, and opens a draft pull request whose
+checks say what the corpus still has to describe. Two settings in its header
+are the repository's to make.
 
 ## wherefore gate
 

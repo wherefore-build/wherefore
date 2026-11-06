@@ -4,8 +4,8 @@
   {
    "version": "0.20.0",
    "date": "2026-11-06",
-   "title": "Drift, on the map",
-   "says": "A value said by hand in two or more files that no source holds is drift: wherefore check drift names each with its files and counts them, the map draws them beside the files, and a declared allowance can only fall.",
+   "title": "Drift on the map, and pins the client's own",
+   "says": "A value said by hand in two or more files that no source holds is drift: wherefore check drift names each with its files and counts them, the map draws them beside the files, and a declared allowance can only fall. And a release reaches a client by the client's own watch now: wherefore init writes a workflow that asks PyPI, moves the pin and opens the pull request, so no token and no list of clients exist anywhere.",
    "shows": {
     "fixture": true,
     "run": "wherefore check drift",

@@ -355,6 +355,8 @@ def starter(name):
                     "derived by running the generators; this declares the rest.",
             "authored": {"rules": [
                 [NAME, "this file: what the corpus is, and why each exemption exists"],
+                [".github/workflows/wherefore-pin.yml", "the watch for the engine's releases: written by "
+                                                         "wherefore init, this repository's since"],
             ]},
             "captured": {"groups": {}},
         },

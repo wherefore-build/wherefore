@@ -46,4 +46,5 @@ where = ["src"]
 # hand.
 wherefore = ["_observe/sitecustomize.py", "commands.json", "features.json", "principles.json",
              "releases.json", "skills/wherefore/SKILL.md", "skills/wherefore/start.md",
-             "docs/commands.md", "docs/configuration.md", "docs/checks.md", "docs/reporting.md"]
+             "docs/commands.md", "docs/configuration.md", "docs/checks.md", "docs/reporting.md",
+             "workflows/wherefore-pin.yml"]

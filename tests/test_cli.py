@@ -19,6 +19,11 @@ class Init(unittest.TestCase):
         self.assertIn("README.md is unclassified", out)
         self.assertIn("facts.json is unclassified", out)
         self.assertNotIn("wherefore.json is unclassified", out)
+        # and the watch for the engine's releases, written once and the repository's own
+        watch = root / ".github/workflows/wherefore-pin.yml"
+        self.assertTrue(watch.is_file(), "init writes the watch")
+        self.assertIn("pypi.org/pypi/wherefore-build/json", watch.read_text(encoding="utf-8"))
+        self.assertNotIn("wherefore-pin.yml is unclassified", out, "the starter declares the watch")
 
     def test_init_does_not_overwrite(self):
         d = pathlib.Path(tempfile.mkdtemp())
