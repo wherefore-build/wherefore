@@ -12,17 +12,17 @@ anything. It needs no setup and writes nothing, and it answers the first
 question an owner is usually asked and cannot answer from memory - what does
 the company say in more than one place? Point it at what the company
 publishes: the built site, the docs folder, exported deck notes, or a live
-address. Where there are two places - a site and an app, the docs and the
-deck - point it at both at once:
+address. Where there are several places - the site, the app, the backend,
+the docs, the deck - point it at all of them at once:
 
 ```
-wherefore scan https://www.example.com app
+wherefore scan https://www.example.com app backend docs
 ```
 
 Read in one place, it reports every value stated in words more than one way:
 "start your {} day free trial": 14 in three places, 30 in one. Read in two,
-it also says what the places state in common, which of those they disagree
-on (`DIFFER`), and which they agree on. That is the count in its plainest
+it also says what the places state in common, which of those any two of
+them disagree on (`DIFFER`), and which they all agree on. That is the count in its plainest
 form, and the reason to do any of this.
 
 **Show the person what it found before you ask them anything.** The interview
@@ -59,14 +59,14 @@ only what you have read.
 
 ### "0 things in common" is not agreement
 
-When two places are read together and the scan says they state nothing in
+When several places are read together and the scan says they state nothing in
 common, read the `read` lines under the first line before believing it: for
 each place, how many files of each kind were read, and the kinds seen and
 not read. A checkout whose readable files were icons and vendored packages'
 READMEs contributed nothing of the company's. The scan reads source code for
 its strings, so an app's words count; a kind it names as not read - a
 spreadsheet, a database dump, a format of its own - is where to look by
-other means. Until the two sides have been read, there is no count.
+other means. Until every side has been read, there is no count.
 
 ### The colours, which nobody can list
 

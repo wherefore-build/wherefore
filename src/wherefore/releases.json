@@ -2,6 +2,27 @@
  "note": "Every release of the engine, newest first, said once as data: its version, its date, a title and a sentence, and a picture of it working. A client that tells people about the product - the company's changelog page - reads this from the release it pins, so the page lists every release and cannot list one that was never cut. CHANGELOG.md is the long account of each release; tests/test_releases.py holds its headings to the versions and dates here, every feature's `since` (features.json) to a release here, and the newest release to the version pyproject.toml states. `shows` is what the release printed when it was run: `run` is typed in a fresh git repository named fernhollow (shown as ~/fernhollow), holding `files` if any, or a copy of the fixture company if `fixture` is true; `output` is what it printed, in order, with a line of just … where lines are left out. The test runs the newest release's again, on every change, so the picture of the current release cannot drift from what it does; an older one's is history, true of the release that printed it.",
  "releases": [
   {
+   "version": "0.18.1",
+   "date": "2026-11-06",
+   "title": "Scan any number of repositories at once",
+   "says": "The scan always took any number of places; the words said two. Now they say what it does: the site, the app, the backend and the docs together, and where any two disagree.",
+   "shows": {
+    "fixture": false,
+    "run": "wherefore scan site app backend docs",
+    "files": {
+     "site/index.html": "<p>Start your 14 day free trial today. Uploads up to 250 MB per file.</p>\n",
+     "app/Main.elm": "welcome = \"Start your 30 day free trial today\"\n",
+     "backend/limits.py": "MAX_UPLOAD = \"Uploads up to 500 MB per file\"\nTRIAL = \"Start your 14 day free trial today\"\n",
+     "docs/limits.md": "Uploads up to 250 MB per file.\n"
+    },
+    "output": [
+     "4 places read together - site, app, backend, docs - state 2 things in common; they disagree on 2",
+     "  DIFFER  \"start your {} day free\"  site: 14 (1x) · app: 30 (1x) · backend: 14 (1x)",
+     "  DIFFER  \"up to {} mb per\"  site: 250 (1x) · backend: 500 (1x) · docs: 250 (1x)"
+    ]
+   }
+  },
+  {
    "version": "0.18.0",
    "date": "2026-11-06",
    "title": "The inbox, held",

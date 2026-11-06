@@ -158,10 +158,10 @@
   },
   {
    "id": "scan2",
-   "name": "Scan two repositories at once",
+   "name": "Scan any number of repositories at once",
    "since": "0.13.0",
-   "says": "point the scan at your site and your app together: every place is tagged with where it came from, and the scan says what both state and where the two disagree - the drift between teams, with nothing installed",
-   "details": "Point the scan at your site and your app together. Every place is tagged with where it came from, and the scan says what both state and which of those they disagree on - drift between two teams, which no one repository's checks can see, with nothing installed."
+   "says": "point the scan at your site, your app, your backend and your docs together: every place is tagged with where it came from, and the scan says what they state in common and where any two disagree - drift between teams, with nothing installed",
+   "details": "Point the scan at as many places as the company has - the site, the app, the backend, the docs, the deck - in one command. Every place is tagged with where it came from, and the scan says what they state in common and which of those they disagree on, place by place - drift between teams, which no one repository's checks can see, with nothing installed."
   },
   {
    "id": "scan-read",

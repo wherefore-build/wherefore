@@ -40,7 +40,7 @@ wherefore list              # what each generator writes, right now
 wherefore gate              # is every tracked file classified and current?
 wherefore graph             # what builds what: which script makes each file, from what
 wherefore check palette     # every colour anywhere is one the brand's source holds, or excused with why
-wherefore scan site app     # what two places state in common, and where they disagree; needs no corpus
+wherefore scan site app docs  # what several places state in common, and where they disagree; needs no corpus
 wherefore check published   # every page you publish but cannot build still states the source's facts, read live
 ```
 
@@ -85,12 +85,13 @@ the generator list, the comparators and the exemptions live, with their
 reasons. Edit them there. Do not copy them into `wherefore.json`, which refuses
 them anyway, because that would be one fact in two places.
 
-## Scanning, one place or two
+## Scanning, one place or every place
 
 `wherefore scan` reads what a person reads - pages, Markdown, plain text - in
 a folder or at a live address, and reports every value stated in words more
-than one way. Given two places, it also says what they state in common and
-which of those they disagree on:
+than one way. Given several places - the site, the app, the backend, the
+docs - it also says what they state in common and which of those they
+disagree on, place by place:
 
 ```
 2 places read together - site, app - state 2 things in common; they disagree on 1
@@ -98,7 +99,7 @@ which of those they disagree on:
   agree   "plans from {} dollars a"  site: 9 (1x) · app: 9 (1x)
 ```
 
-A `DIFFER` line is drift between two teams, which no one repository's checks
+A `DIFFER` line is drift between teams, which no one repository's checks
 can see; it exits 1, so a deploy can run it. Under the first line, a `read`
 line per place says what it contributed - how many files of each kind, and
 the kinds it saw and did not read - and source code is read for its strings,

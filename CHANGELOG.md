@@ -7,6 +7,15 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.18.1 (2026-11-06)
+
+**Scan any number of repositories at once.** The scan has taken any number of places
+since 0.13.0 - `wherefore scan site app backend docs` reads all four, tags
+each statement with where it came from, and says where any two disagree -
+and every word about it said two. The feature, the roadmap's ledger, the
+skill and the scan's own notes now say what it does, and a test holds four
+places. Nothing in the code moved.
+
 ## 0.18.0 (2026-11-06)
 
 **The inbox, held.** Six issues were answered by four releases on 6 November

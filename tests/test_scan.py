@@ -279,6 +279,19 @@ class TwoPlacesAtOnce(unittest.TestCase):
         self.assertEqual(trial["roots"]["app"], [{"value": "30", "count": 1}])
         self.assertEqual({w["root"] for g in d["disagree"] for v in g["values"] for w in v["where"]}, {"site", "app"})
 
+    def test_four_places_are_read_together_and_each_disagreement_names_the_places(self):
+        root = corpus({
+            "site/index.html": "<p>Start your 14 day free trial today. Uploads up to 250 MB per file.</p>\n",
+            "app/Main.elm": 'welcome = "Start your 30 day free trial today"\n',
+            "backend/limits.py": 'MAX_UPLOAD = "Uploads up to 500 MB per file"\nTRIAL = "Start your 14 day free trial today"\n',
+            "docs/limits.md": "Uploads up to 250 MB per file.\n",
+        })
+        code, out = run(root, "site", "app", "backend", "docs")
+        self.assertEqual(code, 1, out)
+        self.assertIn("4 places read together - site, app, backend, docs - state 2 things in common; they disagree on 2", out)
+        self.assertIn('DIFFER  "start your {} day free"  site: 14 (1x) · app: 30 (1x) · backend: 14 (1x)', out)
+        self.assertIn('DIFFER  "up to {} mb per"  site: 250 (1x) · backend: 500 (1x) · docs: 250 (1x)', out)
+
     def test_one_place_reads_as_before(self):
         root = self.places()
         code, out = run(root, "site", "--json")

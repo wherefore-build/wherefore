@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wherefore-build"
-version = "0.18.0"
+version = "0.18.1"
 description = "A company that compiles: every asset generated from one source of truth, every change proven."
 readme = "README.md"
 license = "Apache-2.0"
