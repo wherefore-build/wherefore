@@ -291,6 +291,9 @@ def _pct(t, total):
 def _window(name, start, end, total, fade_in=0.3, fade_out=0.3, rise=False):
     """A scene's window: in at `start`, out at `end`. A fade of 0 is a cut - a
     terminal does not fade. `rise` brings the scene up into place as it comes."""
+    # A cut is a fade of a fiftieth: two keyframes at one instant make the
+    # browser ramp from the clip's start instead, and the scene ghosts early.
+    fade_in, fade_out = max(fade_in, 0.02), max(fade_out, 0.02)
     a, b = start + fade_in, max(start + fade_in, end - fade_out)
     up = ";transform:translateY(4cqmin)" if rise else ""
     flat = ";transform:none" if rise else ""
