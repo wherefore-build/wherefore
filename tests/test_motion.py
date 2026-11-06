@@ -94,6 +94,8 @@ class EveryStoryboardHolds(unittest.TestCase):
             self.assertIn('<pre class="term">', html) if any(s["kind"] in ("command", "answer") for s in b["scenes"]) else None
             self.assertIn(f'data-duration="{b["duration"]}"', html)
             self.assertIn("html.still", html, "a renderer can pause the page at --t")
+            self.assertIn("prefers-reduced-motion:reduce){.scene,.typed,.answer .ln{animation:none}.scene{opacity:0}.scene.claim{opacity:1}", html,
+                          "less motion shows the claim, not a blank frame")
 
     def test_the_brand_comes_from_a_stylesheet_when_one_is_given_and_plain_colours_otherwise(self):
         b = self.boards[0]

@@ -9,7 +9,8 @@ is compiled, like the changelog. The page plays in any frame it is shown in,
 portrait or landscape, because every size is a share of the frame; the
 company's site plays it on the feature's card, and a renderer steps it frame
 by frame into a video (corpus/motion_render.py) by setting `--t` on a page
-marked `still`, which pauses every animation at that second.
+marked `still`, which pauses every animation at that second. A viewer who
+asks for less motion sees the claim, still.
 
 WHAT HOLDS IT (tests/test_motion.py): every feature has a claim of at most
 CLAIM_WORDS words; every storyboard runs MIN_SECONDS to MAX_SECONDS; no scene
@@ -315,7 +316,7 @@ html,body{{margin:0;height:100%;overflow:hidden;background:{var['ground']};color
 .typed,.answer .ln{{animation:{total}s linear infinite;animation-delay:calc(var(--t) * -1s)}}
 .typed{{font:inherit}}
 html.still .scene,html.still .typed,html.still .answer .ln{{animation-play-state:paused}}
-@media (prefers-reduced-motion:reduce){{.scene,.typed,.answer .ln{{animation-play-state:paused}}}}
+@media (prefers-reduced-motion:reduce){{.scene,.typed,.answer .ln{{animation:none}}.scene{{opacity:0}}.scene.claim{{opacity:1}}}}
 .mark{{font:400 17cqmin/1 {var['font-display']};letter-spacing:-0.02em}}
 .ver{{font:500 4cqmin/1 {var['font-mono']};color:{var['ground']};background:{var['accent']};padding:1.6cqmin 2.6cqmin;border-radius:999px;align-self:flex-start}}
 .eye{{font:500 3.3cqmin/1.3 {var['font-mono']};letter-spacing:0.06em;text-transform:uppercase;color:{var['muted']}}}
