@@ -240,6 +240,20 @@ own field, not empty), `file` (a tracked file matching a glob), `says` or
 `why`, which is what the check prints when it is missing. `{field}` is the
 thing's own field; `{id}` and `{stage}` always exist.
 
+That is one ladder, the default, and most corpora need no more. Things that
+move differently each get a ladder of their own, by name, under `ladders`:
+
+```json
+"launch": {"ladders": {
+  "features": {"of": {"source": "facts", "at": "features", "stage": "stage"},
+               "stages": ["building", "beta", "live"], "needs": {...}},
+  "site": {"of": {"source": "facts", "stage": "site.status"},
+           "stages": ["draft", "launched"], "needs": {...}}}}
+```
+
+Each ladder takes the same keys as the one above. A thing is on one ladder:
+two ladders that read the same things are refused.
+
 ## proofs
 
 Where the corpus's proofs are: `{"glob": "proofs/*_proof.py"}`. `wherefore

@@ -267,9 +267,10 @@ then on, and what must not be said before it. The check fails a thing at a
 stage it does not have everything for, naming the stage and what is
 missing in the section's own words, and for every other thing says what
 the next stage still waits on. So a pull request that moves a stage is red
-until the stage is earned. `--json` prints every thing, its stage, and each
-requirement held or not, for a reader that draws it. Without a section it
-says so and passes.
+until the stage is earned. With several ladders, each is listed under its
+name and a fault names its ladder. `--json` prints every ladder, every thing
+on it, its stage, and each requirement held or not, for a reader that draws
+it. Without a section it says so and passes.
 
 ```
 $ wherefore check launch
