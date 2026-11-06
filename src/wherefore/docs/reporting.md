@@ -44,7 +44,8 @@ link.
 The issue is the inbox. When the makers take a report on, a comment on the
 issue gives the plan and names the roadmap item; the roadmap is a file
 beside the engine's code, and the company's site shows it. When it ships, a
-comment says the release and the feature, with a line an agent reads -
+comment says the release and the feature, plays the feature's clip from the
+company's site, and ends with a line an agent reads -
 
 ```
 wherefore-inbox: shipped version=0.16.0 feature=scan-read

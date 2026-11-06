@@ -7,6 +7,22 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.20.1 (2026-11-06)
+
+**A stopped build says why, in the pull request.** The watch `wherefore
+init` writes quoted the gate's last lines when a release stopped the build,
+and the gate can only name the files a stopped build left unwritten; the
+words the build asked for - a feature this corpus does not describe yet,
+in the generator's own terms - were in the build's output, and discarded.
+Its first live run, on the company's own site, opened the 0.20.0 pin that
+way. The pull request now quotes the build when the build failed, and the
+gate when it did not. The watch is the client's from the day `init` writes
+it, so a client that already has one makes the same change in its own copy,
+or takes the template again.
+
+The reporting doc says the closing note on an issue plays the feature's
+clip, as it now does.
+
 ## 0.20.0 (2026-11-06)
 
 **Drift, on the map.** The scan, turned on a corpus's own hand-written
