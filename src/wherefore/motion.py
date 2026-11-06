@@ -197,8 +197,11 @@ def storyboard(feature, release=None, item=None, examples=(), settings=None):
         if more:
             add("more", 4.0, 9.0, eyebrow="what it does", text=more)
     add("claim", 4.0, 4.0, text=feature["claim"])
-    add("close", 3.5, 3.5, eyebrow="try it", install=s["install"].format(version=version),
-        url=s["site"].replace("https://", "").replace("http://", "").rstrip("/") + f"/features/#{feature['id']}")
+    home = s["site"].replace("https://", "").replace("http://", "").rstrip("/")
+    # The last frame is the one that stays: the address, large, then how to
+    # install, then where this feature's page is (owner, 6 November 2026).
+    add("close", 3.5, 3.5, home=home, install=s["install"].format(version=version),
+        url=f"{home}/features/#{feature['id']}")
     return {"id": feature["id"], "name": feature["name"], "version": version,
             "duration": scenes[-1]["end"], "frames": ["portrait", "landscape"], "scenes": scenes}
 
@@ -206,7 +209,7 @@ def storyboard(feature, release=None, item=None, examples=(), settings=None):
 def texts(scene):
     """Every string a scene shows, in reading order."""
     out = []
-    for k in ("name", "version", "eyebrow", "headline", "typed", "text", "install", "url"):
+    for k in ("name", "version", "eyebrow", "headline", "typed", "text", "home", "install", "url"):
         if scene.get(k):
             out.append(scene[k])
     out += scene.get("lines", [])
@@ -304,7 +307,7 @@ def page(board, css=None, vars=None):
         elif sc["kind"] == "claim":
             inner = f'<div class="claim">{html.escape(sc["text"])}</div>'
         elif sc["kind"] == "close":
-            inner = (f'<div class="eye">{html.escape(sc["eyebrow"])}</div>'
+            inner = (f'<div class="home">{html.escape(sc["home"])}</div>'
                      f'<div class="install">{html.escape(sc["install"])}</div>'
                      f'<div class="url">{html.escape(sc["url"])}</div>')
         body.append(f'<div class="scene {sc["kind"]}" style="animation-name:{name}">{inner}</div>')
@@ -328,8 +331,9 @@ html.still .scene,html.still .typed,html.still .answer .ln{{animation-play-state
 .typed{{display:inline-block;white-space:nowrap;overflow:hidden;vertical-align:bottom;width:0;border-right:0.5cqmin solid {var['accent']}}}
 .answer .ln{{opacity:0}}
 .claim{{font:400 9.5cqmin/1.1 {var['font-display']};text-wrap:balance}}
-.install{{font:400 4.2cqmin/1.6 {var['font-mono']}}}
+.install{{font:400 3.8cqmin/1.6 {var['font-mono']}}}
 .install b{{color:{var['accent']};font-weight:500}}
+.home{{font:400 12cqmin/1 {var['font-display']};letter-spacing:-0.02em}}
 .url{{font:400 3.6cqmin/1.5 {var['font-mono']};color:{var['muted']}}}
 {"".join(rules)}"""
     title = f"{board['name']} · {board['version']}"
