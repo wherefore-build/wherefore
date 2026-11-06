@@ -71,9 +71,21 @@ def values_in(doc):
     return out
 
 
+# Where a colour is quoted, not painted: a page's <pre> and <code>, Markdown's
+# fences and backticks. The scan's own output, shown on a page, names the greys
+# it found; that is text a visitor reads, not a colour they receive.
+QUOTED = re.compile(r"<(pre|code)\b[^>]*>.*?</\1\s*>|```.*?```|~~~.*?~~~|`[^`\n]*`", re.S | re.I)
+
+
+def unquoted(text):
+    """`text` with every quoted stretch blanked, line for line, so what is left
+    is what a page paints and a line number still means the same line."""
+    return QUOTED.sub(lambda m: re.sub(r"[^\n]", " ", m.group(0)), text)
+
+
 def literals(text):
-    """(line, literal, kind) for every colour said in `text`."""
-    for n, line in enumerate(text.splitlines(), 1):
+    """(line, literal, kind) for every colour said in `text` - painted, not quoted in code."""
+    for n, line in enumerate(unquoted(text).splitlines(), 1):
         for m in HEX.finditer(line):
             yield n, m.group(0), "hex"
         for m in FUNC.finditer(line):
