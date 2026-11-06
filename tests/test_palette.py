@@ -32,6 +32,17 @@ class OnePalette(unittest.TestCase):
         self.assertIn("gen/site.py:1: rgba(…)", out)
         self.assertIn("site/a.css:1: white", out)
 
+    def test_a_colour_quoted_in_code_is_not_painted(self):
+        root = corpus({"source": "brand/tokens.json"},
+                      **{"site/index.html": "<p>The scan found</p>\n<pre><code>  #5f6269 · #606370   style.css\n"
+                                            "more</code></pre>\n<p style=\"color:#FF3355\">but this is painted</p>\n",
+                         "docs/scan.md": "It said `#606370` and\n\n```\n#606370\n```\n\nbut #AABBCC is paint\n"})
+        code, out = wherefore(root, "check", "palette")
+        self.assertEqual(code, 1, out)
+        self.assertNotIn("#606370", out, "a colour quoted in code is text, not paint")
+        self.assertIn("site/index.html:4: #FF3355", out, "the line number still means the same line")
+        self.assertIn("docs/scan.md:7: #AABBCC", out)
+
     def test_a_clean_corpus_passes_and_counts(self):
         root = corpus({"source": "brand/tokens.json", "not_ours": {"vendor/model.html": "another company's page; its own suite holds its brand"}},
                       **{"site/page.css": "body { color: var(--ink); background: #F7F6F2; }\n",

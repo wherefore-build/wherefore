@@ -7,6 +7,16 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.16.1 (2026-11-06)
+
+**A colour quoted in code is not paint.** The company's site shows the
+newest release's own output in its hero, and 0.16.0's names two greys it
+found on an example site; `wherefore check palette` read them as colours the
+page paints and failed the brand. It now blanks what a page quotes - the
+contents of `<pre>` and `<code>`, and Markdown's fences and backticks - line
+for line, so a quoted colour is text a visitor reads, and a line number still
+means the same line. A colour painted beside quoted text fails as before.
+
 ## 0.16.0 (2026-11-06)
 
 **The scan says what it read** (wherefore-build/wherefore#19, #20, and the
