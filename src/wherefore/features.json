@@ -111,9 +111,7 @@
    "name": "Tell us",
    "since": "0.12.0",
    "commands": [
-    "wherefore report bug WORDS ... [--from FILE] [--show]",
-    "wherefore report ask WORDS ... [--from FILE] [--show]",
-    "wherefore report feature WORDS ... [--from FILE] [--show]"
+    "wherefore report --title TITLE WORDS ... [--from FILE] [--show | --link]"
    ]
   },
   {

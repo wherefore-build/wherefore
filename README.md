@@ -33,7 +33,7 @@ hold your app, website and docs. [How it is built](https://wherefore.build/#case
 - **One palette** (since 0.10.0): every colour anywhere is one the brand's source holds, or the file says, with why, whose colours they are. `wherefore check palette`
 - **The pre-push hook** (since 0.1.0): a pre-push hook: no push leaves the corpus stale. `wherefore hook install`, `wherefore hook pre-push`
 - **The skill, for Claude Code and Codex** (since 0.2.0): teaches your coding agent the rules, and starts a corpus with you: one fact, end to end. One skill, written where each agent reads it, and held to the release
-- **Tell us** (since 0.12.0): something the engine did that it should not have, written for its makers - the release, the corpus's shape, the output given, your words, nothing private - and opened as an issue, or shown first. `wherefore report bug WORDS ... [--from FILE] [--show]`, `wherefore report ask WORDS ... [--from FILE] [--show]`, `wherefore report feature WORDS ... [--from FILE] [--show]`
+- **Tell us** (since 0.12.0): feedback for the engine's makers - a bug, a question or a request, one topic each - with a title and the words, the release, the corpus's shape and the output given, nothing private; opened as an issue, or shown, or a link for the person to send. `wherefore report --title TITLE WORDS ... [--from FILE] [--show | --link]`
 - **Releases that reach every client** (since 0.8.0): when the engine ships, every repository that pins it gets a pull request moving its pin, opened by the release itself, and the client's checks say what it still has to describe before it can build
 - **Scan two repositories at once** (since 0.13.0): point the scan at your site and your app together: every place is tagged with where it came from, and the scan says what both state and where the two disagree - the drift between teams, with nothing installed
 
@@ -84,9 +84,7 @@ wherefore check upstream                                                        
 wherefore check palette                                                               # every colour anywhere is one the brand's source holds, or the file says, with why, whose colours they are
 wherefore hook install                                                                # a pre-push hook: no push leaves the corpus stale
 wherefore hook pre-push                                                               # what the installed hook runs before a push; not for typing
-wherefore report bug WORDS ... [--from FILE] [--show]                                 # something the engine did that it should not have, written for its makers - the release, the corpus's shape, the output given, your words, nothing private - and opened as an issue, or shown first
-wherefore report ask WORDS ... [--from FILE] [--show]                                 # a question for the engine's makers, written the same way and opened as an issue, or shown first
-wherefore report feature WORDS ... [--from FILE] [--show]                             # something you want the engine to do, written the same way and opened as an issue, or shown first
+wherefore report --title TITLE WORDS ... [--from FILE] [--show | --link]              # feedback for the engine's makers - a bug, a question or a request, one topic each - with a title and the words, the release, the corpus's shape and the output given, nothing private; opened as an issue, or shown, or a link for the person to send
 ```
 
 **See what builds what.** `wherefore graph` runs every generator once, records

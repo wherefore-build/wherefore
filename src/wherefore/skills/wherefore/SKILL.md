@@ -190,17 +190,24 @@ something it should take, or when the person wants something it does not do,
 there is a way to tell the people who make it:
 
 ```
-wherefore report bug "what happened, in the person's words" --from gate.log --show
-wherefore report ask "the question" --show
-wherefore report feature "what it should do" --show
+wherefore report --title "one line" "what happened, what was wanted, or the question" --from gate.log --show
 ```
 
-It writes the report - the release, the shape of the corpus in counts, the
-output in the file given, the words - and never a file's contents. `--show`
-prints it and sends nothing: run that first, show the person, and send only
-when they say, by running it again without `--show`. With `gh` signed in it
-opens the issue on wherefore-build/wherefore; without, it prints a link that
-opens the issue filled in. The words are the person's: ask, do not invent.
+One command for all of it: there is no kind to choose, because whether a thing
+is a bug or a missing feature is the maintainers' judgment, made in triage.
+**One report per topic.** Feedback with three points about three things is
+three reports, each with its own title; never one report per kind, and never
+every point under one title.
+
+It writes the report - the title, the words, the release, the shape of the
+corpus in counts, the output in the file given - and never a file's contents
+or a path on this machine. You may draft the title and the words from what
+the person said; they are theirs to approve. Run it with `--show` first and
+show the person. Then either send it when they say, by running it again
+without `--show` (it opens the issue on wherefore-build/wherefore with `gh`,
+signed in, or prints a link), or run it with `--link`, which never sends and
+prints a link that opens the issue filled in: the person reads it there and
+sends it themselves, which is the approval.
 
 ## Releases are a person's
 
