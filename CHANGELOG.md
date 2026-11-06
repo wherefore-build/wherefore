@@ -36,9 +36,17 @@ puts them on the GitHub release, and the inbox links them on the issue each
 answered; every feature since the first is rendered once, onto the release
 it arrived in.
 
+Every clip also draws what the feature does, from the corpus the clip is
+made in: each feature names one of four mechanisms, and the scene is
+filled with that corpus's own numbers - its files sorted into built,
+written and captured; a source and the pages built from it; the values
+its pages state and how many disagree; the issues the ledger answered and
+the releases that did - so every number on screen is one the corpus can
+be asked for. No model draws it: four templates, held by the tests.
+
 Every feature now carries a `claim`, one sentence of at most twelve words,
 the line its clip ends on. The tests hold every clip to a reading speed of
-three words a second, a length of sixteen to thirty seconds, a command the
+three words a second, a length of sixteen to thirty-two seconds, a command the
 CLI has, and output the release picture or a docs example prints. `motion`
 in wherefore.json says where the clips go and which stylesheet carries the
 brand. The owner's go of 6 November, with the decisions made there.

@@ -27,6 +27,57 @@ class EveryClaimReads(unittest.TestCase):
             self.assertRegex(claim, r"[.!?]$", f"{f['id']}: the claim is a sentence, ending in a full stop")
 
 
+class EveryMechanismIsDrawn(unittest.TestCase):
+    """The mechanism scene: each feature names one of four, and in a corpus the
+    scene is drawn from that corpus's own numbers, said again in its caption."""
+
+    def test_every_feature_names_a_mechanism_the_engine_draws(self):
+        from wherefore import mechanism
+        for f in motion.features():
+            self.assertIn(f.get("mechanism"), mechanism.KINDS, f"{f['id']} names no mechanism, or one the engine does not draw")
+
+    def test_in_a_corpus_the_scene_is_drawn_from_its_numbers(self):
+        from wherefore import config as cfgmod, mechanism
+        root = repo({"wherefore.json": {"wherefore": 1, "name": "t",
+                                        "sources": {"facts": {"path": "facts.json", "why": "the source"}},
+                                        "generators": [{"script": "make.py", "cwd": "gen", "makes": "site/index.html"}],
+                                        "inventory": {"authored": {"rules": [["*.py", "code"], ["facts.json", "the source"],
+                                                                             ["wherefore.json", "this"], ["*.md", "prose"]]}},
+                                        "reach": {"probes": [{"name": "the name", "fact": "company.name", "reaches": "the page",
+                                                              "files": ["site/index.html"]}]}},
+                     "facts.json": {"company": {"name": "Fernhollow", "city": "Porto"}, "price": 89},
+                     "gen/make.py": "print('x')\n", "README.md": "Fernhollow, in Porto.\n",
+                     "site/index.html": "<p>Fernhollow costs 89.</p>\n", "site/about/index.html": "<p>Porto, 89.</p>\n"})
+        cfg = cfgmod.load(root)
+        data = mechanism.gather(cfg, [{"id": "x", "state": "shipped", "feature": "gate", "issues": ["u/1", "u/2"]}],
+                                [{"version": "0.1.0"}])
+        self.assertEqual(data["sort"], {"files": 6, "built": 2, "authored": 4, "captured": 0, "left": 0})
+        self.assertEqual((data["hold"]["facts"], data["hold"]["pages"], data["hold"]["probe"]), (3, 2, {"fact": "company.name", "files": 1}))
+        self.assertEqual((data["compare"]["places"], data["compare"]["files"]), (["site"], 2))
+        self.assertEqual(data["handover"], {"issues": 2, "items": 1, "releases": 1,
+                                            "steps": ["an issue", "the plan, on it", "the release", "the note that closes it"]})
+        boards = {b["id"]: b for b in motion.storyboards(["gate", "reach", "scan", "docs"], root, {}, cfg)}
+        # the handover is the ledger's: a corpus names its copy with motion.roadmap, else the engine's own is read
+        own = motion.ledger_items(ENGINE)
+        handed = (f"{sum(len(it['issues']) for it in own if it.get('issues'))} issues answered by "
+                  f"{sum(1 for it in own if it.get('issues'))} roadmap items across {len(motion.releases())} releases")
+        for fid, kind, said in (("gate", "sort", "6 files tracked: 2 built by a script"), ("reach", "hold", "3 facts in facts.json, and 2 pages"),
+                                ("scan", "compare", "pages in site; 0 disagree"), ("docs", "handover", handed)):
+            sc = next(s for s in boards[fid]["scenes"] if s["kind"] == "mechanism")
+            self.assertEqual(sc["mechanism"], kind)
+            self.assertIn(said, sc["caption"], fid)
+            page = motion.page(boards[fid])
+            self.assertIn(f'<div class="viz {kind}">', page)
+            self.assertIn(motion.html.escape(sc["caption"]), page)
+        for b in boards.values():
+            self.assertLessEqual(b["duration"], motion.MAX_SECONDS, f"{b['id']} runs {b['duration']} s with its mechanism")
+
+    def test_without_a_corpus_only_the_handover_is_drawn(self):
+        boards = motion.storyboards(["gate", "docs"], ENGINE, {})
+        self.assertFalse(any(s["kind"] == "mechanism" for s in boards[0]["scenes"]), "gate's sort scene needs a corpus")
+        self.assertTrue(any(s["kind"] == "mechanism" for s in boards[1]["scenes"]), "the ledger is the engine's own")
+
+
 class EveryStoryboardHolds(unittest.TestCase):
     def setUp(self):
         self.boards = motion.storyboards(root=ENGINE)
@@ -43,7 +94,7 @@ class EveryStoryboardHolds(unittest.TestCase):
             kinds = [s["kind"] for s in b["scenes"]]
             self.assertEqual(kinds[:2], ["open", "ask"], b["id"])
             self.assertEqual(kinds[-2:], ["claim", "close"], b["id"])
-            self.assertTrue(set(kinds[2:-2]) <= {"command", "answer", "more"}, b["id"])
+            self.assertTrue(set(kinds[2:-2]) <= {"command", "answer", "more", "mechanism"}, b["id"])
             self.assertEqual(b["scenes"][0]["start"], 0.0)
             for a, c in zip(b["scenes"], b["scenes"][1:]):
                 self.assertEqual(a["end"], c["start"], f"{b['id']}: the scenes run end to start")
