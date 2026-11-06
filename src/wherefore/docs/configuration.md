@@ -205,6 +205,7 @@ Where the feature clips go, and the brand they take, all optional:
 
 ```json
 "motion": {"out": "site/motion",
+           "storyboards": "motion",
            "css": "site/brand.css",
            "vars": {"accent": "--brand-accent"},
            "name": "Wherefore",
@@ -212,7 +213,10 @@ Where the feature clips go, and the brand they take, all optional:
            "site": "https://wherefore.build/"}
 ```
 
-`out` is the directory the clips are written to (default `motion/`). `css`
+`out` is the directory the clips are written to (default `motion/`), and
+`storyboards` where their JSON goes (default beside the pages; elsewhere
+when the pages' folder is one a palette check reads, since a storyboard
+quotes what a command printed). `css`
 is a stylesheet the clip links, relative to the corpus root, for the brand's
 variables and fonts; without one the clip carries plain colours. `vars`
 names the variable a role reads when the stylesheet names it differently

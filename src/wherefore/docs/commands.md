@@ -283,7 +283,7 @@ $ wherefore report --title Hello the words --show
 ## wherefore motion
 
 ```
-wherefore motion [ID ...] [--out DIR] [--show]
+wherefore motion [ID ...] [--out DIR] [--storyboards DIR] [--show]
 ```
 
 A short clip for each feature the engine ships, compiled from the ledger:
@@ -292,7 +292,9 @@ install line. Every word is a fact the engine already states - the features,
 the releases, the roadmap, the docs' own examples - and nothing is written
 for the clip. Each clip is one page whose motion is CSS, written to `DIR`
 (default `motion/`, or `motion.out` in wherefore.json) with its storyboard
-as JSON beside it; it plays in any frame it is shown in, portrait or
+as JSON beside it, or under `--storyboards DIR` (`motion.storyboards`) when
+the pages' folder is one a palette check reads, since a storyboard quotes
+what a command printed; it plays in any frame it is shown in, portrait or
 landscape, and a page marked `still` with `--t` set pauses it at that
 second, which is how a renderer steps it into a video. `--show` opens the
 first clip in a browser. The engine's tests hold every clip to a reading

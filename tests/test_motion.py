@@ -122,6 +122,11 @@ class TheCommand(unittest.TestCase):
             self.assertEqual(board["id"], fid)
             self.assertEqual(board["scenes"][0]["name"], "Fernhollow")
         self.assertFalse((root / "clips" / "scan").exists(), "only the ids named")
+        code, out = wherefore(root, "motion", "docs", "--storyboards", "boards")
+        self.assertEqual(code, 0, out)
+        self.assertTrue((root / "clips/docs/index.html").exists())
+        self.assertTrue((root / "boards/docs/storyboard.json").exists())
+        self.assertFalse((root / "clips/docs/storyboard.json").exists(), "the storyboard goes where it is sent")
 
     def test_it_refuses_a_feature_it_does_not_have_and_a_flag_it_does_not_take(self):
         root = repo({"wherefore.json": {"wherefore": 1, "name": "t", "sources": {}}})

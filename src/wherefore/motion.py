@@ -17,11 +17,15 @@ asks more than WORDS_PER_SECOND; the command typed is one the CLI has; every
 printed line is one the release picture or a docs example prints; and the page
 carries every scene's words, so reach holds the clip as it holds a page.
 
-    wherefore motion [ID ...] [--out DIR] [--show]     write the clips (all, or
-                                                       the ids named); --show
-                                                       opens the first in a browser
+    wherefore motion [ID ...] [--out DIR] [--storyboards DIR] [--show]
+                                      write the clips (all, or the ids named),
+                                      the storyboards beside them or in DIR;
+                                      --show opens the first in a browser
 
-`motion` in wherefore.json, all optional: `out` (default motion/), `css` (a
+`motion` in wherefore.json, all optional: `out` (default motion/),
+`storyboards` (where the JSON goes, default beside the pages; a corpus whose
+palette check reads the pages' folder keeps the storyboards, which quote
+what a command printed, out of it), `css` (a
 stylesheet the clip links for the brand's variables and fonts, relative to the
 corpus root; without one the clip carries plain colours), `vars` (the
 variable each role reads, when the stylesheet names them differently), `name`
@@ -46,7 +50,7 @@ MAX_SECONDS = 30.0
 LINE_WORDS = 14          # an output line longer than this is cut at a clause, with … to say so
 ANSWER_LINES = 4
 ANSWER_WORDS = 28
-FIELDS = ("out", "css", "vars", "name", "install", "site")
+FIELDS = ("out", "storyboards", "css", "vars", "name", "install", "site")
 ROLES = ("ground", "surface", "line", "ink", "muted", "accent", "font-display", "font-body", "font-mono")
 DEFAULTS = {"out": "motion", "name": "Wherefore", "install": "pip install wherefore-build=={version}",
             "site": "https://wherefore.build/"}
@@ -370,27 +374,30 @@ def validate(doc):
     settings_from(c)
 
 
-def write(boards, out, css=None, vars=None):
-    """out/<id>/index.html and storyboard.json for each; [paths written]."""
+def write(boards, out, css=None, vars=None, storyboards=None):
+    """out/<id>/index.html for each, and <id>/storyboard.json beside it or
+    under `storyboards`; [paths written]."""
     paths = []
     for b in boards:
         d = out / b["id"]
         d.mkdir(parents=True, exist_ok=True)
         rel = css and os.path.relpath(css, d).replace(os.sep, "/")
         (d / "index.html").write_text(page(b, rel, vars), encoding="utf-8")
-        (d / "storyboard.json").write_text(json.dumps(b, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
-        paths += [d / "index.html", d / "storyboard.json"]
+        j = (storyboards or out) / b["id"]
+        j.mkdir(parents=True, exist_ok=True)
+        (j / "storyboard.json").write_text(json.dumps(b, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        paths += [d / "index.html", j / "storyboard.json"]
     return paths
 
 
-USAGE = "usage: wherefore motion [ID ...] [--out DIR] [--show]"
+USAGE = "usage: wherefore motion [ID ...] [--out DIR] [--storyboards DIR] [--show]"
 
 
 def main(cfg, args):
     if any(a in ("-h", "--help") for a in args):
         print(USAGE)
         return 0
-    show, out, ids = False, None, []
+    show, out, ids, boards_dir = False, None, [], None
     typed_out = None
     it = iter(args)
     for a in it:
@@ -399,6 +406,11 @@ def main(cfg, args):
         elif a == "--out":
             out = typed_out = next(it, None)
             if not out:
+                print(USAGE)
+                return 2
+        elif a == "--storyboards":
+            boards_dir = next(it, None)
+            if not boards_dir:
                 print(USAGE)
                 return 2
         elif a.startswith("-"):
@@ -410,10 +422,12 @@ def main(cfg, args):
     root = cfg.root if cfg else pathlib.Path.cwd()
     out = pathlib.Path(out) if out else root / s.get("out", DEFAULTS["out"])
     css = root / s["css"] if s.get("css") else None
+    if boards_dir or s.get("storyboards"):
+        boards_dir = pathlib.Path(boards_dir) if boards_dir else root / s["storyboards"]
     boards = storyboards(ids or None, root, s)
     for b in boards:
         print(f"  {b['id']:<12} {len(b['scenes'])} scenes  {b['duration']:>4.1f} s  {b['name']}")
-    write(boards, out, css, s.get("vars"))
+    write(boards, out, css, s.get("vars"), boards_dir)
     shown = typed_out.rstrip("/") if typed_out else os.path.relpath(out, pathlib.Path.cwd()).replace(os.sep, "/")
     print(f"wrote {shown}/: {len(boards)} clip{'s' if len(boards) != 1 else ''}, "
           f"{'each ' if len(boards) != 1 else ''}a page in motion, played by the frame it is shown in")
