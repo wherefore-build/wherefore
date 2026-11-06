@@ -99,25 +99,29 @@ jobs:
           export PYTHONPATH="$PWD/.wherefore-engine"
           # build regenerates; the gate is the judge, and passes only if every
           # generator ran and what they made is what is now in the tree. When
-          # a generator the release stops fails the build, the pull request
-          # quotes the build - the generator's own words, a feature with no
-          # words here - not the gate, which would only name the files the
-          # stopped build left unwritten.
+          # a generator the release stops, the pull request quotes it: the
+          # generator's own words - a feature with no words here - not the
+          # files a release always moves, which is all the last lines of
+          # either say. A build exits 1 whenever a generated file moved, so
+          # its exit says nothing of this.
           set +e
           python3 -m wherefore build > build.txt 2>&1
-          BUILT=$?
           python3 -m wherefore gate > gate.txt 2>&1
           STATUS=$?
           set -e
           cat build.txt gate.txt
-          if [ "$BUILT" = "0" ]; then SAID=gate.txt; else SAID=build.txt; fi
+          if grep -q "failed while" build.txt gate.txt; then
+            cat build.txt gate.txt | grep -A3 "failed while" | grep -v '^--$' | grep -v '^\s*$' | awk '!seen[$0]++' | head -n 30 > said.txt
+          else
+            grep -v '^\s*$' gate.txt | tail -n 30 > said.txt
+          fi
           echo "status=$STATUS" >> "$GITHUB_OUTPUT"
           {
             echo "said<<WHEREFORE"
-            grep -v '^\s*$' "$SAID" | tail -n 30
+            cat said.txt
             echo "WHEREFORE"
           } >> "$GITHUB_OUTPUT"
-          rm -rf build.txt gate.txt .wherefore-engine
+          rm -rf build.txt gate.txt said.txt .wherefore-engine
       - name: Open the pull request, and start the checks on it
         if: steps.which.outputs.move == 'true'
         env:
