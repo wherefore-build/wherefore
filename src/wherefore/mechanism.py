@@ -139,6 +139,15 @@ def render(sc, i, total, rules):
     """The scene's inner HTML; keyframes for its parts go into `rules`."""
     kind, d, t0 = sc["mechanism"], sc["data"], sc["start"]
     esc = html.escape
+    counted = [0]
+
+    def count(n, at, cls="num"):
+        """A number that climbs to `n` from `at`, over a second; the value is
+        in the markup too, for anything that reads rather than watches."""
+        counted[0] += 1
+        name = f"cnt{i}_{counted[0]}"
+        rules.append(f"@keyframes {name}{{0%,{_pct(at, total)}{{--n:0}}{_pct(at + 1.0, total)},100%{{--n:{n}}}}}")
+        return f'<span class="{cls} count" style="--to:{n};animation-name:{name}" data-n="{n}"><span class="sr">{n}</span></span>'
 
     def appear(name, at, grow=False):
         a, b = _pct(at, total), _pct(at + 0.35, total)
@@ -155,10 +164,11 @@ def render(sc, i, total, rules):
             appear(f"bar{i}_{j}", t0 + 0.4 + 0.5 * j, grow=True)
             out.append(f'<div class="row"><span class="lab">{esc(label)}</span>'
                        f'<span class="bar"><i class="t-{tone}" style="--w:{100 * n / most:.1f}%;animation-name:bar{i}_{j}"></i></span>'
-                       f'<span class="num">{n}</span></div>')
-        appear(f"left{i}", t0 + 2.4)
+                       f'{count(n, t0 + 0.4 + 0.5 * j)}</div>')
+        # THE POINT OF THE SCENE, last and largest: nothing left over.
+        appear(f"left{i}", t0 + 2.6)
         out.append(f'<div class="row left" style="animation-name:left{i}"><span class="lab">unaccounted for</span>'
-                   f'<span class="num t-accent">{d["left"]}</span></div>')
+                   f'<span class="bar none"></span><span class="num t-accent">{d["left"]}</span></div>')
         return f'<div class="viz sort">{"".join(out)}</div>'
 
     if kind == "hold":
@@ -173,7 +183,7 @@ def render(sc, i, total, rules):
             chips.append(f'<span class="chip t-muted" style="animation-name:pgm{i}">+{more} more</span>')
         return (f'<div class="viz hold"><div class="card src" style="animation-name:src{i}">'
                 f'<span class="lab">the source</span><span class="val">{esc(d["source"])}</span>'
-                f'<span class="num">{d["facts"]} facts</span></div>'
+                f'<span class="num">{count(d["facts"], t0 + 0.4)} facts</span></div>'
                 f'<div class="arrow">→</div><div class="chips">{"".join(chips)}</div></div>')
 
     if kind == "compare":
@@ -187,9 +197,9 @@ def render(sc, i, total, rules):
         tone = "fail" if d["disagree"] else "accent"
         says = "".join(f'<span class="chip t-fail">{esc(s)}</span>' for s in d.get("says", []))
         return (f'<div class="viz compare"><div class="places">{"".join(cards)}</div>'
-                f'<div class="card tally" style="animation-name:st{i}"><span class="num big">{d["stated"]}</span>'
+                f'<div class="card tally" style="animation-name:st{i}">{count(d["stated"], t0 + 1.4, "num big")}'
                 f'<span class="lab">values stated, {d["files"]} pages</span></div>'
-                f'<div class="card tally t-{tone}" style="animation-name:dis{i}"><span class="num big">{d["disagree"]}</span>'
+                f'<div class="card tally t-{tone}" style="animation-name:dis{i}">{count(d["disagree"], t0 + 2.6, "num big")}'
                 f'<span class="lab">disagree</span>{says}</div></div>')
 
     if kind == "handover":
@@ -202,6 +212,13 @@ def render(sc, i, total, rules):
 
 
 CSS = """
+@property --n{syntax:'<integer>';inherits:false;initial-value:0}
+.viz .count{animation:var(--d) linear infinite;animation-delay:calc(var(--t) * -1s)}
+.viz .count::after{counter-reset:n var(--n);content:counter(n)}
+.viz .count .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.viz .row.left .lab{color:var(--ink)}
+.viz .row.left .num{font-size:5.5cqmin;line-height:1}
+.viz .bar.none{background:none;border:0}
 .viz{display:grid;gap:2.2cqmin;width:100%;max-width:120cqmin}
 .viz .row{display:grid;grid-template-columns:36cqmin 1fr 10cqmin;gap:2cqmin;align-items:center;font:400 3.2cqmin/1.3 var(--font-mono)}
 .viz .row.left{opacity:0;animation:var(--d) linear infinite;animation-delay:calc(var(--t) * -1s)}
@@ -225,7 +242,7 @@ CSS = """
 .viz .step{opacity:0;animation:var(--d) linear infinite;animation-delay:calc(var(--t) * -1s);display:grid;gap:1.6cqmin;justify-items:start;font:400 3cqmin/1.3 var(--font-mono)}
 .viz .step .dot{width:4cqmin;height:4cqmin;border-radius:50%;background:var(--accent)}
 .viz .step .lab{color:var(--ink)}
-html.still .viz .row.left,html.still .viz .bar i,html.still .viz .card,html.still .viz .chip,html.still .viz .step{animation-play-state:paused}
-@media (prefers-reduced-motion:reduce){.viz .row.left,.viz .bar i,.viz .card,.viz .chip,.viz .step{animation:none;opacity:1}.viz .bar i{width:var(--w)}}
+html.still .viz .row.left,html.still .viz .bar i,html.still .viz .card,html.still .viz .chip,html.still .viz .step,html.still .viz .count{animation-play-state:paused}
+@media (prefers-reduced-motion:reduce){.viz .row.left,.viz .bar i,.viz .card,.viz .chip,.viz .step,.viz .count{animation:none;opacity:1}.viz .bar i{width:var(--w)}.viz .count{--n:var(--to)}}
 .mech-cap{font:400 3.4cqmin/1.45 var(--font-body);color:var(--muted);max-width:120cqmin}
 """

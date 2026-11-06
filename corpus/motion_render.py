@@ -136,7 +136,7 @@ def main(argv=None):
     boards = motion.storyboards([f["id"] for f in feats], site, settings, cfg)
     pages = site / settings.get("out", "site/motion")
     css = site / settings["css"] if settings.get("css") else site / "site/brand.css"
-    motion.write(boards, pages, css, settings.get("vars"), out)
+    motion.write(boards, pages, css, settings.get("vars"), out, site)
     for b in boards:
         files, said = [], []
         for frame in FRAMES:

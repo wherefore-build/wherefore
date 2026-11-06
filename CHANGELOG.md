@@ -46,7 +46,7 @@ be asked for. No model draws it: four templates, held by the tests.
 
 Every feature now carries a `claim`, one sentence of at most twelve words,
 the line its clip ends on. The tests hold every clip to a reading speed of
-three words a second, a length of sixteen to thirty-two seconds, a command the
+three words a second, a length of sixteen to thirty-four seconds, a command the
 CLI has, and output the release picture or a docs example prints. `motion`
 in wherefore.json says where the clips go and which stylesheet carries the
 brand. The owner's go of 6 November, with the decisions made there.

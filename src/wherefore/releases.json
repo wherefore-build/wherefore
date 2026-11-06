@@ -28,7 +28,7 @@
     "fixture": false,
     "run": "wherefore motion published",
     "output": [
-     "  published    6 scenes  23.0 s  A page you publish but cannot build",
+     "  published    6 scenes  24.5 s  A page you publish but cannot build",
      "wrote motion/: 1 clip, a page in motion, played by the frame it is shown in"
     ]
    }
