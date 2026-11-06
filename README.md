@@ -30,6 +30,7 @@ hold your app, website and docs. [How it is built](https://wherefore.build/#case
 - **Reach** (since 0.1.0): every fact, moved one at a time, reaches what it should. `wherefore check reach`
 - **Claims** (since 0.1.0): every claim says only what its rule allows. `wherefore check claims`
 - **Derived from elsewhere** (since 0.5.0): every copy taken from elsewhere still matches where it was taken from, read there now. `wherefore check upstream`
+- **A page you publish but cannot build** (since 0.17.0): every page you publish but cannot build - a site on a hosted CMS - still states the source's facts, read live; a copy held by reading until it can be built. `wherefore check published`
 - **One palette** (since 0.10.0): every colour anywhere is one the brand's source holds, or the file says, with why, whose colours they are. `wherefore check palette`
 - **The pre-push hook** (since 0.1.0): a pre-push hook: no push leaves the corpus stale. `wherefore hook install`, `wherefore hook pre-push`
 - **The skill, for Claude Code and Codex** (since 0.2.0): teaches your coding agent the rules, and starts a corpus with you: one fact, end to end. One skill, written where each agent reads it, and held to the release
@@ -83,6 +84,7 @@ wherefore check reach                                                           
 wherefore check claims                                                                # every claim says only what its rule allows
 wherefore check upstream                                                              # every copy taken from elsewhere still matches where it was taken from, read there now
 wherefore check palette                                                               # every colour anywhere is one the brand's source holds, or the file says, with why, whose colours they are
+wherefore check published                                                             # every page you publish but cannot build - a site on a hosted CMS - still states the source's facts, read live; a copy held by reading until it can be built
 wherefore hook install                                                                # a pre-push hook: no push leaves the corpus stale
 wherefore hook pre-push                                                               # what the installed hook runs before a push; not for typing
 wherefore report --title TITLE WORDS ... [--from FILE] [--show | --link]              # feedback for the engine's makers - a bug, a question or a request, one topic each - with a title and the words, the release, the corpus's shape and the output given, nothing private; opened as an issue, or shown, or a link for the person to send

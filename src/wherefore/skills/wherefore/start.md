@@ -322,30 +322,63 @@ says. The app is the one place; the others are readers.
 ## A page you publish but cannot build
 
 Some surfaces the company publishes are built by nobody: a public site on a
-hosted CMS, a listing on someone else's marketplace. The owner may rule out
-changing how it is made. It still states the company's own facts - the same
-plan features the app states - and it drifts like any copy.
+hosted CMS that marketing edits in a form, a listing on someone else's
+marketplace. The owner may rule out changing how it is made, for now. It
+still states the company's own facts - the same plan features the app
+states - and it drifts like any copy, edited where it is published.
 
 This is the opposite of `upstream`. An upstream is a copy the corpus took
-from elsewhere, held to the place it was taken from; `wherefore check
-upstream` fails when that place moves. Here the corpus is the source and the
-page is the copy, and the engine has no check for that direction yet
-(wherefore-build/wherefore#22 asks for one: read the page live, compare it
-with the source, and fail when it differs). Until then:
+from elsewhere, held to the place it was taken from. Here the corpus is the
+source and the page is the copy. Declare it, with the facts it states and how
+each appears there:
 
-- **Scan it with the surfaces the corpus builds,** both at once, on every
-  change that moves a fact: `wherefore scan https://www.example.com site`.
-  The `DIFFER` lines are the page's drift from the source, read live.
-- **Hold the page's values in the retired register.** When a fact changes,
-  retire the old value in the same change; `wherefore check retired` names
-  any page in the corpus that still says it, and the scan names the published
-  page.
-- **Write down who changes the page,** and that it is a copy, in the
-  corpus: a captured group with no files, or a note beside the source, with
-  the address and the facts it states.
+```json
+"published": {
+ "pricing": {
+  "url": "https://www.example.com/pricing",
+  "why": "the public site, on a hosted CMS marketing edits; it states the plans the app decides",
+  "states": [
+   {"fact": "plans.pro.trial_days", "as": ["{} day free trial", "{}-day free trial"]},
+   {"fact": "plans.pro.price", "as": "${} per month"},
+   {"fact": "plans.pro.features", "each": true}
+  ],
+  "unreachable": "the CMS being down is not the page moving; a deploy goes ahead and says so"
+ }
+}
+```
 
-Do not take the page's words into the corpus as if they were the source.
-They are a copy, and the source is here.
+`as` is a template with the value in the braces - a page says "14-day free
+trial" and the fact is 14 - or several; `each` holds every item of a list. Do
+not write the page's sentence out whole: that is a copy of the page, which is
+the thing not to keep.
+
+**`wherefore check published`** reads each page live, as a person reads it,
+and fails when the page says otherwise, quoting it: "says '30 day free trial',
+and plans.pro.trial_days is '14'". A person edits the page where it is
+published, because that is the only way that page changes. It goes to the
+network, so it is never part of the gate or the hook: run it before every
+deploy, beside `check upstream`. The drift it catches happens on the other
+side, when nobody is deploying - marketing edits the CMS on a Tuesday - so
+offer the owner a scheduled run as well, and let them choose:
+
+```yaml
+on:
+  push:
+  schedule:
+    - cron: "17 6 * * *"   # the owner's choice: the page moves when nobody deploys
+```
+
+`reach` counts a fact named here as reaching that page, by declaration, and
+says so; a fact stated nowhere the corpus builds and on no published page is
+still dead. Prove the entries the way every check is proved: change the
+source's value and require the check to fail, quoting the page.
+
+**This is the step before building the page, not instead of it.** A
+published page is a copy until it is built from the source, and the check
+says so each time it runs. When the owner is ready - a CMS that reads a
+feed, a page the corpus writes and someone uploads, a site moved to a
+repository - the entry comes out of `published` and the page becomes a
+generated asset like any other. Keep the goal in the `why`.
 
 ## What stays written by hand
 
