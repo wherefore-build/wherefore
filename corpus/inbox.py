@@ -15,15 +15,25 @@ asked - and the agent that filed the report for them - reads it there:
 
 ONCE. Every comment carries a marker naming the item and the step, and an
 issue that already has that marker is left alone - except that a shipped note
-written before the clips existed gains the Watch line, once - so a re-run
-posts nothing twice and the first run after this script arrives catches up every issue
-that was answered before it existed. The shipped comment ends with a line an
-agent reads:
+catches up with what a new one says: the Watch line, and the clip itself -
+so a re-run posts nothing twice and the first run after this script arrives
+catches up every issue that was answered before it existed. The shipped
+comment ends with a line an agent reads:
 
     wherefore-inbox: shipped version=0.16.0 feature=scan-read
 
+THE CLIP PLAYS ON THE ISSUE (owner, 6 November 2026). The company's site
+writes each feature's clip twice: a page, and poster.svg beside it, the same
+clip as one SVG that a browser plays wherever an image is shown. The shipped
+note embeds the poster, linking the page, so the person who asked sees what
+shipped play where they asked. The site serves a feature's poster only once
+it has rebuilt against the release, which is after the release writes here;
+so a note written while the poster is not served yet carries the Watch line
+alone, and a later run (.github/workflows/inbox.yml, every few hours) adds
+the clip once it is.
+
 GITHUB_TOKEN with issues: write is what it takes. Without one, --show still
-says what would be done.
+says what would be done, with the clip in place.
 """
 import json
 import os
@@ -60,16 +70,49 @@ def planned_comment(item):
             f"{marker(item, 'planned')}")
 
 
-def watch(feature):
-    """The feature's clip on the company's site: what shipped, in motion."""
-    return f"**Watch:** https://wherefore.build/motion/{feature['id']}/"
+def clip(feature):
+    return f"https://wherefore.build/motion/{feature['id']}/"
 
 
-def shipped_comment(item, feature):
+def poster(feature):
+    """The clip as one SVG, which GitHub shows in a comment and a browser plays."""
+    return f"{clip(feature)}poster.svg"
+
+
+def serves(url):
+    """Whether the site answers for `url` now."""
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, method="HEAD", headers={"User-Agent": "wherefore-inbox"}), timeout=15) as r:
+            return r.status == 200
+    except (urllib.error.URLError, OSError, ValueError):
+        return False
+
+
+def watch(feature, played):
+    """The feature's clip on the company's site: what shipped, in motion. With
+    `played`, the clip itself first, the poster linking the page."""
+    line = f"**Watch:** {clip(feature)}"
+    if not played:
+        return line
+    return f"[![{feature['name']}, in motion]({poster(feature)})]({clip(feature)})\n\n{line}"
+
+
+def caught_up(body, feature):
+    """An earlier shipped note brought to what a new one says - the Watch
+    line if it lacks one, the clip once the site serves it - or None when
+    there is nothing to add yet."""
+    if "/motion/" not in body:
+        return body.replace("\n\nInstall: ", f"\n\n{watch(feature, serves(poster(feature)))}\n\nInstall: ", 1)
+    if "poster.svg" not in body and serves(poster(feature)):
+        return body.replace(f"**Watch:** {clip(feature)}", watch(feature, True), 1)
+    return None
+
+
+def shipped_comment(item, feature, played):
     return (f"Shipped in Wherefore {item['since']} as **{feature['name']}**: {item['words']}\n\n"
             f"**What was planned, and built:** {item.get('plan', '')}\n\n"
             f"**The feature now:** {feature.get('details', '')}\n\n"
-            f"{watch(feature)}\n\n"
+            f"{watch(feature, played)}\n\n"
             f"Install: `pip install -U wherefore-build=={item['since']}` · "
             f"Details: {SITE}#{feature['id']} · "
             f"Release notes: https://github.com/{REPO}/releases/tag/v{item['since']}\n\n"
@@ -140,21 +183,26 @@ def ship(gh, show):
             continue
         f = feats[it["feature"]]
         for url in it["issues"]:
-            n, body = number(url), shipped_comment(it, f)
+            n = number(url)
             if show:
+                body = shipped_comment(it, f, True)
                 print(f"would say on #{n}, if not said, and close it: shipped {it['id']} in {it['since']}\n"
                       + "\n".join("  | " + l for l in body.splitlines()))
                 continue
             earlier = gh.said(n, marker(it, "shipped"))
             if earlier:
-                # Said before the clips existed: the note gains the line, once.
-                if "/motion/" not in earlier.get("body", ""):
-                    gh.edit(earlier["id"], earlier["body"].replace("\n\nInstall: ", f"\n\n{watch(f)}\n\nInstall: ", 1))
+                # Said already: the note catches up with what a new one says, once.
+                newer = caught_up(earlier.get("body", ""), f)
+                if newer and newer != earlier.get("body", ""):
+                    gh.edit(earlier["id"], newer)
                     done += 1
                     print(f"added the clip to the note on #{n}: shipped {it['id']} in {it['since']} as {f['id']}")
                 continue
-            gh.comment(n, body)
+            played = serves(poster(f))
+            gh.comment(n, shipped_comment(it, f, played))
             gh.close(n)
+            if not played:
+                print(f"the site does not serve {poster(f)} yet; the note on #{n} has the Watch line, and gains the clip on a later run")
             done += 1
             print(f"said on #{n} and closed it: shipped {it['id']} in {it['since']} as {f['id']}")
     return done

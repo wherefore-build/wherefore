@@ -39,6 +39,10 @@ class WrittenBack(unittest.TestCase):
             self.assertIn(f"wherefore-inbox: shipped version={it['since']} feature={it['feature']}", out)
             self.assertIn(f"<!-- wherefore-inbox shipped {it['id']} -->", out)
             self.assertIn(it["plan"][:60], out, "the plan is on the closing note")
+            # the clip plays on the issue: the site's poster, linking the clip's page, above the Watch line
+            page = f"https://wherefore.build/motion/{it['feature']}/"
+            self.assertIn(f", in motion]({page}poster.svg)]({page})", out, "the closing note plays the clip")
+            self.assertIn(f"**Watch:** {page}", out)
 
     def test_every_open_item_with_issues_is_told_its_plan(self):
         code, out = run("--planned", "--show")

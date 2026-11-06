@@ -2,12 +2,21 @@
 # issue carries its plan. On every push to main, the plan is written onto each
 # such issue, once - a marker in the comment keeps it to once. What shipped is
 # written by release.yml, on the release, and closes the issue.
+#
+# AND THE SHIPPED NOTES CATCH UP, every few hours and whenever a person runs
+# this: a note written before the company's site served the feature's clip
+# gains the clip once it does (corpus/inbox.py says how), and an issue a
+# release answered while this could not reach it gets its note. Nothing is
+# said twice.
 name: inbox
 
 on:
   push:
     branches: [main]
     paths: [roadmap.json, src/wherefore/features.json, corpus/inbox.py]
+  schedule:
+    - cron: "41 */6 * * *"
+  workflow_dispatch:
 
 permissions:
   issues: write
@@ -15,6 +24,7 @@ permissions:
 
 jobs:
   planned:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -22,3 +32,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python3 corpus/inbox.py --planned
+  shipped:
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: What shipped, on each issue, caught up with the clip
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 corpus/inbox.py --shipped
