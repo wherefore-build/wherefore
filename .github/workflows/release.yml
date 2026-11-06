@@ -17,6 +17,14 @@
 # by setting it (PUBLISHING.md). It uploads by PyPI's trusted publishing: PyPI
 # trusts this workflow in this repository, so no PyPI token is stored anywhere.
 #
+# AND EVERY FEATURE IS IN MOTION. For each feature the release ships, the
+# `motion` job renders its clip - the page `wherefore motion` writes, stepped
+# frame by frame by a browser, joined by ffmpeg - and puts the portrait and
+# landscape clips and a poster on the release (corpus/motion_render.py).
+# workflow_dispatch with `motion` renders again: a version's features, or
+# `all`, every feature onto the release it arrived in, which is how the
+# features before 0.20.0 got theirs.
+#
 # AND EVERY CLIENT IS TOLD. Once the release is on PyPI, each repository that
 # pins the engine is sent `engine-released` with the version, and its own
 # workflow moves its pin, regenerates what the release lets through, and opens
@@ -34,6 +42,10 @@ on:
     inputs:
       ref:
         description: the commit whose declared version to tag and publish (default, the one pushed)
+        required: false
+        default: ""
+      motion:
+        description: "render the clips again: a version's features, or `all` for every feature onto its own release"
         required: false
         default: ""
 
@@ -98,13 +110,35 @@ jobs:
       - name: Upload it to PyPI, by trusted publishing
         uses: pypa/gh-action-pypi-publish@release/v1
 
+  motion:
+    needs: publish
+    if: needs.publish.outputs.tagged == 'true' || inputs.motion != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VERSION: ${{ inputs.motion || needs.publish.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.publish.outputs.sha }}
+      - name: The browser that steps each clip, and ffmpeg that joins it
+        run: |
+          python3 -m pip install --quiet playwright==1.63.0
+          python3 -m playwright install --with-deps chromium
+          ffmpeg -version | head -1
+      - name: Each feature's clip, rendered from its page and put on its release
+        run: python3 corpus/motion_render.py --version "$VERSION" --upload
+
   # AND EVERY ISSUE THE RELEASE ANSWERS IS TOLD, AND CLOSED. roadmap.json says
   # which (a shipped item, since this release, naming its issues), and
   # corpus/inbox.py writes what shipped onto each, once, with a line the
-  # person's agent can read, then closes it.
+  # person's agent can read and the clips to watch, then closes it. After the
+  # clips, so the links lead somewhere; a note written before them gains them.
   inbox:
-    needs: publish
-    if: needs.publish.outputs.tagged == 'true'
+    needs: [publish, motion]
+    if: (needs.publish.outputs.tagged == 'true' || inputs.motion != '') && !cancelled()
     runs-on: ubuntu-latest
     permissions:
       issues: write
