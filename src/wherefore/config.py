@@ -218,6 +218,9 @@ def validate(cfg):
     if d.get("published") is not None:
         from . import published
         published.validate(d)
+    if d.get("motion") is not None:
+        from . import motion
+        motion.validate(d)
     seen = set()
     for i, g in enumerate(d.get("generators", [])):
         where = f"generators[{i}]"

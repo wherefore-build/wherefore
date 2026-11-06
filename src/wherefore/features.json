@@ -1,5 +1,5 @@
 {
- "note": "What the engine does, as features, said once, with the release each arrived in. A client that describes the product - the company's site - reads this from the release it pins and must say something about every feature here, or the build stops: so a release that adds a feature fails every page that does not yet tell people about it. The README's list is generated from it (corpus/readme.py). A feature with commands takes its words from commands.json, the one place a command is described; a feature without one says its own. Every command in commands.json belongs to exactly one feature, and tests/test_features.py fails a command that belongs to none.",
+ "note": "What the engine does, as features, said once, with the release each arrived in. A client that describes the product - the company's site - reads this from the release it pins and must say something about every feature here, or the build stops: so a release that adds a feature fails every page that does not yet tell people about it. The README's list is generated from it (corpus/readme.py). A feature with commands takes its words from commands.json, the one place a command is described; a feature without one says its own. Every command in commands.json belongs to exactly one feature, and tests/test_features.py fails a command that belongs to none. Every feature carries a `claim`, one sentence of at most twelve words, the line its clip ends on (motion.py); tests/test_motion.py holds it.",
  "features": [
   {
    "id": "scan",
@@ -8,7 +8,8 @@
    "commands": [
     "wherefore scan PATH|URL ..."
    ],
-   "details": "Point it at a built site, a docs folder, exported notes or a live address. It reads what a person reads - pages, Markdown, text - finds every value stated in words, and reports each statement whose copies disagree, the commonest value first and every place it was said. It favours missing a disagreement over inventing one, and it needs no configuration: it is the first thing to run, before anything is declared."
+   "details": "Point it at a built site, a docs folder, exported notes or a live address. It reads what a person reads - pages, Markdown, text - finds every value stated in words, and reports each statement whose copies disagree, the commonest value first and every place it was said. It favours missing a disagreement over inventing one, and it needs no configuration: it is the first thing to run, before anything is declared.",
+   "claim": "Where every value is stated, and where the copies disagree."
   },
   {
    "id": "start",
@@ -17,7 +18,8 @@
    "commands": [
     "wherefore init [DIR]"
    ],
-   "details": "One command writes a wherefore.json that declares nothing yet, and the skill where Claude Code and Codex read it. From the first build on, the skill is the one the pinned release ships, and the gate says so when a copy has been edited by hand."
+   "details": "One command writes a wherefore.json that declares nothing yet, and the skill where Claude Code and Codex read it. From the first build on, the skill is the one the pinned release ships, and the gate says so when a copy has been edited by hand.",
+   "claim": "A wherefore.json that declares nothing yet, and a skill beside it."
   },
   {
    "id": "gate",
@@ -27,7 +29,8 @@
     "wherefore gate [--keep]",
     "wherefore gate --restamp GROUP"
    ],
-   "details": "On every push, each tracked file must be generated during the gate's own run, authored under a rule with a reason, or captured and stamped with what it was made from. A file nobody wrote and nobody claimed stops the change and is named; so does a generated file that differs from what is committed, and a corpus that does not settle on a second run."
+   "details": "On every push, each tracked file must be generated during the gate's own run, authored under a rule with a reason, or captured and stamped with what it was made from. A file nobody wrote and nobody claimed stops the change and is named; so does a generated file that differs from what is committed, and a corpus that does not settle on a second run.",
+   "claim": "Every tracked file accounted for; every generated one current."
   },
   {
    "id": "build",
@@ -37,7 +40,8 @@
     "wherefore build",
     "wherefore list"
    ],
-   "details": "Every generator runs, in order, and then again: the second run must change nothing, so the corpus settles. What moved is left in place for the diff, so a change to a fact shows exactly which assets follow it, and a generated file nobody tracks is named."
+   "details": "Every generator runs, in order, and then again: the second run must change nothing, so the corpus settles. What moved is left in place for the diff, so a change to a fact shows exactly which assets follow it, and a generated file nobody tracks is named.",
+   "claim": "Every generator run twice, compared with what is committed."
   },
   {
    "id": "graph",
@@ -46,7 +50,8 @@
    "commands": [
     "wherefore graph [--html PATH] [--json PATH|-] [--theme CSS ...] [--home URL [WORDS]]"
    ],
-   "details": "Runs every generator once, traces what each reads and writes, and draws one self-contained page: every source, script and file, with the lines between them. It changes nothing. A corpus may publish its own map, drawn in its brand's colours, with a way back to the site."
+   "details": "Runs every generator once, traces what each reads and writes, and draws one self-contained page: every source, script and file, with the lines between them. It changes nothing. A corpus may publish its own map, drawn in its brand's colours, with a way back to the site.",
+   "claim": "What builds what, drawn from a real run."
   },
   {
    "id": "proofs",
@@ -55,7 +60,8 @@
    "commands": [
     "wherefore prove [SCRIPT ...]"
    ],
-   "details": "Each check ships with a proof that plants the fault the check exists to catch, runs the check, and requires it to fail naming the fault; then the tree is put back exactly. A check nobody has seen fail is not trusted, and the proofs run in CI beside the checks."
+   "details": "Each check ships with a proof that plants the fault the check exists to catch, runs the check, and requires it to fail naming the fault; then the tree is put back exactly. A check nobody has seen fail is not trusted, and the proofs run in CI beside the checks.",
+   "claim": "Every check shown to fail when it should."
   },
   {
    "id": "retired",
@@ -64,7 +70,8 @@
    "commands": [
     "wherefore check retired"
    ],
-   "details": "A register of what a value was, what replaced it, and why. Nothing a person reads may say the old value or phrase again, and the check names the file and the line that does - so a changed price or a renamed plan cannot linger in a help article."
+   "details": "A register of what a value was, what replaced it, and why. Nothing a person reads may say the old value or phrase again, and the check names the file and the line that does - so a changed price or a renamed plan cannot linger in a help article.",
+   "claim": "Nothing a person reads still claims a retired value."
   },
   {
    "id": "reach",
@@ -73,7 +80,8 @@
    "commands": [
     "wherefore check reach"
    ],
-   "details": "Every fact is moved, one at a time, and everything that states it must change. A fact that moves nothing is dead or copied by hand into a generator, and the probe says which; a fact a published page states reaches it by declaration. Exemptions carry a reason."
+   "details": "Every fact is moved, one at a time, and everything that states it must change. A fact that moves nothing is dead or copied by hand into a generator, and the probe says which; a fact a published page states reaches it by declaration. Exemptions carry a reason.",
+   "claim": "Every fact, moved one at a time, reaches what it should."
   },
   {
    "id": "claims",
@@ -82,7 +90,8 @@
    "commands": [
     "wherefore check claims"
    ],
-   "details": "A claim - SOC 2 certified, made in Sheffield, the fastest in its class - gets a rule saying what may be claimed, of what, and why. No page may claim more than the rule allows, and the check names the page that does."
+   "details": "A claim - SOC 2 certified, made in Sheffield, the fastest in its class - gets a rule saying what may be claimed, of what, and why. No page may claim more than the rule allows, and the check names the page that does.",
+   "claim": "Every claim says only what its rule allows."
   },
   {
    "id": "upstream",
@@ -91,7 +100,8 @@
    "commands": [
     "wherefore check upstream"
    ],
-   "details": "A copy taken from elsewhere - another company's published file, counts from another product at one of its versions - records where it was taken from and what must still match there. The check reads the source now and fails the deploy when it has moved, until the copy is taken again and the change says so."
+   "details": "A copy taken from elsewhere - another company's published file, counts from another product at one of its versions - records where it was taken from and what must still match there. The check reads the source now and fails the deploy when it has moved, until the copy is taken again and the change says so.",
+   "claim": "Every copy still matches where it was taken from, read now."
   },
   {
    "id": "published",
@@ -103,7 +113,8 @@
    "details": "A page nobody here builds - the public site on a hosted CMS marketing edits - is declared with the facts it states and how each appears. The check reads it live, as a person reads it, and fails when the page says otherwise, quoting the page. It runs before a deploy and, if the client chooses, on a schedule. A copy held by reading until it can be built.",
    "issues": [
     "https://github.com/wherefore-build/wherefore/issues/22"
-   ]
+   ],
+   "claim": "A copy held by reading until it can be built."
   },
   {
    "id": "palette",
@@ -112,7 +123,8 @@
    "commands": [
     "wherefore check palette"
    ],
-   "details": "The brand's colours live in one JSON file. Every colour said anywhere else - a stylesheet, a page, a drawing, a script - fails by file and line, unless the file says, with a reason, whose colours they are. A colour quoted in code is text, not paint, and passes."
+   "details": "The brand's colours live in one JSON file. Every colour said anywhere else - a stylesheet, a page, a drawing, a script - fails by file and line, unless the file says, with a reason, whose colours they are. A colour quoted in code is text, not paint, and passes.",
+   "claim": "Every colour anywhere is one the brand's source holds."
   },
   {
    "id": "hook",
@@ -122,7 +134,8 @@
     "wherefore hook install",
     "wherefore hook pre-push"
    ],
-   "details": "A pre-push hook runs the gate before a push leaves the machine, so no push ships a stale document, and the push that would is refused with the file named."
+   "details": "A pre-push hook runs the gate before a push leaves the machine, so no push ships a stale document, and the push that would is refused with the file named.",
+   "claim": "No push leaves the corpus stale."
   },
   {
    "id": "skill",
@@ -135,14 +148,16 @@
     "https://github.com/wherefore-build/wherefore/issues/18",
     "https://github.com/wherefore-build/wherefore/issues/19",
     "https://github.com/wherefore-build/wherefore/issues/21"
-   ]
+   ],
+   "claim": "One skill, where each agent reads it, held to the release."
   },
   {
    "id": "docs",
    "name": "Docs from each release",
    "since": "0.19.0",
    "says": "the docs ship inside each release as data - start, commands, configuration, checks and proofs, reporting - held to the code by the engine's tests, so a client renders the docs of the release it pins and nothing describes a release it does not run",
-   "details": "Five pages ship inside each release: the start guide, every command with a worked example, every section of wherefore.json, what each check holds and how to prove one, and how to report back. The engine's tests hold them to the code: every command has its section, every section of the configuration the engine reads is documented, every command a page names exists, and every example is run again on the example company and must print what the page says. The company's site renders the docs of the release it pins."
+   "details": "Five pages ship inside each release: the start guide, every command with a worked example, every section of wherefore.json, what each check holds and how to prove one, and how to report back. The engine's tests hold them to the code: every command has its section, every section of the configuration the engine reads is documented, every command a page names exists, and every example is run again on the example company and must print what the page says. The company's site renders the docs of the release it pins.",
+   "claim": "The docs of the release you run, and no other."
   },
   {
    "id": "report",
@@ -154,21 +169,24 @@
    "details": "One command writes a bug, a question or a request for the engine's makers - a title, the words, the release, the corpus's shape in counts, the output given, and nothing private - shows it first, and opens it as an issue or prints a link for the person to send. Issues are the inbox: what becomes a feature is the maintainers' call, the roadmap names who asked, and the release writes back what shipped and closes the issue.",
    "issues": [
     "https://github.com/wherefore-build/wherefore/issues/15"
-   ]
+   ],
+   "claim": "A bug, a question or a request, nothing private, sent once."
   },
   {
    "id": "pins",
    "name": "Releases that reach every client",
    "since": "0.8.0",
    "says": "when the engine ships, every repository that pins it gets a pull request moving its pin, opened by the release itself, and the client's checks say what it still has to describe before it can build",
-   "details": "When the engine ships, every repository that pins it is told, and its own workflow moves the pin, regenerates what the release lets through, and opens a draft pull request whose checks say what it still has to describe. Nothing merges by itself."
+   "details": "When the engine ships, every repository that pins it is told, and its own workflow moves the pin, regenerates what the release lets through, and opens a draft pull request whose checks say what it still has to describe. Nothing merges by itself.",
+   "claim": "A release reaches a client only by its own pull request."
   },
   {
    "id": "scan2",
    "name": "Scan any number of repositories at once",
    "since": "0.13.0",
    "says": "point the scan at your site, your app, your backend and your docs together: every place is tagged with where it came from, and the scan says what they state in common and where any two disagree - drift between teams, with nothing installed",
-   "details": "Point the scan at as many places as the company has - the site, the app, the backend, the docs, the deck - in one command. Every place is tagged with where it came from, and the scan says what they state in common and which of those they disagree on, place by place - drift between teams, which no one repository's checks can see, with nothing installed."
+   "details": "Point the scan at as many places as the company has - the site, the app, the backend, the docs, the deck - in one command. Every place is tagged with where it came from, and the scan says what they state in common and which of those they disagree on, place by place - drift between teams, which no one repository's checks can see, with nothing installed.",
+   "claim": "Your site, your app, your docs, scanned together."
   },
   {
    "id": "scan-read",
@@ -179,7 +197,18 @@
    "issues": [
     "https://github.com/wherefore-build/wherefore/issues/19",
     "https://github.com/wherefore-build/wherefore/issues/20"
-   ]
+   ],
+   "claim": "Beside the result, what the scan read, so quiet means quiet."
+  },
+  {
+   "id": "motion",
+   "name": "Every feature, in motion",
+   "since": "0.20.0",
+   "commands": [
+    "wherefore motion [ID ...] [--out DIR] [--show]"
+   ],
+   "details": "For each feature the engine ships, one short clip compiled from the ledger: the version, who asked, the command typed, what it printed, the claim, the install line. Every word is a fact the engine already states, and nothing is written for the clip. A clip is a page whose motion is CSS, so it plays on the feature's card in any frame and the checks that judge a page judge it; a renderer steps it frame by frame into a video that goes on the release and the issue it answered. The engine's tests hold every clip to a reading speed, a length, a command that exists and output the command prints.",
+   "claim": "Every feature, in motion, every word a fact."
   }
  ]
 }

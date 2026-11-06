@@ -7,6 +7,29 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.20.0 (2026-11-06)
+
+**Every feature, in motion.** A short clip for each feature the engine
+ships, compiled from the ledger: the version, who asked, the command typed,
+what it printed, the claim, the install line. Every word is a fact the
+engine already states - the features, the releases, the roadmap, the docs'
+own examples - and nothing is written for the clip. `wherefore motion`
+writes each as one page whose motion is CSS, with its storyboard beside it,
+so it plays in any frame it is shown in and the checks that judge a page
+judge it; a page marked `still` with `--t` set pauses at that second, which
+is how `corpus/motion_render.py` steps it frame by frame into portrait and
+landscape video. The release renders the clips of the features it ships,
+puts them on the GitHub release, and the inbox links them on the issue each
+answered; every feature since the first is rendered once, onto the release
+it arrived in.
+
+Every feature now carries a `claim`, one sentence of at most twelve words,
+the line its clip ends on. The tests hold every clip to a reading speed of
+three words a second, a length of sixteen to thirty seconds, a command the
+CLI has, and output the release picture or a docs example prints. `motion`
+in wherefore.json says where the clips go and which stylesheet carries the
+brand. The owner's go of 6 November, with the decisions made there.
+
 ## 0.19.0 (2026-11-06)
 
 **Docs from each release.** The product's docs, compiled from the release

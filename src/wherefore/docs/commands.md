@@ -257,3 +257,27 @@ $ wherefore report --title Hello the words --show
 …
 --show: nothing was sent. Show the person; send it only when they say.
 ```
+
+## wherefore motion
+
+```
+wherefore motion [ID ...] [--out DIR] [--show]
+```
+
+A short clip for each feature the engine ships, compiled from the ledger:
+the version, who asked, the command typed, what it printed, the claim, the
+install line. Every word is a fact the engine already states - the features,
+the releases, the roadmap, the docs' own examples - and nothing is written
+for the clip. Each clip is one page whose motion is CSS, written to `DIR`
+(default `motion/`, or `motion.out` in wherefore.json) with its storyboard
+as JSON beside it; it plays in any frame it is shown in, portrait or
+landscape, and a page marked `still` with `--t` set pauses it at that
+second, which is how a renderer steps it into a video. `--show` opens the
+first clip in a browser. The engine's tests hold every clip to a reading
+speed, a length, a command that exists and output the command prints.
+
+```
+$ wherefore motion published
+  published    6 scenes  23.0 s  A page you publish but cannot build
+wrote motion/: 1 clip, a page in motion, played by the frame it is shown in
+```

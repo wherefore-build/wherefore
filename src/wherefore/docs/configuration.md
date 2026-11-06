@@ -199,6 +199,28 @@ Pages the company publishes but cannot build, and the facts each states:
 item of a list. `source` names the facts when reach does not and the corpus
 has more than one.
 
+## motion
+
+Where the feature clips go, and the brand they take, all optional:
+
+```json
+"motion": {"out": "site/motion",
+           "css": "site/brand.css",
+           "vars": {"accent": "--brand-accent"},
+           "name": "Wherefore",
+           "install": "pip install wherefore-build=={version}",
+           "site": "https://wherefore.build/"}
+```
+
+`out` is the directory the clips are written to (default `motion/`). `css`
+is a stylesheet the clip links, relative to the corpus root, for the brand's
+variables and fonts; without one the clip carries plain colours. `vars`
+names the variable a role reads when the stylesheet names it differently
+from `--ground`, `--surface`, `--line`, `--ink`, `--muted`, `--accent`,
+`--font-display`, `--font-body` and `--font-mono`. `name` is the product's
+(default Wherefore), `install` the install line with `{version}` where the
+version goes, and `site` where the feature pages are.
+
 ## proofs
 
 Where the corpus's proofs are: `{"glob": "proofs/*_proof.py"}`. `wherefore

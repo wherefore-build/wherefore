@@ -2,6 +2,15 @@
  "note": "THE ROADMAP, beside the code it plans, so that the people and the agents working on the engine plan from it - and THE INBOX'S LEDGER. Each item has an id, a name, one line on what it does, and a state: next, later, or shipped. An item that answers issues names them (`issues`) and who asked (`asked_by`, a GitHub login) and carries its `plan`, the design intent in words, written when it is taken on. When it ships it does not leave: its state becomes shipped, `since` names the release and `feature` the feature that answers it, so the chain from a request to what shipped is written here and the engine's tests hold it (tests/test_roadmap.py, test_features.py, test_releases.py). The release writes back to each issue - the plan when it is planned, what shipped when it ships - and closes it (corpus/inbox.py). It is a file, not a tracker, because a file is diffed, gated and read by a build with no token: the company's site copies it and holds the copy with `wherefore check upstream`.",
  "items": [
   {
+   "id": "motion",
+   "state": "shipped",
+   "name": "Every feature, in motion",
+   "words": "A short clip for each feature, compiled from the ledger and held by the checks.",
+   "plan": "Six scenes, every one a fact the engine states: the version, who asked, the command typed, what it printed, the claim, the install line. The clip is a page whose motion is CSS, so the checks that judge a page judge it and the site plays it on the feature's card; a renderer steps it frame by frame into portrait and landscape video for the release and the issue. Silent, captioned; the claim line written by the agent that builds the feature, held to twelve words; shipped in the engine so a client gets the same for its own features. Every feature since the first is backfilled.",
+   "since": "0.20.0",
+   "feature": "motion"
+  },
+  {
    "id": "docs",
    "state": "shipped",
    "name": "Docs from each release",

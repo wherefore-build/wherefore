@@ -1,0 +1,150 @@
+"""Every feature, in motion: src/wherefore/motion.py and the claims in features.json.
+
+A clip is compiled from facts, so what can go wrong is the compiling: a claim
+too long to read, a scene that asks more words a second than a person can
+take, a clip too short to say anything or too long to watch, a command typed
+that the CLI does not have, a line printed that the command never prints, a
+page that drops a scene's words. These hold each, for every feature.
+"""
+import json
+import os
+import re
+import subprocess
+import sys
+import unittest
+
+from _util import ENGINE, SRC, repo, wherefore
+from wherefore import cli, motion
+
+
+class EveryClaimReads(unittest.TestCase):
+    def test_every_feature_has_a_claim_of_at_most_twelve_words_that_is_a_sentence(self):
+        for f in motion.features():
+            claim = f.get("claim", "")
+            self.assertTrue(claim.strip(), f"{f['id']} has no claim: the one sentence its clip ends on")
+            self.assertLessEqual(motion.words(claim), motion.CLAIM_WORDS,
+                                 f"{f['id']}: the claim is {motion.words(claim)} words; a clip reads {motion.CLAIM_WORDS} at most")
+            self.assertRegex(claim, r"[.!?]$", f"{f['id']}: the claim is a sentence, ending in a full stop")
+
+
+class EveryStoryboardHolds(unittest.TestCase):
+    def setUp(self):
+        self.boards = motion.storyboards(root=ENGINE)
+        self.heads = {motion.head(c["usage"]) for c in cli.commands()}
+        self.printed = set()
+        for r in motion.releases().values():
+            self.printed.update((r.get("shows") or {}).get("output", []))
+        for _cmd, lines in motion.docs_examples():
+            self.printed.update(lines)
+
+    def test_there_is_one_per_feature_in_order_with_the_scenes_a_clip_has(self):
+        self.assertEqual([b["id"] for b in self.boards], [f["id"] for f in motion.features()])
+        for b in self.boards:
+            kinds = [s["kind"] for s in b["scenes"]]
+            self.assertEqual(kinds[:2], ["open", "ask"], b["id"])
+            self.assertEqual(kinds[-2:], ["claim", "close"], b["id"])
+            self.assertTrue(set(kinds[2:-2]) <= {"command", "answer", "more"}, b["id"])
+            self.assertEqual(b["scenes"][0]["start"], 0.0)
+            for a, c in zip(b["scenes"], b["scenes"][1:]):
+                self.assertEqual(a["end"], c["start"], f"{b['id']}: the scenes run end to start")
+            self.assertEqual(b["duration"], b["scenes"][-1]["end"])
+
+    def test_it_runs_sixteen_to_thirty_seconds_and_no_scene_outruns_a_reader(self):
+        for b in self.boards:
+            self.assertGreaterEqual(b["duration"], motion.MIN_SECONDS, f"{b['id']} is too short to say anything")
+            self.assertLessEqual(b["duration"], motion.MAX_SECONDS, f"{b['id']} is too long to watch")
+            for s in b["scenes"]:
+                n, d = sum(motion.words(t) for t in motion.texts(s)), s["end"] - s["start"]
+                self.assertLessEqual(n / d, motion.WORDS_PER_SECOND + 1e-9,
+                                     f"{b['id']}/{s['kind']}: {n} words in {d} s is more than {motion.WORDS_PER_SECOND} a second")
+                for t in motion.texts(s):
+                    self.assertLessEqual(motion.words(t), max(motion.LINE_WORDS, 24),
+                                         f"{b['id']}/{s['kind']}: a line of {motion.words(t)} words")
+
+    def test_the_command_typed_is_one_the_cli_has(self):
+        for b in self.boards:
+            for s in b["scenes"]:
+                if s["kind"] == "command":
+                    self.assertTrue(any(s["typed"] == h or s["typed"].startswith(h + " ") for h in self.heads),
+                                    f"{b['id']} types `{s['typed']}`, which no command's usage begins")
+
+    def test_every_line_printed_is_one_a_release_picture_or_a_docs_example_prints(self):
+        for b in self.boards:
+            for s in b["scenes"]:
+                if s["kind"] != "answer":
+                    continue
+                for line in s["lines"]:
+                    whole = line[:-1] if line.endswith(motion.ELIDED) else line
+                    self.assertTrue(any(p == line or p.startswith(whole) for p in self.printed),
+                                    f"{b['id']} shows `{line}`, which nothing the engine replays prints")
+
+    def test_the_page_carries_every_word_of_every_scene(self):
+        for b in self.boards:
+            html = motion.page(b)
+            for s in b["scenes"]:
+                for t in motion.texts(s):
+                    self.assertIn(motion.html.escape(t), html, f"{b['id']}/{s['kind']}: the page drops `{t}`")
+            self.assertIn(f'data-duration="{b["duration"]}"', html)
+            self.assertIn("html.still", html, "a renderer can pause the page at --t")
+
+    def test_the_brand_comes_from_a_stylesheet_when_one_is_given_and_plain_colours_otherwise(self):
+        b = self.boards[0]
+        linked = motion.page(b, "../../brand.css", {"accent": "--brand-accent"})
+        self.assertIn('<link rel="stylesheet" href="../../brand.css">', linked)
+        self.assertIn("var(--brand-accent)", linked)
+        self.assertNotIn("#", re.sub(r"#[a-z0-9-]+|&#\d+;", "", linked.split("<style>")[1].split("</style>")[0]),
+                         "with a stylesheet the page states no colour of its own")
+        plain = motion.page(b)
+        self.assertNotIn("<link", plain)
+        for v in motion.PLAIN.values():
+            self.assertIn(v, plain)
+
+
+class TheCommand(unittest.TestCase):
+    def test_it_writes_a_page_and_a_storyboard_per_feature_and_says_so(self):
+        root = repo({"wherefore.json": {"wherefore": 1, "name": "t", "sources": {},
+                                        "motion": {"out": "clips", "name": "Fernhollow"}}})
+        code, out = wherefore(root, "motion", "published", "gate")
+        self.assertEqual(code, 0, out)
+        self.assertIn("  published    6 scenes", out)
+        self.assertIn("wrote clips/: 2 clips, each a page in motion", out)
+        for fid in ("published", "gate"):
+            self.assertTrue((root / "clips" / fid / "index.html").exists())
+            board = json.loads((root / "clips" / fid / "storyboard.json").read_text(encoding="utf-8"))
+            self.assertEqual(board["id"], fid)
+            self.assertEqual(board["scenes"][0]["name"], "Fernhollow")
+        self.assertFalse((root / "clips" / "scan").exists(), "only the ids named")
+
+    def test_it_refuses_a_feature_it_does_not_have_and_a_flag_it_does_not_take(self):
+        root = repo({"wherefore.json": {"wherefore": 1, "name": "t", "sources": {}}})
+        code, out = wherefore(root, "motion", "teleport")
+        self.assertNotEqual(code, 0)
+        self.assertIn("no feature called teleport", out)
+        code, out = wherefore(root, "motion", "--fast")
+        self.assertEqual(code, 2)
+        self.assertIn("does not take --fast", out)
+
+    def test_it_needs_no_wherefore_json_and_show_opens_the_first(self):
+        root = repo({"README.md": "nothing here\n"})
+        env = dict(os.environ, PYTHONPATH=str(SRC), BROWSER="true")
+        env.pop("WHEREFORE_ROOT", None)
+        r = subprocess.run([sys.executable, "-m", "wherefore", "motion", "docs", "--show"], cwd=root, env=env,
+                           capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("wrote motion/: 1 clip", r.stdout)
+        self.assertIn("opened", r.stdout)
+        self.assertTrue((root / "motion/docs/index.html").exists())
+
+    def test_the_section_is_checked_before_anything_runs(self):
+        for bad, said in (({"motion": {"outt": "x"}}, "does not take"),
+                          ({"motion": {"install": "pip install it"}}, "{version}"),
+                          ({"motion": {"vars": {"accent": "accent"}}}, "CSS variable"),
+                          ({"motion": "clips"}, "is an object")):
+            root = repo({"wherefore.json": dict({"wherefore": 1, "name": "t", "sources": {}}, **bad)})
+            code, out = wherefore(root, "motion", "docs")
+            self.assertNotEqual(code, 0, bad)
+            self.assertIn(said, out, bad)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -206,9 +206,21 @@ def _scan(args):
     return scan.main(args)
 
 
+def _motion(args):
+    # A wherefore.json if there is one, for the brand and where to write; none needed.
+    from . import motion
+    try:
+        root = cfgmod.find_root()
+    except cfgmod.ConfigError:
+        cfg = None
+    else:
+        cfg = cfgmod.load(root)        # checked as it loads: a bad `motion` section is refused here
+    return motion.main(cfg, args)
+
+
 COMMANDS = {"init": _init, "list": _list, "build": _build, "gate": _gate,
             "graph": _graph, "prove": _prove, "check": _check, "hook": _hook,
-            "scan": _scan, "report": _report}
+            "scan": _scan, "report": _report, "motion": _motion}
 
 
 def commands():
