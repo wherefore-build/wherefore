@@ -254,6 +254,17 @@ move differently each get a ladder of their own, by name, under `ladders`:
 Each ladder takes the same keys as the one above. A thing is on one ladder:
 two ladders that read the same things are refused.
 
+Some corpora say a stage by whether a field is set at all - a draft is open
+while `draft` is set, a revision is released once it carries `promoted` -
+and a stage field beside it would say the same thing twice. `stage` is then
+an object: the first field in `set` that the thing has, set to something,
+is its stage, and `otherwise` is the stage of a thing that has none of them:
+
+```json
+"of": {"path": "spec/version.json",
+       "stage": {"set": {"draft": "draft"}, "otherwise": "released"}}
+```
+
 ## proofs
 
 Where the corpus's proofs are: `{"glob": "proofs/*_proof.py"}`. `wherefore

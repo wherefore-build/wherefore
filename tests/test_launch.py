@@ -121,6 +121,51 @@ class TheCheck(unittest.TestCase):
         self.assertIn("::error::kettles is launched, and from launched it needs no draft banner: site/index.html says", out)
 
 
+class AStageSaidByAFieldBeingSet(unittest.TestCase):
+    """The pendulum's shape: a draft is open while `draft` is set, and a revision
+    is released once it carries `promoted` - no stage field beside either."""
+
+    PACK = {"of": {"path": "spec/version.json", "stage": {"set": {"draft": "draft"}, "otherwise": "released"}},
+            "stages": ["draft", "released"],
+            "needs": {"released": [{"file": "archive/{version}.zip", "why": "an archive of the pack"}]},
+            "until": {"released": [{"in": "drawings/**", "says": "DRAFT", "why": "every sheet stamps DRAFT"}]}}
+
+    def pack(self, version, files):
+        doc = {"wherefore": 1, "name": "pendulum", "launch": self.PACK}
+        return repo({"wherefore.json": doc, "spec/version.json": version, **files})
+
+    def test_a_field_set_is_its_stage_and_a_field_unset_is_otherwise(self):
+        root = self.pack({"version": "V23", "draft": {"opened": "2026-11-06"}}, {"drawings/a.svg": "<text>DRAFT</text>\n"})
+        code, out = wherefore(root, "check", "launch")
+        self.assertEqual(code, 0, out)
+        self.assertIn("draft", out)
+        root = self.pack({"version": "V23", "draft": None}, {"drawings/a.svg": "<text>DRAFT</text>\n"})
+        code, out = wherefore(root, "check", "launch")
+        self.assertEqual(code, 1, out)
+        self.assertIn("is released, and from released it needs an archive of the pack", out)
+
+    def test_an_empty_field_is_not_set_and_the_first_field_set_wins(self):
+        section = {"of": {"source": "facts", "at": "revs", "id": "rev",
+                          "stage": {"set": {"promoted": "released", "draft": "draft"}, "otherwise": "planned"}},
+                   "stages": ["planned", "draft", "released"]}
+        revs = [{"rev": "A", "promoted": "2026-10-01", "draft": "x"}, {"rev": "B", "draft": "open", "promoted": ""},
+                {"rev": "C", "draft": {}}]
+        root = corpus([], None, section, {"revs": revs})
+        self.assertEqual({k: t["stage"] for k, t in found(root).items()},
+                         {"A": "released", "B": "draft", "C": "planned"})
+
+    def test_a_field_that_names_no_stage_is_refused(self):
+        doc = {"wherefore": 1, "name": "t", "launch": {"of": {"path": "v.json", "stage": {
+            "set": {"draft": "drafting"}, "otherwise": "released"}}, "stages": ["draft", "released"]}}
+        with self.assertRaises(cfgmod.ConfigError) as e:
+            launch.validate(doc)
+        self.assertIn("draft means 'drafting', which is not one of the stages", str(e.exception))
+        doc["launch"]["of"]["stage"] = {"set": {"draft": "draft"}}
+        with self.assertRaises(cfgmod.ConfigError) as e:
+            launch.validate(doc)
+        self.assertIn("`launch.of.stage.otherwise` is the stage of a thing that has none", str(e.exception))
+
+
 class SeveralLadders(unittest.TestCase):
     SITE = {"of": {"source": "facts", "stage": "site.status"}, "stages": ["draft", "launched"],
             "needs": {"launched": [{"in": "site/**", "lacks": "Not launched yet.", "why": "no draft banner"}]}}

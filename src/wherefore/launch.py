@@ -40,6 +40,16 @@ JSON file by `path`; `at`, the list or object of things inside it; `id` and
 `stage`, the fields of each. Without `at` there is one thing, the corpus
 itself, whose stage is the field `stage` names - a site's draft or launched.
 
+A STAGE SAID BY A FIELD BEING SET. Some corpora say a stage by whether a
+field is there at all - a draft is open while `draft` is set; a revision is
+released once it carries `promoted` - and a stage field beside it would say
+the same thing twice. `stage` is then an object: the first field in `set`
+that the thing has, set to something, is its stage, and `otherwise` is the
+stage of a thing that has none of them.
+
+    "of": {"path": "spec/version.json",
+           "stage": {"set": {"draft": "draft"}, "otherwise": "released"}}
+
 WHAT IS READ: tracked files, the way the gate sees them, generated pages
 included - the feature page is what a visitor reads. Markup is read as its
 text and as its source, so a name split by a tag still counts.
@@ -149,8 +159,12 @@ def _ladder(d, where, doc):
                           "or `path`, a JSON file")
     if "source" in of and of["source"] not in (doc.get("sources") or {}):
         raise ConfigError(f"`{where}.of.source` is {of['source']!r}, which is not a source in wherefore.json")
-    if not (isinstance(of.get("stage"), str) and of["stage"]):
-        raise ConfigError(f"`{where}.of.stage` is the field that holds each thing's stage")
+    stage = of.get("stage")
+    if isinstance(stage, dict):
+        _stage_by_field(stage, f"{where}.of.stage", stages)
+    elif not (isinstance(stage, str) and stage):
+        raise ConfigError(f"`{where}.of.stage` is the field that holds each thing's stage, or "
+                          "{\"set\": {field: stage}, \"otherwise\": stage} when a field being set is the stage")
     if "id" in of and "at" not in of:
         raise ConfigError(f"`{where}.of.id` names each thing's field among several (`at`); "
                           "without `at` the one thing is the corpus itself")
@@ -168,6 +182,39 @@ def _ladder(d, where, doc):
                 raise ConfigError(f"`{where}.{part}.{stage}` is a list of requirements")
             for i, r in enumerate(reqs):
                 _requirement(r, f"{where}.{part}.{stage}[{i}]")
+
+
+def _stage_by_field(spec, where, stages):
+    """`of.stage` as an object: the stage is the first field in `set` that the thing has, or `otherwise`."""
+    from .config import ConfigError
+    unknown = set(spec) - {"set", "otherwise"}
+    if unknown:
+        raise ConfigError(f"`{where}` takes `set` and `otherwise`; it has {', '.join(sorted(unknown))}")
+    by = spec.get("set")
+    if not isinstance(by, dict) or not by or not all(isinstance(k, str) and k for k in by):
+        raise ConfigError(f"`{where}.set` maps a field to the stage a thing is at when that field is set: "
+                          "{\"promoted\": \"released\"}")
+    if "otherwise" not in spec:
+        raise ConfigError(f"`{where}.otherwise` is the stage of a thing that has none of the fields in `set`")
+    for field, named in list(by.items()) + [("otherwise", spec["otherwise"])]:
+        if named not in stages:
+            raise ConfigError(f"`{where}` says {field} means {named!r}, which is not one of the stages "
+                              f"({', '.join(stages)})")
+
+
+def _is_set(v):
+    return v is not MISSING and v not in (None, "", False) and v != [] and v != {}
+
+
+def stage_of(item, spec):
+    """A thing's stage: the field `spec` names, or - `spec` an object - the first
+    field in `set` the thing has, set to something, or `otherwise`."""
+    if isinstance(spec, str):
+        return _get(item, spec)
+    for field, named in spec["set"].items():
+        if _is_set(_get(item, field)):
+            return named
+    return spec["otherwise"]
 
 
 def _requirement(r, where):
@@ -206,7 +253,7 @@ def things(cfg, d):
     rel = cfg.doc["sources"][of["source"]]["path"] if "source" in of else of["path"]
     doc = json.loads((cfg.root / rel).read_text(encoding="utf-8"))
     if "at" not in of:
-        return [{"id": cfg.name, "stage": _get(doc, of["stage"]), "fields": doc}], rel
+        return [{"id": cfg.name, "stage": stage_of(doc, of["stage"]), "fields": doc}], rel
     node = _get(doc, of["at"])
     if isinstance(node, dict):
         items = [(str(k), v) for k, v in node.items()]
@@ -221,7 +268,7 @@ def things(cfg, d):
             continue
         ident = _get(item, of.get("id", "id"))
         ident = key if ident is MISSING and key is not None else ident
-        out.append({"id": str(ident), "stage": _get(item, of["stage"]), "fields": item})
+        out.append({"id": str(ident), "stage": stage_of(item, of["stage"]), "fields": item})
     return out, rel
 
 

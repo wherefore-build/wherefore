@@ -10,7 +10,7 @@ import json
 import threading
 import unittest
 
-from _util import repo, wherefore
+from _util import repo, scripted, wherefore
 
 MODEL = "<p>the model, as it was copied</p>\n"
 
@@ -57,6 +57,31 @@ def corpus(upstream, files=None):
     tree = {"wherefore.json": config, "taken/model.html": MODEL, "facts.json": {"taken": {"version": "83"}}}
     tree.update(files or {})
     return repo(tree)
+
+
+class ACorpusWhoseInventoryLivesInItsScripts(unittest.TestCase):
+    """The pendulum's shape: its captured groups are in checks/inventory.json,
+    configured by the gate script `entry` names, not in wherefore.json."""
+
+    def setUp(self):
+        self.site = Site({"/model.html": (200, MODEL)})
+        self.addCleanup(self.site.close)
+
+    def corpus(self, upstream):
+        inv = {"authored": {"rules": [["checks/*", "the scripts"], ["wherefore.json", "the corpus"], [".gitignore", "x"]]},
+               "captured": {"groups": {"typeface": {"files": ["taken/model.html"], "no_stamp": "a third party's file",
+                                                    "why": "a copy of another site's file", "upstream": upstream}}}}
+        return scripted(inv, {"taken/model.html": MODEL})
+
+    def test_it_reads_the_groups_those_scripts_configure(self):
+        code, out = wherefore(self.corpus({"url": f"{self.site.url}/model.html", "matches": "bytes"}), "check", "upstream")
+        self.assertEqual(code, 0, out)
+        self.assertIn("ok   typeface: taken/model.html is what", out)
+
+    def test_an_upstream_there_is_checked_as_one_in_wherefore_json_is(self):
+        code, out = wherefore(self.corpus({"url": "ftp://nowhere", "matches": "bytes"}), "check", "upstream")
+        self.assertNotEqual(code, 0, out)
+        self.assertIn("the captured group `typeface`: `upstream.url` is the address", out)
 
 
 class TheCopyIsHeldToItsSource(unittest.TestCase):

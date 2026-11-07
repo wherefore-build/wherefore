@@ -8,7 +8,7 @@ import tempfile
 import unittest
 import urllib.parse
 
-from _util import ENGINE, SRC, repo
+from _util import ENGINE, SRC, repo, scripted
 
 FIXTURE = ENGINE / "tests" / "fixture"
 
@@ -50,6 +50,16 @@ class TheReport(unittest.TestCase):
         self.assertNotIn("hunter2", out)
         self.assertNotIn("41", out.split("**The corpus:**")[1].split("\n")[0])
         self.assertIn("--show: nothing was sent", out)
+
+    def test_a_corpus_configured_in_its_own_scripts_is_counted_as_its_gate_counts_it(self):
+        inv = {"authored": {"rules": [["checks/*", "the scripts"], ["wherefore.json", "the corpus"],
+                                      [".gitignore", "bytecode"]]},
+               "captured": {"groups": {"typeface": {"files": ["fonts/*"], "no_stamp": "a font", "why": "third party"}}}}
+        root = scripted(inv, gens=("page.py", "sheet.py"))
+        code, out = run(root, "--title", "A pendulum-shaped corpus", "Counts.", "--show")
+        self.assertEqual(code, 0, out)
+        self.assertIn("pendulum-shaped: 2 generators, 0 sources, 3 authored rules, 1 captured groups, "
+                      "configured in Python (`entry`)", out)
 
     def test_words_with_several_points_stay_points_in_the_body_not_the_title(self):
         root = repo({"wherefore.json": {"wherefore": 1, "name": "fern"}})

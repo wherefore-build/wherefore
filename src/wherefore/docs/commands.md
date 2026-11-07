@@ -195,7 +195,9 @@ there now. A captured group with an `upstream` names the address and what
 must still match; the check fails MOVED when the source says something else,
 NO LONGER SAYS when the source changed shape, and UNREACHABLE when it does
 not answer, unless the group says why that should not stop the corpus. It goes
-to the network: before a deploy, never in the gate.
+to the network: before a deploy, never in the gate. A corpus that configures
+the engine in its own scripts (`entry`) is read the way its gate reads it:
+the groups are the ones those scripts configure.
 
 ```
 $ wherefore check upstream
