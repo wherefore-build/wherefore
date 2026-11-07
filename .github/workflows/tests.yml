@@ -87,6 +87,22 @@ jobs:
         run: python3 corpus/version_moves.py
       - name: And each of those fails when it should
         run: python3 -m wherefore prove
+      # WHERE IT STANDS, for the app. On main only, once everything above has
+      # passed: `wherefore status` is this tree's own command (the release
+      # this job judges with may not have it), and it judges nothing - the
+      # gate it runs is only counted, the verdict above is the gate's.
+      - name: Where this repository stands, kept for the app to read
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
+        run: python3 -m wherefore status --gate --out status.json
+      - name: Keep it
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v7
+        with:
+          name: wherefore-status
+          path: status.json
+          retention-days: 30
 
   # EVERY COMMIT FROM OUTSIDE IS SIGNED OFF. A pull request from a fork comes
   # in under Apache-2.0 with each commit certifying the Developer Certificate
