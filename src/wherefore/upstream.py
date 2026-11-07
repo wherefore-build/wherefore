@@ -61,10 +61,26 @@ class TooLarge(Exception):
     """The address answered with more than LIMIT bytes."""
 
 
+def groups(cfg):
+    """Every captured group, as the gate sees them: in wherefore.json, or in the
+    inventory a corpus's own scripts configure (`entry`), the way drift reads it."""
+    from . import graph
+    return graph.inventory(cfg).get("captured", {}).get("groups", {}) or {}
+
+
 def declared(cfg):
-    """[(group name, group, upstream)] for every captured group that names one."""
-    groups = cfg.doc.get("inventory", {}).get("captured", {}).get("groups", {})
-    return [(n, g, g["upstream"]) for n, g in groups.items() if g.get("upstream")]
+    """[(group name, group, upstream)] for every captured group that names one.
+
+    wherefore.json's own groups were checked when it was loaded; a group a
+    script configures is checked here, the same way, before anything is fetched."""
+    out = []
+    scripted = "inventory" not in cfg.doc and any(cfg.entry(c) for c in ("list", "gate"))
+    for n, g in groups(cfg).items():
+        if g.get("upstream"):
+            if scripted:
+                validate(f"the captured group `{n}`", g["upstream"], g.get("files", []))
+            out.append((n, g, g["upstream"]))
+    return out
 
 
 def validate(where, up, files):
@@ -251,16 +267,16 @@ def main(cfg, args):
         print(f"::error::wherefore check upstream takes nothing: {' '.join(args)}")
         return 2
     watched = declared(cfg)
-    groups = cfg.doc.get("inventory", {}).get("captured", {}).get("groups", {})
+    every = groups(cfg)
     if not watched:
-        print(f"nothing captured here names an upstream ({len(groups)} captured groups): "
+        print(f"nothing captured here names an upstream ({len(every)} captured groups): "
               f"nothing is derived from elsewhere, or nothing says so")
         return 0
     results = [judge(cfg, n, g, up) for n, g, up in watched]
     for _, line in results:
         print(f"  {line}")
     bad = [s for s, _ in results if s in ("moved", "unread", "unreachable")]
-    unwatched = len(groups) - len(watched)
+    unwatched = len(every) - len(watched)
     print()
     if bad:
         print(f"::error::{len(bad)} of {len(watched)} copies taken from elsewhere no longer match where "

@@ -52,8 +52,15 @@ def shape():
     except (Exception, SystemExit):              # the error names the file and the directory; the report says neither
         return "a wherefore.json the engine refuses (add its error with --from, if it helps)"
     d = cfg.doc
-    inv = d.get("inventory", {})
-    parts = [f"{len(d.get('generators', []))} generators", f"{len(d.get('sources', {}))} sources",
+    inv, gens = d.get("inventory", {}), d.get("generators", [])
+    if "entry" in d:                             # its lists live in its scripts: count what they configure, as the gate does
+        try:
+            from . import generators, graph
+            inv = graph.inventory(cfg)
+            gens = generators.GENERATORS
+        except (Exception, SystemExit):          # a script that will not import is counted as nothing, not named
+            pass
+    parts = [f"{len(gens)} generators", f"{len(d.get('sources', {}))} sources",
              f"{len(inv.get('authored', {}).get('rules', []))} authored rules",
              f"{len(inv.get('captured', {}).get('groups', {}))} captured groups"]
     if "entry" in d:

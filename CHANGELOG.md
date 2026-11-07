@@ -7,6 +7,24 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.24.0 (2026-11-07)
+
+**A stage said by a field being set.** A launch ladder read each thing's
+stage from a field that names it. Some corpora say a stage by whether a field
+is there at all - a draft is open while `draft` is set, a revision is
+released once it carries `promoted` - and a stage field beside it would say
+the same thing twice. `of.stage` may now be an object: the first field in
+`set` that the thing has, set to something, is its stage, and `otherwise` is
+the stage of a thing with none of them. So a draft system already kept by a
+corpus's own checks can have a ladder on top, and the app can draw it.
+
+**A corpus that keeps its inventory in its scripts is read through them.** A
+corpus that hands its gate to scripts of its own (`entry`) keeps its
+inventory there too, not in `wherefore.json`. `wherefore check drift` already
+read it the way the gate does; now `wherefore check upstream` does, so a
+captured group there can name its upstream and be held to it, and `wherefore
+report` counts that corpus's generators, rules and groups instead of none.
+
 ## 0.23.0 (2026-11-06)
 
 **Where it stands, in one read.** `wherefore status` says where a repository

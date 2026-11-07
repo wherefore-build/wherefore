@@ -34,3 +34,30 @@ def wherefore(root, *args):
     r = subprocess.run([sys.executable, "-m", "wherefore", *args], cwd=root, env=env,
                        capture_output=True, text=True)
     return r.returncode, r.stdout + r.stderr
+
+
+def scripted(inventory, files=None, gens=()):
+    """A corpus shaped like the pendulum: wherefore.json hands `list` and `gate`
+    to scripts of its own, which configure the engine - and its inventory lives
+    in checks/inventory.json, read by those scripts, never in wherefore.json."""
+    listed = ", ".join(f"G.Gen({g!r}, 'gen', 'out/{g}, a page')" for g in gens)
+    gen_script = ("import pathlib, sys\n"
+                  "from wherefore import generators as G\n"
+                  "ROOT = pathlib.Path(__file__).resolve().parents[1]\n"
+                  f"G.configure(ROOT, [{listed}])\n"
+                  "if __name__ == '__main__':\n    sys.exit(G.main())\n")
+    gate_script = ("import json, pathlib, sys\n"
+                   "import generators\n"
+                   "from wherefore import gate\n"
+                   "ROOT = pathlib.Path(__file__).resolve().parents[1]\n"
+                   "INV = ROOT / 'checks/inventory.json'\n"
+                   "gate.configure(ROOT, lambda: json.loads(INV.read_text()), None, 'checks/inventory.json',\n"
+                   "               None, None, gate.COMPARE)\n"
+                   "if __name__ == '__main__':\n    sys.exit(gate.main())\n")
+    tree = {"wherefore.json": {"wherefore": 1, "name": "pendulum-shaped", "entry": {
+                "why": "its lists live in the scripts its proofs plant into",
+                "list": "checks/generators.py", "gate": "checks/coverage_gate.py"}},
+            "checks/generators.py": gen_script, "checks/coverage_gate.py": gate_script,
+            "checks/inventory.json": inventory, ".gitignore": "__pycache__/\n"}
+    tree.update(files or {})
+    return repo(tree)

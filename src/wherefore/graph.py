@@ -69,6 +69,16 @@ def configure(cfg):
         importlib.import_module(path.stem)
 
 
+def inventory(cfg):
+    """The inventory as the gate sees it: wherefore.json's own, or - for a corpus
+    that configures the engine in its scripts (`entry`) - what they configure."""
+    if not any(cfg.entry(c) for c in ("list", "gate")):
+        return cfg.doc.get("inventory") or {}
+    from . import gate
+    configure(cfg)
+    return (gate.DECL() if gate.DECL else None) or {}
+
+
 # ── the map's own generator ─────────────────────────────────────────────────
 #
 # A corpus may publish its own map: a `run` generator that is this command -
