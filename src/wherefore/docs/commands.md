@@ -277,6 +277,31 @@ $ wherefore check launch
 ok   no launch section: nothing here waits on a stage. Declare one in wherefore.json - where each thing's stage lives, the stages in order, and what each needs
 ```
 
+## wherefore status
+
+```
+wherefore status [--gate] [--json] [--out PATH]
+```
+
+Where this repository stands, in one read: what each file is, how many
+values drift, where every launch stands, and which engine release it pins.
+It judges nothing the other commands do not; it puts their answers in one
+place, as a few lines or as JSON. Without `--gate` nothing runs: files are
+sorted by what `wherefore.json` declares, and the rest are left for the
+gate. With `--gate` the gate runs first, and its verdict and counts are in
+the document. `--out` writes the JSON to a file, which is how CI keeps it
+for the app to read. A repository with no `wherefore.json` is scanned
+instead: how many values it states, in how many files, and how many
+disagree.
+
+```
+$ wherefore status
+fernhollow-kettles
+  files    15 tracked: 10 written, 1 captured, 4 for the gate to judge
+  drift    0 values said by hand twice with no source, none declared
+  launch   no ladders
+```
+
 ## wherefore hook
 
 ```

@@ -66,6 +66,10 @@
    "does": "every thing with a stage - a feature, a site, a roadmap item - held to what its stage needs and to what must not be said before; fails naming what is missing, and says what each next stage still waits on; --json for a reader that draws it"
   },
   {
+   "usage": "wherefore status [--gate] [--json] [--out PATH]",
+   "does": "where this repository stands, in one read - what each file is, what drifts, where every launch stands, which engine it pins - as a few lines or as JSON; --gate runs the gate for its verdict; a repository not set up yet is scanned"
+  },
+  {
    "usage": "wherefore hook install",
    "does": "a pre-push hook: no push leaves the corpus stale"
   },
