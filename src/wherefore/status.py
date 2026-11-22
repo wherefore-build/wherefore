@@ -20,6 +20,11 @@ was built and is current. With `--gate` the gate runs, in its own process, as
 A corpus that hands its gate to its own script (`entry`) gets that script's
 verdict, and its counts only if it prints them the way the gate does.
 
+WHO DECIDES. With a `decisions` section, how many facts - every leaf of every
+declared source, as the working tree holds them - a rule covers, and how many
+of those need someone named. Which decision moved each fact is not recorded
+yet: `wherefore check decisions` judges each change as it comes.
+
 A REPOSITORY NOT SET UP YET - no wherefore.json - is scanned instead, the way
 `wherefore scan .` would: how many values it states, in how many files, and
 how many disagree. That is the first thing the app shows for it, beside the
@@ -120,6 +125,9 @@ def find(root, gate=False):
                     "read": drifting["read"],
                     "list": [{"value": v["value"], "says": v["says"], "files": v["files"]} for v in drifting["values"]]}
     doc["launch"] = launch.find(cfg) if cfg.doc.get("launch") is not None else {"ladders": []}
+    if cfg.doc.get("decisions") is not None:
+        from . import decisions
+        doc["decisions"] = decisions.coverage(cfg)
     return doc
 
 
@@ -161,6 +169,10 @@ def lines(doc):
         state = (f"{short} lack{'s' if short == 1 else ''} what {'its stage needs' if short == 1 else 'their stages need'}"
                  if short else "each at a stage it has everything for")
         out.append(f"  launch   {lad['name']}: {len(lad['things'])} thing{'s' if len(lad['things']) != 1 else ''}, {state}")
+    dec = doc.get("decisions")
+    if dec:
+        out.append(f"  decisions {dec['covered']} of {dec['facts']} facts need an approval to change, by "
+                   f"{dec['rules']} rule{'s' if dec['rules'] != 1 else ''}; {dec['named']} from someone named")
     return out
 
 

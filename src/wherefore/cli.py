@@ -167,7 +167,7 @@ def _prove(args):
 
 
 # The checks `wherefore check` runs, in the order commands.json lists them.
-CHECKS = ("retired", "reach", "claims", "upstream", "palette", "published", "drift", "launch")
+CHECKS = ("retired", "reach", "claims", "upstream", "palette", "published", "drift", "launch", "decisions")
 
 
 def _check(args):
@@ -204,6 +204,9 @@ def _check(args):
     if name == "launch":
         from . import launch
         return launch.main(cfg, rest)
+    if name == "decisions":
+        from . import decisions
+        return decisions.main(cfg, rest)
     print(f"::error::no check called {name!r}: {', '.join(CHECKS)}")
     return 1
 

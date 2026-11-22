@@ -209,6 +209,15 @@
    "details": "Release is not launch: code ships any day, and what waits is the moment a thing is said to be ready. Every thing with a stage - a feature in beta, a site launched, a roadmap item shipped - has it as a fact in a source; the stages are named once, in order, and each names what must be true from then on: a help doc, a line in the changelog, the name on the feature page. What must not be said before a stage is declared too, so nothing public names a feature still being built. A pull request that moves a thing to a stage it does not have everything for is red, and the check says what is missing in the corpus's own words; for every other thing it says what the next stage still waits on. One ladder is the default; things that move differently - features through building, beta and live, the site through draft and launched - each get a ladder of their own, by name."
   },
   {
+   "id": "decisions",
+   "name": "Decisions",
+   "since": "0.26.0",
+   "commands": [
+    "wherefore check decisions [--base REF] [--pr N | --approvals FILE]"
+   ],
+   "details": "A repository says which facts are sensitive - a price, a plan's limit, a compliance claim - and who decides each: named people, or any reviewer who is not the author. On a pull request, every fact the change adds, removes or moves must carry an approving review on the head commit from someone its rules allow, read from GitHub, where the reviewer is a verified account. The author's own approval, an approval on an earlier commit and a dismissed one do not count, and nothing typed does: a commit message that says the founder agreed is not the founder agreeing. Off a pull request it says what the change would need and exits 2."
+  },
+  {
    "id": "status",
    "name": "Where it stands, in one read",
    "since": "0.23.0",

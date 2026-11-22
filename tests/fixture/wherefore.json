@@ -165,5 +165,27 @@
    },
    "why": "an origin claim has a regulated meaning; copy may name only what happens there"
   }
- ]
+ ],
+ "decisions": {
+  "rules": [
+   {
+    "source": "facts",
+    "keys": "product.price_usd",
+    "decides": [
+     "fern-founder"
+    ],
+    "why": "the price is a promise to every customer: the founder sets it"
+   },
+   {
+    "source": "facts",
+    "keys": [
+     "company.*",
+     "product.*",
+     "origin.activities.*"
+    ],
+    "decides": "reviewer",
+    "why": "every fact a customer reads is checked by a second person before it ships"
+   }
+  ]
+ }
 }
