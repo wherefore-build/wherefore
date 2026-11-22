@@ -218,6 +218,18 @@
    "details": "A repository says which facts are sensitive - a price, a plan's limit, a compliance claim - and who decides each: named people, or any reviewer who is not the author. On a pull request, every fact the change adds, removes or moves must carry an approving review on the head commit from someone its rules allow, read from GitHub, where the reviewer is a verified account. The author's own approval, an approval on an earlier commit and a dismissed one do not count, and nothing typed does: a commit message that says the founder agreed is not the founder agreeing. Off a pull request it says what the change would need and exits 2."
   },
   {
+   "id": "facts-in-a-store",
+   "name": "Facts in a store",
+   "since": "0.27.0",
+   "commands": [
+    "wherefore facts pull [--source NAME]",
+    "wherefore facts import [FILE] [--source NAME] --decided-by WHO [--note WORDS]",
+    "wherefore facts set KEY VALUE [--as TYPE] [--source NAME] --decided-by WHO [--note WORDS]",
+    "wherefore facts log [KEY] [--source NAME]"
+   ],
+   "details": "Each fact has an identity - its source and its dotted key - a type, and who decided it. A source may type its facts with a schema, checked when a fact is written and again by the gate, which names a fact of the wrong type by its identity. And a source may be backed by a store instead of a file a person edits: versions kept for good, each fact with who decided it, read through an open protocol - one JSON request a line, over standard input and output - that any store can speak, with a reference store on SQLite in the engine. The generators do not change: the store is pulled into the source's file, the same path and shape as before, and the gate holds that file to the store at the version pinned, so a file edited by hand, or a store that moved and was not pulled, fails."
+  },
+  {
    "id": "status",
    "name": "Where it stands, in one read",
    "since": "0.23.0",

@@ -15,6 +15,10 @@ prove one.
   the map the full gate keeps, so it holds less than the full gate: a read
   the map cannot see is skipped. The full gate on main and on a schedule is
   what holds the rest.
+  A source that declares a `schema` has every fact typed by it, named by
+  its identity when one is wrong; a source backed by a store has its file
+  materialized at the pinned version by a generator, so a file edited by
+  hand differs, and a store that moved past the pin fails it.
 - **Reach** (`wherefore check reach`): every fact, moved one at a time,
   changes something a visitor receives. It fails naming the fact that moved
   nothing - dead, or copied by hand into a generator - and the probe that
@@ -102,6 +106,11 @@ fire on the tree as it is. `report` prints PASS or MISS per case and returns
 the exit status. `wherefore prove` runs every proof the corpus declares, one
 at a time, in place - two at once in one checkout would plant faults over
 each other.
+
+In a corpus whose facts are backed by a store, the source's file is
+generated: a fault planted in it is overwritten by the first build. Plant in
+the store - `wherefore facts set`, inside an `Edit` of the store's file so
+it is put back - as the engine's `proofs/facts_proof.py` does.
 
 A proof that passes before the check is written is a proof of nothing: write
 the proof, watch it MISS, write the check, watch it PASS. Then break the

@@ -21,6 +21,8 @@ A GENERATOR RUNS when any of these hold, and is skipped otherwise:
   - it is a command, not Python: what it reads is not observed;
   - it is a module run with -m that is not the engine's: its code is not in
     the tree, where a change could be seen;
+  - it materializes a store (`-m wherefore.facts`, facts.py): what a store
+    holds is not a file in the tree, so no map can say it did not move;
   - the map did not observe its reads, or it failed when the map was made;
   - its script changed since REF;
   - a file it read (code or source) changed since REF, or was rewritten
@@ -269,6 +271,8 @@ def _why_run(p, g):
     e = p.entries[G.name(g)]
     if g.run:
         return "a command: what it reads is not observed"
+    if g.script == "-m wherefore.facts":
+        return "it materializes a store: what a store holds is not a file the map can watch"
     if g.script.startswith("-m "):
         mod = g.script[3:].strip()
         if mod != "wherefore" and not mod.startswith("wherefore."):
