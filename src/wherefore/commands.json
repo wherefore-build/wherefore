@@ -14,6 +14,10 @@
    "does": "every tracked file classified, every generated one current; puts the tree back unless --keep"
   },
   {
+   "usage": "wherefore gate --since REF [--keep]",
+   "does": "only the generators a change since REF can reach run, by the map the full gate keeps; the rest are taken as committed, and the run says which ran and why"
+  },
+  {
    "usage": "wherefore gate --restamp GROUP",
    "does": "record a re-made capture against its sources"
   },

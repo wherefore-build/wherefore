@@ -88,9 +88,10 @@ def inventory(cfg):
 # that one would run the map, without end. It is credited instead with the
 # files its arguments name, and the gate holds those files to what it writes.
 
-def maps_itself(g):
-    """The paths, relative to the root, that a `run` generator which is this
-    command would write; None for any other generator."""
+def call(g):
+    """What a `run` generator that is this command asks for: the options
+    `parse` makes of its words, or None for any other generator - or for words
+    this command would refuse, which is left to run, and fail in words."""
     if not g.run:
         return None
     words = list(g.run)
@@ -100,27 +101,29 @@ def maps_itself(g):
         words = words[1:]
     else:
         return None
-    if words[:1] != ["graph"]:
+    if words[:1] != ["graph"] or any(a in ("-h", "--help") for a in words[1:]):
         return None
-    out, rest = [], words[1:]
-    while rest:
-        a, rest = rest[0], rest[1:]
-        if a not in ("--html", "--json", "--theme", "--home"):
-            return None               # not a call this command would take: let it run, and fail in words
-        if not rest:
-            return None
-        dest, rest = rest[0], rest[1:]
-        if a == "--theme":
-            continue                  # a stylesheet it reads, not a file it writes
-        if a == "--home":             # an address, and maybe the words for it: nothing written
-            if rest and not rest[0].startswith("--"):
-                rest = rest[1:]
-            continue
-        if dest != "-":
-            out.append(os.path.normpath(os.path.join(g.cwd, dest)))
-    if not out and "--html" not in words:
-        out.append(os.path.normpath(os.path.join(g.cwd, DEFAULT_HTML)))
-    return out
+    import contextlib
+    import io
+    with contextlib.redirect_stdout(io.StringIO()):
+        opts = parse(words[1:])
+    return None if isinstance(opts, int) else opts
+
+
+def maps_itself(g):
+    """The paths, relative to the root, that a `run` generator which is this
+    command would write; None for any other generator.
+
+    Every file `main` writes: the page, unless it goes to stdout, and the JSON
+    when it is asked for. The page is written even when only --json is named -
+    to wherefore-graph.html - so it is credited then too: a command run by the
+    gate is seen writing it, and a credit that left it out would say less than
+    the run does."""
+    opts = call(g)
+    if opts is None:
+        return None
+    return [os.path.normpath(os.path.join(g.cwd, opts[k])) for k in ("html", "json")
+            if opts[k] not in (None, "-")]
 
 
 # ── the run, and putting the tree back ──────────────────────────────────────
@@ -389,20 +392,41 @@ def main(cfg, args):
     if isinstance(opts, int):
         return opts
     configure(cfg)
-    from . import generators as G
     tracked, wrote, reads, failures = observe()
     m = model(cfg.name, tracked, wrote, reads, failures)
+    theme = read_theme(opts, pathlib.Path.cwd())
+    if theme is None:
+        return 2
+    to_stdout = "-" in (opts["html"], opts["json"])
+    say = sys.stderr if to_stdout else sys.stdout
+    written = write(m, opts, theme, pathlib.Path.cwd())
+    for who, err in failures:
+        print(f"::error::{who} failed while the graph ran it, so what it reads and makes "
+              f"is not all here:\n{err}", file=say)
+    print(summary(m, " and ".join(written) or None), file=say)
+    return 1 if failures else 0
+
+
+def read_theme(opts, cwd):
+    """The stylesheets --theme names, read from `cwd`, as one text; None, said,
+    when one is not there."""
     theme = ""
     for t in opts["theme"]:
         path = pathlib.Path(t)
         if not path.is_absolute():
-            path = pathlib.Path.cwd() / path
+            path = cwd / path
         if not path.is_file():
             print(f"::error::--theme {t}: no such stylesheet")
-            return 2
+            return None
         theme += path.read_text(encoding="utf-8")
-    to_stdout = "-" in (opts["html"], opts["json"])
-    say = sys.stderr if to_stdout else sys.stdout
+    return theme
+
+
+def write(m, opts, theme, cwd):
+    """Write the map `m` where `opts` says, relative to `cwd`: the page, and the
+    JSON. What goes to stdout is printed. Returns the destinations written, as
+    given. The gate's --since writes a map through this too (since.py), so the
+    bytes it compares are the bytes this command writes."""
     written = []
     for kind, text in (("html", lambda: themed(page(m, opts["home"]), theme)),
                        ("json", lambda: json.dumps(m, indent=1, ensure_ascii=False) + "\n")):
@@ -414,15 +438,11 @@ def main(cfg, args):
             continue
         path = pathlib.Path(dest)
         if not path.is_absolute():
-            path = pathlib.Path.cwd() / path
+            path = cwd / path
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text(), encoding="utf-8")
         written.append(dest)
-    for who, err in failures:
-        print(f"::error::{who} failed while the graph ran it, so what it reads and makes "
-              f"is not all here:\n{err}", file=say)
-    print(summary(m, " and ".join(written) or None), file=say)
-    return 1 if failures else 0
+    return written
 
 
 PAGE = r"""<!doctype html>

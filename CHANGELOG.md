@@ -7,6 +7,39 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.25.0 (2026-11-22)
+
+**A gate for the change.** The gate ran every generator on every change, so
+its cost grew with the whole corpus however small the change was. `wherefore
+gate --since REF` runs only the generators a change since REF can reach: one
+runs when its script, a file it reads or a file it writes changed since REF,
+when a generator before it in the run rewrote a file it reads, or when what
+it reads is not observed - a command, not Python. The rest are skipped, and
+the files they wrote are taken as generated at the bytes committed. Every
+tracked file is still classified, and what ran is still compared and
+settled. The run names each generator it ran, skipped or composed, and why.
+
+What each generator reads and writes comes from the corpus's own map,
+`wherefore graph --json PATH` declared as a generator, so the full gate keeps
+it current like any file it builds and nobody keeps it by hand. Under
+`--since` the map is composed rather than run - running it runs everything -
+from this run and the map at REF, through the code the command runs, and
+compared like any other file. When the map cannot say, every generator runs
+and the run says why: no map at REF, a map another release wrote, generators
+it does not name, a file added or removed, a file git neither tracks nor
+ignores, or a change to what tells the gate what to do.
+
+The map holds the reads Python's `open()` was seen making. A file read
+through a shell, a C extension or from outside the tree is not in it, so a
+change to that file alone is skipped. `proofs/since_proof.py` shows it, in
+the case "a read through a shell", beside the full gate catching it. So
+`--since` is for pull requests, and the full gate on main and on a schedule
+stays the backstop. The design is Stage 1 of `docs/scale.md`.
+
+The map's credit for a `wherefore graph` generator now includes the page the
+command writes when only `--json` is named, `wherefore-graph.html`, as the
+gate already saw it write.
+
 ## 0.24.0 (2026-11-07)
 
 **A stage said by a field being set.** A launch ladder read each thing's

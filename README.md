@@ -23,6 +23,7 @@ hold your app, website and docs. [How it is built](https://wherefore.build/#case
 - **Scan** (since 0.3.0): where each stated value appears, and where the copies disagree; needs no setup. Given two places - a site and an app - what both state, and where they differ. `wherefore scan PATH|URL ...`
 - **Start a corpus** (since 0.1.0): write a wherefore.json that declares nothing yet. `wherefore init [DIR]`
 - **The gate** (since 0.1.0): every tracked file classified, every generated one current; puts the tree back unless --keep. `wherefore gate [--keep]`, `wherefore gate --restamp GROUP`
+- **A gate for the change** (since 0.25.0): only the generators a change since REF can reach run, by the map the full gate keeps; the rest are taken as committed, and the run says which ran and why. `wherefore gate --since REF [--keep]`
 - **The build** (since 0.1.0): the roll: every generator - a Python script or any command - twice, compared with what is committed, and the results left in place. `wherefore build`, `wherefore list`
 - **What builds what** (since 0.7.0): what builds what: run every generator once, trace what each reads and writes, and draw it as one self-contained page (and JSON) - changing nothing. `wherefore graph [--html PATH] [--json PATH|-] [--theme CSS ...] [--home URL [WORDS]]`
 - **Proofs** (since 0.1.0): run the client's proofs, one at a time, in place. `wherefore prove [SCRIPT ...]`
@@ -78,6 +79,7 @@ pip install -e '.[pictures,xlsx]' # with picture and workbook comparison
 wherefore scan PATH|URL ...                                                           # where each stated value appears, and where the copies disagree; needs no setup. Given two places - a site and an app - what both state, and where they differ
 wherefore init [DIR]                                                                  # write a wherefore.json that declares nothing yet
 wherefore gate [--keep]                                                               # every tracked file classified, every generated one current; puts the tree back unless --keep
+wherefore gate --since REF [--keep]                                                   # only the generators a change since REF can reach run, by the map the full gate keeps; the rest are taken as committed, and the run says which ran and why
 wherefore gate --restamp GROUP                                                        # record a re-made capture against its sources
 wherefore build                                                                       # the roll: every generator - a Python script or any command - twice, compared with what is committed, and the results left in place
 wherefore list                                                                        # run every generator once and say what each wrote

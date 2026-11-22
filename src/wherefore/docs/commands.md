@@ -55,6 +55,7 @@ are the repository's to make.
 
 ```
 wherefore gate [--keep]
+wherefore gate --since REF [--keep]
 wherefore gate --restamp GROUP
 ```
 
@@ -76,6 +77,44 @@ $ wherefore gate
 every tracked file is classified, and every generated one was written
 during this run and matches what is committed
 ```
+
+`--since REF` judges a change by what it can reach. REF is a commit the full
+gate passed: in a pull request, its base. A generator runs when its script,
+a file it reads or a file it writes changed since REF, when a generator
+before it in this run rewrote a file it reads, or when what it reads is not
+observed - a command, not Python. Every other generator is skipped, and the
+files it wrote are taken as generated, at the bytes committed. Every tracked
+file is still classified, and the ones that ran are still compared and
+settled; a skipped generator whose input the run rewrote runs in the second
+pass.
+
+What each generator reads and writes comes from the corpus's own map:
+`wherefore graph --json PATH`, declared as a generator, so the full gate keeps
+it current like any file it builds and nobody keeps it by hand. Under
+`--since` the map is not run, since running it runs everything; it is
+composed from this run and the map at REF, and compared like any other file.
+Every generator runs instead - a full gate, and it says why - when there is
+no map at REF, another release of the engine wrote it, the generators are not
+the ones it names, a file was added or removed, the tree holds a file git
+neither tracks nor ignores, a generator reads the map, or `wherefore.json` or
+anything else that tells the gate what to do changed.
+
+```
+$ wherefore gate --since HEAD
+15 tracked files; 4 generators
+since HEAD: every generator runs - no generator writes the map (`wherefore graph --json PATH`), so there is nothing to skip by
+…
+every tracked file is classified, and every generated one was written
+during this run and matches what is committed
+```
+
+The map holds what Python's `open()` was seen reading. A file a generator
+reads through a shell, a C extension, or from outside the tree is not in it,
+so a change to that file alone is skipped and passes. The engine's
+`proofs/since_proof.py` shows it, in the case "a read through a shell". So
+`--since` is for pull requests, and the full gate stays the backstop: run it
+on main and on a schedule, where a file `--since` trusted and the full gate
+finds stale fails, naming the generator whose read the map missed.
 
 ## wherefore build
 
