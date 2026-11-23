@@ -57,6 +57,23 @@ class WhatDrifts(unittest.TestCase):
         found = drift.find(cfgmod.load(root))
         self.assertEqual(found["values"], [], "README says it once; the script is code; the page is generated")
 
+    def test_a_source_declared_with_drift_false_holds_nothing(self):
+        said = {"README.md": "Our kettle boils in 3 minutes.\n", "docs/faq.md": "It boils in 3 minutes flat.\n",
+                "version.json": {"version": "3.1.0", "build": 3}}
+        for opted_out, drifting in ((None, []), (False, ["3"])):
+            version = {"path": "version.json", "why": "named by decisions"}
+            if opted_out is not None:
+                version["drift"] = opted_out
+            root = corpus(said, {"sources": {**BASE["sources"], "version": version}})
+            found = drift.find(cfgmod.load(root))
+            self.assertEqual([v["value"] for v in found["values"]], drifting,
+                             "a version file holds every small number, unless it says it holds none")
+        root = corpus(said, {"sources": {**BASE["sources"], "version": {"path": "version.json", "why": "x",
+                                                                        "drift": "no"}}})
+        code, out = wherefore(root, "check", "drift")
+        self.assertNotEqual(code, 0, out)
+        self.assertIn("source 'version': `drift` is false", out)
+
     def test_a_captured_drawing_counts_and_an_ignored_file_does_not(self):
         root = corpus({"README.md": "Boils in 3 minutes.\n",
                        "sketch.svg": '<svg xmlns="http://www.w3.org/2000/svg"><text>Boils in 3 minutes</text></svg>\n',

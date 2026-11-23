@@ -329,6 +329,68 @@ class AClientThatConfiguresTheEngineInItsOwnScripts(unittest.TestCase):
         self.assertEqual(git(root, "status", "--porcelain").stdout, "")
 
 
+FOREIGN_OBSERVER = """\
+import os, sys
+
+
+class copying:
+    \"\"\"A client's observer: says, in its own log, who declared a copy.\"\"\"
+    def __enter__(self):
+        with open(os.environ["FOREIGN_COPYING_LOG"], "a", encoding="utf-8") as fh:
+            fh.write(sys._getframe(1).f_code.co_name + "\\n")
+        return self
+
+    def __exit__(self, *exc):
+        return False
+"""
+
+
+class TheObserverToldIsTheOneRunning(unittest.TestCase):
+    """graph's snapshot and restore are copies, declared to the observer that
+    is logging this process's reads - a client's own, under its own
+    variables - and not to the engine's module, which nobody is listening to
+    then. The pendulum's leaf check found the difference: every tracked file,
+    logged as a read."""
+
+    def test_a_foreign_observer_on_the_path_is_the_one_whose_copying_is_entered(self):
+        import os
+        from _util import SRC
+        root = fernhollow()
+        observer = root.parent / "client-observer"
+        observer.mkdir()
+        (observer / "sitecustomize.py").write_text(FOREIGN_OBSERVER, encoding="utf-8")
+        log = root.parent / "copying.log"
+        out = root.parent / "out"
+        out.mkdir()
+        env = dict(os.environ, PYTHONPATH=os.pathsep.join([str(observer), str(SRC)]),
+                   WHEREFORE_ROOT=str(root), FOREIGN_COPYING_LOG=str(log))
+        r = subprocess.run([sys.executable, "-m", "wherefore", "graph", "--json", str(out / "g.json"),
+                            "--html", str(out / "g.html")], cwd=root, env=env, capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        entered = log.read_text(encoding="utf-8").split() if log.exists() else []
+        self.assertEqual(entered, ["observe", "observe"],
+                         "the snapshot and the restore are declared to the observer that is running")
+
+    def test_the_running_observers_copying_is_taken_and_none_is_a_context_that_does_nothing(self):
+        import contextlib, types
+        from unittest import mock
+        from wherefore import graph as G
+        foreign = types.ModuleType("sitecustomize")
+        foreign.copying = contextlib.contextmanager(lambda: (yield))
+        with mock.patch.dict(sys.modules, {"sitecustomize": foreign}):
+            self.assertIs(G.running_copying(), foreign.copying)
+        without = types.ModuleType("sitecustomize")           # a sitecustomize that is no observer
+        with mock.patch.dict(sys.modules, {"sitecustomize": without}):
+            self.assertIs(G.running_copying(), contextlib.nullcontext)
+        with mock.patch.dict(sys.modules, {"sitecustomize": None}):   # none loaded at all
+            self.assertIs(G.running_copying(), contextlib.nullcontext)
+            with G.running_copying()():
+                pass
+        self.assertNotIn("wherefore._observe.sitecustomize", sys.modules,
+                         "the engine's observer is never imported by its package name: importing it "
+                         "would install a second hook wherever its log variable is set")
+
+
 class TheLine(unittest.TestCase):
     def test_flags_it_does_not_take_are_refused(self):
         root = fernhollow()

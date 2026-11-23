@@ -24,7 +24,11 @@ what there is to declare.
 
 WHAT HOLDS A VALUE. A source holds a value when the value is a leaf of the
 source, or a number, version or money inside a leaf's text. Comparison is
-the scan's own: `$89`, `89` and `89.0` are one value.
+the scan's own: `$89`, `89` and `89.0` are one value. A source declared with
+`"drift": false` holds nothing here: one declared only so `decisions` can
+name its facts - a version file, whose small numbers are everywhere - would
+otherwise call every 1 and 2 said by hand held, and hide the drift this is
+for.
 
 WHAT IS READ: what a person reads - prose and markup, by hand. A string in
 a script is the script's business, and a generator that restates a source
@@ -102,8 +106,9 @@ def held_values(cfg):
     whole, and every number, version or money inside a leaf's text."""
     from . import gate
     held = set()
-    paths = [cfg.root / src["path"] for src in (cfg.doc.get("sources") or {}).values()]
-    if not paths and gate.SPEC:                 # an `entry` corpus names its source in Python
+    declared = (cfg.doc.get("sources") or {}).values()
+    paths = [cfg.root / src["path"] for src in declared if src.get("drift", True)]
+    if not declared and gate.SPEC:              # an `entry` corpus names its source in Python
         paths = [cfg.root / gate.SPEC]
     for path in paths:
         if not path.is_file() or path.suffix.lower() != ".json":

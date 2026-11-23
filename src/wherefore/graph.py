@@ -143,13 +143,32 @@ def _dirs(root):
     return out
 
 
+def running_copying():
+    """copying() from the observer this process is running under, or a context
+    that does nothing when none is loaded - as gate.py takes it.
+
+    The observer that matters is the one that put itself on the path as
+    `sitecustomize`, and whose hook is logging this process's reads: the
+    engine's own, or a client's (the pendulum's checks/_observe, logging to
+    its CP_READ_LOG). Importing the engine's module by its package name
+    instead would declare the snapshot and the restore to an observer nobody
+    is listening to, and the client's log would call every tracked file a
+    read - which its leaf check then fails, on every gate that runs a map."""
+    try:
+        from sitecustomize import copying
+    except ImportError:
+        import contextlib
+        return contextlib.nullcontext
+    return copying
+
+
 def observe():
     """Run every generator once, watched, and put the tree back.
 
     Returns (tracked, wrote, reads, failures) - tracked as {realpath: rel},
     the rest as generators.run_all gives them."""
     from . import gate, generators as G
-    from ._observe.sitecustomize import copying
+    copying = running_copying()
     names = sorted(G.tracked().values())
     before_untracked, before_dirs = _untracked(G.ROOT), _dirs(G.ROOT)
     wrote, reads, failures, tracked = {}, {}, [], {}

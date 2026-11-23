@@ -47,6 +47,19 @@ bytes it begins with, and fails naming the fact by its identity -
 product.price_usd is number` - and a glob that names no fact, since a
 mistyped glob types nothing.
 
+The keys are the ones the source's adapter gives. In a `params` source a
+fact is a parameter, `family.group.name`, holding its `nominal` or its
+`value` - `{"hardware.*": "number"}` - and a value that is a band or a list
+of points is an `array`; a store holds facts as leaves, so a `params`
+source backed by one takes no schema. A corpus that hands its gate to its
+own script (`entry`) declares its schemas here all the same: the gate reads
+them from this file when the script's `gate.configure()` names none.
+
+A source declared only so other sections can name its facts - a version
+file that `decisions` reads - may say `"drift": false`, and its values then
+count as held by no source when `wherefore check drift` reads: a file of
+small numbers would otherwise hide every 1 and 2 said by hand.
+
 A source may be backed by a store instead of being a file a person edits.
 It keeps its `path`, and says which store the file is made from:
 
@@ -268,7 +281,8 @@ How much drift the corpus still allows, and what is not read for it, all optiona
 source behind them that `wherefore check drift` still passes; `why` says
 what they are and what will track them. `ignore` maps a glob of files not
 read for drift to the reason. Without the section the check reports and
-passes.
+passes. A source that says `"drift": false` holds nothing here (see
+sources).
 
 ## launch
 

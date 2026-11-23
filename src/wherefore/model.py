@@ -27,6 +27,16 @@ two are exact inverses for any document whose top is an object and in which
 no two facts would share a dotted key. render() writes it as text, the one
 way a store-backed source's file is written.
 
+A `params` SOURCE NAMES ITS FACTS ITS OWN WAY, as `sources.value` reads
+them: `family.group.name` is spec[family][group]["params"][name], and its
+value is that parameter's `nominal`, or its `value` where it has no band.
+params() takes such a document apart into those facts, so a schema types
+them by the names reach and every rule already give them. A parameter is one
+fact whatever its value holds, so a band or a list of points is an array:
+here alone an array or object may hold something. Its path is where the
+value sits, and there is no compose() for it - a parameter's tolerance and
+provenance are beside its value, not facts of their own.
+
 A SCHEMA types facts by glob: {"product.price_usd": "number", "company.*":
 "string", "origin.note": ["string", "null"]}. `*` matches dots too, as every
 glob over dotted keys in the engine does. Every glob that names a fact must
@@ -94,6 +104,49 @@ def decompose(doc, source=""):
 
     walk(doc, [])
     return out
+
+
+def params(doc, source=""):
+    """[Fact] for every parameter in a `params` document, in document order,
+    each named `family.group.name` as sources.value names it."""
+    if not isinstance(doc, dict):
+        raise ModelError(f"{source or 'a source'}: the top of a source is an object, and this is "
+                         f"{type(doc).__name__}")
+    out, seen = [], {}
+    for family, groups in doc.items():
+        if not isinstance(groups, dict):
+            continue
+        for group, g in groups.items():
+            if not isinstance(g, dict) or not isinstance(g.get("params"), dict):
+                continue
+            for name, p in g["params"].items():
+                if not isinstance(p, dict):
+                    continue
+                at = "nominal" if "nominal" in p else "value" if "value" in p else None
+                path = [str(family), str(group), "params", str(name)] + ([at] if at else [])
+                key = f"{family}.{group}.{name}"
+                if key in seen:
+                    raise ModelError(f"{source or 'a source'}: two parameters would both be called {key!r} "
+                                     f"({seen[key]} and {path}): a name with a dot in it names a fact "
+                                     f"the dotted key cannot tell from another")
+                seen[key] = path
+                v = p.get(at) if at else None
+                out.append(Fact(source, key, path, kind(v), v))
+    return out
+
+
+def kind(value):
+    """The JSON type of any value, whatever it holds: a `params` fact's type."""
+    if isinstance(value, dict):
+        return "object"
+    if isinstance(value, list):
+        return "array"
+    return typename(value)
+
+
+def read(doc, source="", adapter="leaves"):
+    """[Fact] for `doc`, named the way its source's adapter names them."""
+    return params(doc, source) if adapter == "params" else decompose(doc, source)
 
 
 def compose(facts):

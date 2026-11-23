@@ -7,6 +7,40 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.27.1 (2026-11-23)
+
+**A corpus that configures its gate in its own script is held to its
+schemas.** 0.27.0 typed a source's facts only when the engine configured the
+gate from `wherefore.json` itself. A corpus that hands its gate to a script
+of its own (`entry`) calls `gate.configure()`, which took no schemas, so the
+schemas it declared were never checked. `configure()` now reads them from
+the `wherefore.json` at the root it is given, when it is passed none, and
+takes `schemas=` for a script that would rather say them; the script need
+not change. Each source is typed by its own adapter: in a `params` source a
+fact is a parameter, `family.group.name`, holding its `nominal` or its
+`value` - the name reach and every rule already give it - and a band or a
+list of points is an `array`. `wherefore facts log` names a `params`
+source's facts the same way. A store holds facts as leaves, so a `params`
+source backed by one is refused a schema. `proofs/entry_proof.py` plants a
+wrong type in a `params` source, another in the leaves source beside it, and
+a glob that names nothing, into a corpus shaped like the pendulum, and
+requires the gate - and the script run bare, as CI runs it - to name each.
+
+**The map's copies are declared to the observer that is running.** `wherefore
+graph` snapshots every tracked file and puts each back, and declares those
+copies as copies, so a read log does not call them reads. It declared them
+to the engine's own observer, imported by its package name, which nothing is
+listening to when a corpus runs an observer of its own. The pendulum's read
+log then held every tracked file as a read by every gate that ran a map
+generator, and its leaf check failed. The map now takes `copying()` from the
+observer that is running, as the gate always has.
+
+**A source may hold nothing for drift.** `wherefore check drift` counts every
+value a source holds as held. A source declared only so `decisions` can name
+its facts - a version file, all small numbers - then hid drift, and the
+pendulum left one undeclared for that reason. `"drift": false` on a source
+says its values are held by nothing there.
+
 ## 0.27.0 (2026-11-22)
 
 **Facts as a typed model, behind a pluggable source.** A fact was a scalar in
