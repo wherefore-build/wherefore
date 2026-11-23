@@ -39,6 +39,11 @@ prove one.
   its stage needs, and nothing says what may not be said before it. It
   fails naming the thing, the stage and what is missing, and for every
   other thing says what the next stage still waits on.
+- **Decisions** (`wherefore check decisions`): every fact a change adds,
+  removes or moves carries an approving review, on the head commit, from
+  someone its rules allow - a person named, or any reviewer who is not the
+  author. It fails naming each fact and what is missing from whom, and
+  counts nothing typed: a commit message, a pull request's body.
 - **Your own checks**: a script in the corpus that reads the tree and exits
   1 with a reason, run by CI beside the engine's. The company's site has a
   dozen: every control pressed cold on a phone, every page fitting a phone's
@@ -49,6 +54,17 @@ repository, so the same tree always gives the same answer, and they run on
 every push and in the pre-push hook. Upstream and published go to the
 network, so they run before a deploy, and on a schedule if the client wants
 one, never in the gate.
+
+Decisions runs on a pull request and nowhere else, because what it reads is
+there: the approving reviews, whose author is GitHub's account and not a
+name anybody typed. A review changes its verdict without changing the tree,
+so its workflow runs on `pull_request_review` as well as `pull_request` (the
+commands page shows one). Off a pull request it says what the change would
+need and exits 2 rather than pass. It never runs in the gate or the
+pre-push hook: a push has no approvals yet. And it can only be satisfied
+when the author and the decider are different accounts - an agent that
+opens pull requests as its owner makes its owner the author, who cannot then
+approve; the agent needs an identity of its own.
 
 ## Writing a check
 

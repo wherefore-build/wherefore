@@ -2,6 +2,29 @@
  "note": "Every release of the engine, newest first, said once as data: its version, its date, a title and a sentence, and a picture of it working. A client that tells people about the product - the company's changelog page - reads this from the release it pins, so the page lists every release and cannot list one that was never cut. CHANGELOG.md is the long account of each release; tests/test_releases.py holds its headings to the versions and dates here, every feature's `since` (features.json) to a release here, and the newest release to the version pyproject.toml states. `shows` is what the release printed when it was run: `run` is typed in a fresh git repository named fernhollow (shown as ~/fernhollow), holding `files` if any, or a copy of the fixture company if `fixture` is true; `output` is what it printed, in order, with a line of just … where lines are left out. The test runs the newest release's again, on every change, so the picture of the current release cannot drift from what it does; an older one's is history, true of the release that printed it.",
  "releases": [
   {
+   "version": "0.26.0",
+   "date": "2026-11-22",
+   "title": "Every fact change carries a decision",
+   "says": "A `decisions` section names the facts that need someone's say - a source and a glob of its keys - and who decides them, and `wherefore check decisions` fails a pull request that changes one without an approving review on its head commit from someone allowed to give it. The author's own approval, an approval on an earlier commit and anything typed in a commit message do not count.",
+   "shows": {
+    "fixture": false,
+    "run": "wherefore check decisions --base 4b825dc642cb6eb9a060e54bf8d69288fbee4904 --approvals approvals.json",
+    "files": {
+     "wherefore.json": "{\n \"wherefore\": 1,\n \"name\": \"fernhollow-kettles\",\n \"sources\": {\n  \"facts\": {\n   \"path\": \"facts.json\",\n   \"why\": \"THE SOURCE: every fact the corpus states is here once\"\n  }\n },\n \"decisions\": {\n  \"rules\": [\n   {\n    \"source\": \"facts\",\n    \"keys\": \"plans.*.price_usd\",\n    \"decides\": [\n     \"fern-founder\"\n    ],\n    \"why\": \"a price is a promise to every customer: the founder sets it\"\n   }\n  ]\n }\n}\n",
+     "facts.json": "{\n \"plans\": {\n  \"pro\": {\n   \"price_usd\": 99\n  }\n }\n}\n",
+     "approvals.json": "{\n \"author\": \"sam\",\n \"reviews\": [\n  {\n   \"user\": {\n    \"login\": \"sam\",\n    \"type\": \"User\"\n   },\n   \"state\": \"APPROVED\",\n   \"commit_id\": \"9e1d7c2b5a8f3e6d4c1b0a9f8e7d6c5b4a3f2e1d\",\n   \"author_association\": \"MEMBER\"\n  },\n  {\n   \"user\": {\n    \"login\": \"fern-founder\",\n    \"type\": \"User\"\n   },\n   \"state\": \"APPROVED\",\n   \"commit_id\": \"3f2c1a9e8d7b6c5a4f3e2d1c0b9a8f7e6d5c4b3a\",\n   \"author_association\": \"OWNER\"\n  }\n ]\n}\n"
+    },
+    "output": [
+     "  rule  facts: plans.*.price_usd - fern-founder decides",
+     "1 fact changed since 4b825dc; 1 needs a decision",
+     "…",
+     "  not counted  sam approved, and is the author: nobody decides their own change",
+     "  not counted  fern-founder approved 3f2c1a9, not the head: the change moved after it",
+     "  FAIL  facts plans.pro.price_usd added, 99: needs an approving review on the head from fern-founder (facts: plans.*.price_usd)"
+    ]
+   }
+  },
+  {
    "version": "0.25.0",
    "date": "2026-11-22",
    "title": "A gate for the change",

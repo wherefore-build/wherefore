@@ -7,6 +7,43 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.26.0 (2026-11-22)
+
+**Every fact change carries a decision.** Who decided a fact was a quote in
+a commit message, which anyone can type, the agent that made the change
+included. A `decisions` section in `wherefore.json` now names the facts that
+need someone's say - a source and a glob of its dotted keys - and who decides
+them: named GitHub logins, or any reviewer who is not the author, each rule
+with its `why`. `wherefore check decisions` reads every source a rule names
+at the base and at HEAD, finds each key added, removed or given another
+value, and requires, for every rule that names it, an approving review from
+someone that rule allows.
+
+A review counts when it is the reviewer's latest that is not a comment, is
+APPROVED, is by someone other than the pull request's author, and was given
+on the head commit being judged. An approval on an earlier commit does not
+count - the change moved after it - and neither does a dismissed one. For
+"reviewer" the account must have review rights here and not be a bot. Nothing
+typed is read: a commit message, a trailer, the pull request's body or a
+comment saying "approved". In GitHub Actions the reviews come from the REST
+API with `GITHUB_TOKEN`, for the pull request in the event; `--pr N` names
+one, and `--approvals FILE` is a stand-in with the API's shape, for tests and
+proofs. Off a pull request the check says what the change would need and
+exits 2, never passing on approvals it could not read. A rule whose glob
+names no fact fails: it guards nothing.
+
+A review changes the verdict without changing the tree, so the workflow runs
+on `pull_request_review` as well as `pull_request`; the commands page shows
+one. And the check can only be met when the author and the decider are
+different accounts: an agent that opens pull requests with its owner's
+credentials makes its owner the author, who cannot approve. The agent needs
+an identity of its own - the commands page, "Who the author is".
+`wherefore status` says how many facts the rules cover. `proofs/decisions_proof.py`
+plants a change approved by nobody, by its author, on a stale commit, by a
+dismissed review, and only in its commit message's words, and requires each
+to fail. The design is Stage 2 of `docs/scale.md`; recording each decision
+with the release it shipped in is not built yet.
+
 ## 0.25.0 (2026-11-22)
 
 **A gate for the change.** The gate ran every generator on every change, so

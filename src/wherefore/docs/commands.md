@@ -318,6 +318,94 @@ $ wherefore check launch
 ok   no launch section: nothing here waits on a stage. Declare one in wherefore.json - where each thing's stage lives, the stages in order, and what each needs
 ```
 
+## wherefore check decisions
+
+```
+wherefore check decisions [--base REF] [--pr N | --approvals FILE]
+```
+
+Every fact a change adds, removes or gives another value carries the
+decision its rules ask for. The `decisions` section names facts - a source
+and a glob of its dotted keys - and who decides them: named GitHub logins,
+or any reviewer. The check reads each source a rule names at the base and at
+HEAD, as committed, and for each changed key finds every rule that names it;
+a key no rule names needs nothing and is listed as such. A decision is a
+review on the pull request that is the reviewer's latest that is not a
+comment, is APPROVED, is by someone other than the pull request's author, and
+was given on the head commit being judged - an approval on an earlier commit
+does not count, since the change moved after it, and a dismissed one does not
+either. For "reviewer" the account must also have review rights here (GitHub
+says OWNER, MEMBER or COLLABORATOR) and not be a bot; a named login counts
+whatever GitHub says of it. Nothing typed counts: a commit message, a trailer,
+the pull request's body or a comment saying "approved" is never read. It
+fails naming each fact, who approved what, and what is missing from whom; a
+rule whose glob names no fact fails too, since it guards nothing.
+
+In GitHub Actions it reads the pull request from the event and its reviews
+from the REST API with `GITHUB_TOKEN`, and judges the change against the base
+the pull request merges onto. `--base REF` names the base instead; `--pr N`
+reads pull request N from anywhere `GITHUB_TOKEN` and `GITHUB_REPOSITORY` are
+set; `--approvals FILE` reads a stand-in with the API's shape -
+`{"author": "sam", "reviews": [...]}`, and `"head"` if the reviews judge
+another commit than HEAD - for tests and proofs. With none of them it prints
+what the change would need and exits 2: approvals can only be read on a pull
+request, and a check that cannot read them does not pass.
+
+```
+$ wherefore check decisions --base HEAD
+  rule  facts: product.price_usd - fern-founder decides
+  rule  facts: company.*, product.*, origin.activities.* - any reviewer who is not the author decides
+no fact changed since HEAD: nothing waits on a decision
+```
+
+A review changes the verdict without changing the code, so the check must
+run again when one is submitted or dismissed: the workflow triggers on
+`pull_request_review` as well as `pull_request`. It needs the history, to
+read the facts where the change began, and a token that can read the pull
+request:
+
+```yaml
+on:
+  pull_request:
+  pull_request_review:
+    types: [submitted, dismissed]
+permissions:
+  contents: read
+  pull-requests: read
+jobs:
+  decisions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - run: pip install -r requirements-engine.txt
+      - run: python3 -m wherefore check decisions
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+Make the job a required check, so a pull request that changes a fact
+merges only once it is decided. A push after the approval makes the
+approval stale, and the run for that push fails until it is approved again.
+
+### Who the author is
+
+The author is the account that opened the pull request, as GitHub records
+it - not a name in a commit. GitHub does not let an author approve their own
+pull request, and this check does not count it if they do. So a coding agent
+that opens pull requests with its owner's own GitHub credentials makes the
+owner the author of every one of them, and the owner can then never give the
+decision the check asks for. For the check to be satisfiable, the agent acts
+under its own identity - a GitHub App or a bot account - and the owner
+reviews. That is the point of the check, not a workaround of it: the decision
+is a verified account's, never a typed name.
+
+What it cannot see: who pushed each commit. A reviewer who pushes a fact
+change to someone else's pull request and then approves it has decided their
+own change; GitHub's "require approval of the most recent reviewable push"
+is the guard for that.
+
 ## wherefore status
 
 ```
@@ -325,7 +413,8 @@ wherefore status [--gate] [--json] [--out PATH]
 ```
 
 Where this repository stands, in one read: what each file is, how many
-values drift, where every launch stands, and which engine release it pins.
+values drift, where every launch stands, how many facts need a decision to
+change, and which engine release it pins.
 It judges nothing the other commands do not; it puts their answers in one
 place, as a few lines or as JSON. Without `--gate` nothing runs: files are
 sorted by what `wherefore.json` declares, and the rest are left for the
@@ -341,6 +430,7 @@ fernhollow-kettles
   files    15 tracked: 10 written, 1 captured, 4 for the gate to judge
   drift    0 values said by hand twice with no source, none declared
   launch   no ladders
+  decisions 11 of 19 facts need an approval to change, by 2 rules; 1 from someone named
 ```
 
 ## wherefore hook

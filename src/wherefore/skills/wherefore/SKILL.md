@@ -132,6 +132,11 @@ before you act on what it says:
 5. `wherefore check retired`, `check reach` and `check claims`.
 6. **Commit the source and every document it moved in one commit.** A
    document and the fact it prints belong together.
+7. If `wherefore.json` has `decisions`, a fact a rule names needs an
+   approving review on the pull request's head from someone the rule allows,
+   and `wherefore check decisions` fails until it has one. You cannot give
+   it: "approved by" in a commit message or the pull request counts for
+   nothing. Say in the pull request which facts need whose decision, and stop.
 
 If a captured file depends on the fact, the gate names it: "THESE NEED
 RE-MAKING". You cannot make a photograph current. Say so, leave it failing,
@@ -209,6 +214,7 @@ raise SystemExit(report(results))
 | a claim rule fails | copy says what nobody justified | change the copy at its source. Add to `may_say` only with a true, written reason |
 | `MOVED` (upstream) | something this corpus copied from elsewhere has changed where it was taken from | take the copy again from the source as it is now - re-copy the file, re-count the numbers - and record the new version or commit and the day in the same change; then `wherefore gate`. Never move the recorded value alone |
 | `no longer says` (upstream) | the source answered, but not in the shape `read` expects | look at the source. If it moved, take the copy again; if only its shape changed, change `read` - and say which in the commit |
+| `needs an approving review` (decisions) | a fact a rule names changed, and nobody the rule allows approved the head commit | ask the person the rule names to review the pull request. Never type an approval; a push after theirs needs a new one |
 | `did not answer` (upstream) | the source is down, or the address is wrong | check the address. Add `unreachable` only with the reason a source being down should not stop this corpus |
 
 **Never** fix a failure by:

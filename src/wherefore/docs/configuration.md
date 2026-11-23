@@ -265,6 +265,28 @@ is its stage, and `otherwise` is the stage of a thing that has none of them:
        "stage": {"set": {"draft": "draft"}, "otherwise": "released"}}
 ```
 
+## decisions
+
+Which facts need whose approval to change, each rule with why:
+
+```json
+"decisions": {"rules": [
+ {"source": "facts", "keys": "plans.*.price_usd", "decides": ["dana", "lee"],
+  "why": "a price is a promise to every customer: the founders set it"},
+ {"source": "facts", "keys": ["plans.*", "company.*"], "decides": "reviewer",
+  "why": "every fact a customer reads is checked by a second person"}
+]}
+```
+
+`source` is a source this file declares; `keys` is a glob over its leaves'
+dotted keys, or a list of them, matched as `reach` matches - `*` crosses
+dots. `decides` is `"reviewer"`, anyone with review rights who is not the
+change's author, or a list of GitHub logins, any one of whom decides. A fact
+that two rules name needs both: the price above needs dana or lee, and a
+reviewer, which dana or lee also is. A fact no rule names needs no decision.
+`wherefore check decisions` holds a change to them; `wherefore status` says
+how many facts the rules cover.
+
 ## proofs
 
 Where the corpus's proofs are: `{"glob": "proofs/*_proof.py"}`. `wherefore

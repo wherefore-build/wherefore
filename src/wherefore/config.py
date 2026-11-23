@@ -224,6 +224,9 @@ def validate(cfg):
     if d.get("launch") is not None:
         from . import launch
         launch.validate(d)
+    if d.get("decisions") is not None:
+        from . import decisions
+        decisions.validate(d)
     seen = set()
     for i, g in enumerate(d.get("generators", [])):
         where = f"generators[{i}]"
