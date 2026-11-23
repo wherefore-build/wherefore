@@ -77,6 +77,18 @@ The map's credit for a `wherefore graph` generator now includes the page the
 command writes when only `--json` is named, `wherefore-graph.html`, as the
 gate already saw it write.
 
+## 0.24.1 (2026-11-22)
+
+**With a knowledge factory.** A knowledge factory keeps agents' knowledge
+current: a curator agent reads what working agents flag, their traces and the
+team's notes, and updates what they work from. A new docs page says how it
+meets Wherefore. The curator proposes a fact, never a page, on a branch and as
+a pull request; the checks the corpus already runs judge it - the gate, reach,
+retired values and claims - and a person merges. `wherefore scan` and
+`wherefore check drift` are flags the curator can work from, and the agents
+read the same sources as their domain knowledge, not a copy. No command
+changed.
+
 ## 0.24.0 (2026-11-07)
 
 **A stage said by a field being set.** A launch ladder read each thing's

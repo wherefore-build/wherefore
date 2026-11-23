@@ -54,6 +54,19 @@
    }
   },
   {
+   "version": "0.24.1",
+   "date": "2026-11-22",
+   "title": "With a knowledge factory",
+   "says": "The docs say how Wherefore works beside a knowledge factory: a curator agent proposes a fact as a pull request, never a page, and the corpus's own checks judge it before a person merges.",
+   "shows": {
+    "fixture": false,
+    "run": "wherefore --version",
+    "output": [
+     "wherefore 0.24.1"
+    ]
+   }
+  },
+  {
    "version": "0.24.0",
    "date": "2026-11-07",
    "title": "A stage said by a field being set",
