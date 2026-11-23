@@ -16,7 +16,8 @@ why this is JSON and not a format whose reasons would be comments.
 ANY SECTION MAY LIVE IN ITS OWN FILE. A string where an object is expected is a
 path, relative to the root, and the section is read from there - and written
 back there, with that file's own formatting, by the one command that writes
-configuration (`wherefore gate --restamp`). So a client that already keeps its
+configuration (`wherefore gate --restamp`, and `wherefore facts pull`, which
+pins the store version a source was pulled at). So a client that already keeps its
 inventory in checks/inventory.json points at it, and nothing moves.
 
 OR THE CLIENT CONFIGURES THE ENGINE IN PYTHON, AND SAYS WHERE. A corpus that
@@ -197,6 +198,9 @@ def validate(cfg):
         if src.get("adapter", "leaves") not in ("leaves", "params"):
             raise ConfigError(f"source {name!r}: adapter {src.get('adapter')!r} is not "
                               f"one this engine has (leaves, params)")
+    if any(isinstance(s, dict) and ("store" in s or "schema" in s) for s in d.get("sources", {}).values()):
+        from . import facts
+        facts.validate(d)
     pal = d.get("palette")
     if pal is not None:
         if not isinstance(pal, dict):

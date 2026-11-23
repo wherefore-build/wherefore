@@ -82,7 +82,9 @@ during this run and matches what is committed
 gate passed: in a pull request, its base. A generator runs when its script,
 a file it reads or a file it writes changed since REF, when a generator
 before it in this run rewrote a file it reads, or when what it reads is not
-observed - a command, not Python. Every other generator is skipped, and the
+observed - a command, not Python, or the generator that materializes a store
+(`wherefore facts pull`), since what a store holds is no file the map can
+watch. Every other generator is skipped, and the
 files it wrote are taken as generated, at the bytes committed. Every tracked
 file is still classified, and the ones that ran are still compared and
 settled; a skipped generator whose input the run rewrote runs in the second
@@ -405,6 +407,125 @@ What it cannot see: who pushed each commit. A reviewer who pushes a fact
 change to someone else's pull request and then approves it has decided their
 own change; GitHub's "require approval of the most recent reviewable push"
 is the guard for that.
+
+## wherefore facts import
+
+```
+wherefore facts import [FILE] [--source NAME] --decided-by WHO [--note WORDS]
+```
+
+A source's facts, from its own file or from FILE, as the next version of the
+store behind it (the configuration page, `sources`, says how a source is
+backed by one). Each fact is kept with its identity - the source's name and
+its dotted key, `facts:product.price_usd` - its type and its value, and the
+version records who decided it and when. The import is the whole of the
+version: a fact the file does not hold is removed. A fact of a type the
+source's schema does not allow is refused, named, and nothing is written; a
+file the store already holds writes nothing. It says how many facts were
+added, changed and removed, and whether the first pull will rewrite the
+file's spacing. Then `wherefore facts pull`.
+
+## wherefore facts set
+
+```
+wherefore facts set KEY VALUE [--as TYPE] [--source NAME] --decided-by WHO [--note WORDS]
+```
+
+One fact, as a new version of the store, with who decided it. VALUE is read
+as JSON - `95`, `true`, `null`, `"a string"` - and as a string when it is not
+JSON; `--as string|number|boolean|null` says which is meant. A fact keeps its
+type: giving `ninety` for a number is refused unless `--as` says the type is
+to change, and a type the schema does not allow is refused either way,
+naming the fact. A new key is added where its dotted path says, and a new
+item at the end of an array; a key inside a fact, or one that holds other
+facts, is refused. The file does not move until it is pulled, and the gate
+fails until it is: the store says what the corpus does not.
+
+A store records who decided a version as the words given to it; it does not
+verify them. On a pull request, `wherefore check decisions` is what verifies
+a decision, and it reads the pulled file's change like any other.
+
+## wherefore facts pull
+
+```
+wherefore facts pull [--source NAME]
+```
+
+The store's newest version, written to the source's file - the same path and
+the same JSON shape a file source has, so every generator reads it as it
+always did - and the version pinned in `wherefore.json`. Commit the two
+together, with what the build then moves. A version holding a fact of a type
+the schema does not allow is not pulled. From then on the gate holds the
+file to the store: its generator, `python -m wherefore.facts`, writes the
+facts at the pinned version, so a file edited by hand differs from what the
+store says there and is named, and when the store has moved past the pin
+the generator fails and says so. With several store-backed sources, every
+one is pulled unless `--source` names one.
+
+### The store protocol
+
+`wherefore-store/1` is open: any command that speaks it is a store. The
+engine starts it in the corpus's root, writes one JSON request per line to
+its standard input, and reads one JSON answer per line from its standard
+output; when it closes standard input, the store exits. Every answer says
+`"ok"`, and one that is false says `"error"`, words a person reads.
+
+```
+> {"op": "hello", "protocol": "wherefore-store/1"}
+< {"ok": true, "protocol": "wherefore-store/1", "store": "the reference store, SQLite, at facts.db", "head": 2}
+> {"op": "facts", "version": 2}
+< {"ok": true, "version": 2, "facts": [{"key": "product.price_usd", "path": ["product", "price_usd"],
+   "type": "number", "value": 95, "provenance": {"version": 2, "decided_by": "fern-founder",
+   "at": "2026-11-22T09:14:03Z"}}, ...]}
+> {"op": "changes", "from": 1, "to": 2}
+< {"ok": true, "changes": [{"key": "product.price_usd", "was": {...}, "now": {...}}]}
+> {"op": "log"}
+< {"ok": true, "versions": [{"version": 1, "decided_by": "fern-founder", "at": "...", "note": "", "changed": 19}, ...]}
+> {"op": "write", "base": 2, "replace": false, "decided_by": "sam", "note": "",
+   "schema": {"product.price_usd": "number"},
+   "facts": [{"key": "product.price_usd", "path": ["product", "price_usd"], "type": "string", "value": "ninety"}]}
+< {"ok": false, "error": "refused: product.price_usd is a string (\"ninety\"), and the schema says product.price_usd is number", "fact": "product.price_usd"}
+```
+
+`head` is the newest version, 0 for an empty store. `facts` lists every fact
+at a version in document order, each with the version its value was set at,
+by whom and when. `changes` lists every fact whose type or value differs
+between two versions. `write` makes one new version: with `replace` the
+facts given are all of it; without, they are set and the rest kept. A store
+refuses a write whose `base` is not its newest version - another writer
+moved it in between - a fact of a type the schema does not allow, naming it,
+and a write that changes nothing; and it never changes a version once
+written. The engine reads through `hello`, `facts`, `changes` and `log`, and
+writes only through `wherefore facts import` and `set`.
+
+The reference store is `python -m wherefore.store PATH`, one SQLite file,
+declared with `"at"`. A trigger in the database refuses any change to a
+version written, so old versions read back as they were. Kept in the
+repository, it is a binary file: two branches that each write it cannot be
+merged by git, so the second one is rebased and its `wherefore facts set`
+run again. A store anywhere but this machine, authentication, and storing
+anything but facts are not in this release.
+
+## wherefore facts log
+
+```
+wherefore facts log [KEY] [--source NAME]
+```
+
+A source's versions, newest first, with who decided each and how many facts
+it changed; for a store, the version the file is pulled at. With KEY, that
+fact: its value and type, who decided it and at which version, what the
+schema says of it, and every value it has had. A file source answers too:
+its versions are the commits that touched it, and who decided a fact is the
+author of the commit that last set it, as git records it - which anyone can
+type.
+
+```
+$ wherefore facts log product.price_usd
+facts:product.price_usd is 89, a number
+…
+history, newest first:
+```
 
 ## wherefore status
 

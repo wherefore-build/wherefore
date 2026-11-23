@@ -74,6 +74,22 @@
    "does": "every fact a change adds, removes or moves carries the decision its rules ask for - an approving review on the head commit, by a named person or any reviewer who is not the author, read from GitHub; nothing typed counts. Off a pull request it says what the change would need, and exits 2"
   },
   {
+   "usage": "wherefore facts import [FILE] [--source NAME] --decided-by WHO [--note WORDS]",
+   "does": "a source's facts, from its file or FILE, as the next version of the store behind it - each fact with its type and who decided it; a fact the file does not hold is removed"
+  },
+  {
+   "usage": "wherefore facts set KEY VALUE [--as TYPE] [--source NAME] --decided-by WHO [--note WORDS]",
+   "does": "one fact, as a new version of the store, with who decided it; it keeps its type unless --as says otherwise, and a type the source's schema does not allow is refused, naming the fact"
+  },
+  {
+   "usage": "wherefore facts pull [--source NAME]",
+   "does": "a source backed by a store, made a file again: the store's newest version written to the source's path, in the shape a file source has, so every generator reads it unchanged, and pinned in wherefore.json for the gate to hold the file to"
+  },
+  {
+   "usage": "wherefore facts log [KEY] [--source NAME]",
+   "does": "a source's versions, newest first, and who decided each; with KEY, that fact - its value and type, who decided it, and every value it has had. A file source answers too: its versions are the commits that touched it"
+  },
+  {
    "usage": "wherefore status [--gate] [--json] [--out PATH]",
    "does": "where this repository stands, in one read - what each file is, what drifts, where every launch stands, which engine it pins - as a few lines or as JSON; --gate runs the gate for its verdict; a repository not set up yet is scanned"
   },

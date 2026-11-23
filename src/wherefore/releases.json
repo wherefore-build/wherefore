@@ -2,6 +2,25 @@
  "note": "Every release of the engine, newest first, said once as data: its version, its date, a title and a sentence, and a picture of it working. A client that tells people about the product - the company's changelog page - reads this from the release it pins, so the page lists every release and cannot list one that was never cut. CHANGELOG.md is the long account of each release; tests/test_releases.py holds its headings to the versions and dates here, every feature's `since` (features.json) to a release here, and the newest release to the version pyproject.toml states. `shows` is what the release printed when it was run: `run` is typed in a fresh git repository named fernhollow (shown as ~/fernhollow), holding `files` if any, or a copy of the fixture company if `fixture` is true; `output` is what it printed, in order, with a line of just … where lines are left out. The test runs the newest release's again, on every change, so the picture of the current release cannot drift from what it does; an older one's is history, true of the release that printed it.",
  "releases": [
   {
+   "version": "0.27.0",
+   "date": "2026-11-22",
+   "title": "Facts as a typed model, behind a pluggable source",
+   "says": "Each fact has an identity, a type and who decided it; a source may type its facts with a schema, which the gate checks, and may be backed by a store instead of a file - versions kept for good, read through an open protocol, with a reference store on SQLite. `wherefore facts pull` writes the store into the source's file, so every generator reads it unchanged, and the gate fails the file when it stops saying what the store says at the version pinned.",
+   "shows": {
+    "fixture": false,
+    "run": "wherefore facts import --decided-by fern-founder",
+    "files": {
+     "wherefore.json": "{\n \"wherefore\": 1,\n \"name\": \"fernhollow-kettles\",\n \"sources\": {\n  \"facts\": {\n   \"path\": \"facts.json\",\n   \"why\": \"THE SOURCE: every fact the corpus states, kept in the store\",\n   \"schema\": {\n    \"plans.*.price_usd\": \"number\"\n   },\n   \"store\": {\n    \"protocol\": \"wherefore-store/1\",\n    \"at\": \"facts.db\"\n   }\n  }\n },\n \"generators\": [\n  {\n   \"script\": \"-m wherefore.facts\",\n   \"cwd\": \".\",\n   \"probe\": false,\n   \"makes\": \"facts.json, from the store\",\n   \"why\": \"it writes the source the reach probe moves\"\n  }\n ]\n}\n",
+     "facts.json": "{\n \"plans\": {\n  \"pro\": {\n   \"name\": \"Pro\",\n   \"price_usd\": 99\n  }\n }\n}\n"
+    },
+    "output": [
+     "facts: 2 facts from facts.json are version 1 of facts.db, decided by fern-founder",
+     "  2 added, 0 changed, 0 removed since version 0",
+     "next: `wherefore facts pull` writes facts.json at version 1 and pins it in wherefore.json"
+    ]
+   }
+  },
+  {
    "version": "0.26.0",
    "date": "2026-11-22",
    "title": "Every fact change carries a decision",

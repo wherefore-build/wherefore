@@ -29,6 +29,61 @@ Where the facts live, each with a reason:
 `adapter` is `leaves` - a JSON file whose scalars are the facts, named by
 their dotted path - or `params`, the pendulum's own parameter schema.
 
+A source may type its facts with a `schema`: a glob over its dotted keys,
+matched as `reach` matches - `*` crosses dots - and the type each fact it
+names must be, or a list of types:
+
+```json
+"facts": {"path": "facts.json", "why": "THE SOURCE",
+          "schema": {"product.price_usd": "number", "company.*": "string",
+                     "origin.note": ["string", "null"]}}
+```
+
+A type is `string`, `number`, `boolean` or `null`, or `object` or `array`
+for one that holds nothing - an object or array that holds anything is where
+facts are, not a fact. The gate checks every fact against the schema on the
+bytes it begins with, and fails naming the fact by its identity -
+`facts:product.price_usd is a string ("89"), and the schema says
+product.price_usd is number` - and a glob that names no fact, since a
+mistyped glob types nothing.
+
+A source may be backed by a store instead of being a file a person edits.
+It keeps its `path`, and says which store the file is made from:
+
+```json
+"facts": {"path": "facts.json", "why": "THE SOURCE, kept in the store",
+          "store": {"protocol": "wherefore-store/1", "at": "facts.db", "version": 3}}
+```
+
+`protocol` is `wherefore-store/1`, the open protocol on the commands page
+("The store protocol"). `at` names the reference store, a SQLite file the
+engine itself serves; `run` instead names any command that speaks the
+protocol, as a list of its words - `["my-store", "--json"]` - run in the
+root with no shell between. `version` is the store version the file was
+pulled at: `wherefore facts pull` writes it, and nothing else should.
+`indent` is how the file is indented, 1 by default.
+
+The client's generators still open the file, so the engine materializes the
+store into it - the same path, the same JSON shape - and the file is
+generated, held by the gate like any other. That is a generator the corpus
+lists first, and the engine refuses a store-backed source without it, or
+with the reach probe allowed to run it (it would put the store's value
+straight back under every probe):
+
+```json
+{"script": "-m wherefore.facts", "cwd": ".", "probe": false,
+ "makes": "facts.json, from the store",
+ "why": "it writes the source the reach probe moves, so the probe must not run it"}
+```
+
+It writes the facts at the pinned `version`, so the gate fails a file edited
+by hand, and it fails when the store has moved past the pin. The file is no
+longer authored: the inventory claims the store's file (`facts.db`) instead,
+if it is kept in the repository. A corpus that hands its gate to its own
+script (`entry`) adds the generator to its own list. A store anywhere but
+this machine, authentication, and a store for anything but facts are not in
+this release.
+
 ## generators
 
 What builds each asset, in order, each saying what it makes:

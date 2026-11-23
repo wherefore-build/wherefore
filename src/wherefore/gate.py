@@ -158,6 +158,11 @@ DECL_NAME = "wherefore.json"
 SPEC = None             # repo-relative path of the source spec_values read
 ADAPTER = "leaves"
 COMPARE = _C.Comparators()
+# [(source name, repo-relative path, schema, backed by a store)] for every source that declares a
+# `schema`: the facts it holds, as the tree holds them when the gate begins,
+# are typed by it (model.py). Empty for a client that declares none, and for
+# one that configures the gate in code, so neither sees anything new.
+SCHEMAS = []
 COMMAND = "wherefore gate"
 RESETTLE_HINT = ("A generator reads a file that a later one writes, so it\n"
                  "           lands one pass late.")
@@ -194,6 +199,8 @@ def configure_from(cfg):
     else:
         decl = lambda: _json.loads((cfg.root / "wherefore.json").read_text(
             encoding="utf-8")).get("inventory", {})
+    SCHEMAS[:] = [(n, os.path.normpath(s["path"]), s["schema"], bool(s.get("store")))
+                  for n, s in (cfg.doc.get("sources") or {}).items() if s.get("schema")]
     configure(cfg.root, decl, lambda d: cfg.write_section("inventory", d),
               cfg.where("inventory"), src["path"], src.get("adapter", "leaves"),
               _C.Comparators(cfg.doc.get("compare", [])),
@@ -355,6 +362,23 @@ def stamp_for(grp, snap):
         for dotted in wanted:
             parts.append(f"{dotted}={spec_value(spec, dotted)!r}")
     return digest("\n".join(parts).encode())
+
+
+def typed_against(name, rel, schema, snapped, stored=False):
+    """(how many facts the schema types, [what is wrong]) for one source, read
+    from its snapshot."""
+    from . import model
+    if snapped is None:
+        return 0, [f"{rel}, the source {name!r}, declares a schema and is not in the tree git "
+                   f"tracks: a schema is checked on what is committed"]
+    try:
+        facts = model.decompose(json.loads(snapped.read_text(encoding="utf-8")), name)
+    except (ValueError, model.ModelError) as e:
+        return 0, [f"{rel}, the source {name!r}, cannot be read as facts: {e}"]
+    typed = sum(1 for f in facts if model.allowed(schema, f.key))
+    return typed, [f"{p}. A fact of the wrong type is refused wherever it is written: "
+                   f"fix it in {'the store, with `wherefore facts set`' if stored else rel}"
+                   for p in model.check(facts, schema, name)]
 
 
 def untracked_writes(wrote, tracked_now):
@@ -751,6 +775,21 @@ def main(argv=None):
               f"files in {len(decl['captured']['groups'])} groups, "
               f"{len(reshoot)} groups out of date, "
               f"{len(unstamped)} deriving from nothing")
+
+        # ── the facts, against their schema ──────────────────────────────────
+        # On the bytes the gate began with - what is committed, or about to
+        # be - so a value of the wrong type is named by its identity whether
+        # it was typed into a file source or edited into a materialized one.
+        if SCHEMAS:
+            typed, wrong = 0, []
+            for name, rel, schema, stored in SCHEMAS:
+                problems = typed_against(name, rel, schema, snap.get(rel), stored)
+                typed += problems[0]
+                wrong += problems[1]
+            fails += wrong
+            print(f"  {'ok  ' if not wrong else 'FAIL'} {typed} facts in {len(SCHEMAS)} "
+                  f"source{'s' if len(SCHEMAS) != 1 else ''} typed by a schema, "
+                  f"{len(wrong)} {'fault' if len(wrong) == 1 else 'faults'}")
 
         _palette_notice(sorted(generated))
         if fails:

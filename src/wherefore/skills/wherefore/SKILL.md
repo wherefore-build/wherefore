@@ -118,7 +118,11 @@ before you act on what it says:
 
 ## Changing a fact
 
-1. Edit the source named in `sources`, and only the source.
+1. Edit the source named in `sources`, and only the source. If the source
+   says `store`, its file is generated from the store: never edit the file.
+   Run `wherefore facts set KEY VALUE --decided-by WHO`, naming the person
+   who decided it, then `wherefore facts pull`, and commit the file and
+   `wherefore.json` with what the build moves.
 2. If the old value or wording should never be seen again, add a row to the
    retired register, with what it was, what superseded it and why. Do it in the
    same change: the harness must arrive before the change it catches.
@@ -215,6 +219,8 @@ raise SystemExit(report(results))
 | `MOVED` (upstream) | something this corpus copied from elsewhere has changed where it was taken from | take the copy again from the source as it is now - re-copy the file, re-count the numbers - and record the new version or commit and the day in the same change; then `wherefore gate`. Never move the recorded value alone |
 | `no longer says` (upstream) | the source answered, but not in the shape `read` expects | look at the source. If it moved, take the copy again; if only its shape changed, change `read` - and say which in the commit |
 | `needs an approving review` (decisions) | a fact a rule names changed, and nobody the rule allows approved the head commit | ask the person the rule names to review the pull request. Never type an approval; a push after theirs needs a new one |
+| `the store ... is at version N, and ... is pulled at version M` | the store holds facts the corpus does not say yet | `wherefore facts pull`, then `wherefore build`, and commit what moved. Never edit the file or the pin by hand |
+| `... and the schema says ... is number` | a fact is of a type its source's schema does not allow | set it again with the right type - in the store, `wherefore facts set` - and widen the schema only with a reason |
 | `did not answer` (upstream) | the source is down, or the address is wrong | check the address. Add `unreachable` only with the reason a source being down should not stop this corpus |
 
 **Never** fix a failure by:

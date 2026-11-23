@@ -7,6 +7,52 @@ suite judges, so a release reaches no client by itself.
 The version is stated in `pyproject.toml`, in `wherefore.__version__` and here,
 and `tests/test_version.py` holds the three together until they are one fact.
 
+## 0.27.0 (2026-11-22)
+
+**Facts as a typed model, behind a pluggable source.** A fact was a scalar in
+a JSON file, its type whatever was typed, and who decided it a line in a
+commit. Each fact now has an identity - its source and its dotted key,
+`facts:product.price_usd` - a type, and provenance: who decided it, at which
+version, and when (`model.py`). A source may declare a `schema`, globs over
+its keys and the type each must be; the gate checks it on the bytes it
+begins with and names a fact of the wrong type by its identity, and a glob
+that names no fact. The engine reads a source through one interface, read
+only: its facts at a version, the changes between two, and each fact's
+provenance (`sources.py`). A file source answers it as it always read, with
+a git commit as its version; every existing corpus reads exactly as before.
+
+And a source may be backed by a store, beside its `path`: `"store":
+{"protocol": "wherefore-store/1", "at": "facts.db"}`. The protocol is open -
+any command that reads one JSON request a line on its standard input and
+answers on its standard output is a store - and the engine carries a
+reference store on SQLite, `python -m wherefore.store`, whose versions are
+append-only, enforced by the database itself. `wherefore facts import`
+makes a file the store's next version, `wherefore facts set` one fact, each
+with `--decided-by`; a type the schema does not allow is refused when it is
+written, naming the fact. `wherefore facts log` gives the versions and, for
+one fact, every value it has had and who decided it - for a file source
+too, from its commits.
+
+The client's generators open the file, so nothing could intercept a read
+without changing every one of them. So nothing does: `wherefore facts pull`
+materializes the store into the source's file - the same path, the same JSON
+shape - and pins the version in `wherefore.json`, and the build and every
+check read the file as they always have. The file is generated: a generator
+the corpus lists first, `python -m wherefore.facts`, writes the facts at the
+pinned version, so the gate fails a file edited by hand, and fails when the
+store has moved past the pin until it is pulled. The reach probe never runs
+it - it would put the store's value straight back - and `--since` always
+does, since what a store holds is no file the map can watch.
+
+The fixture company, built once from facts.json and once from facts.db with
+facts.json deleted, makes byte-identical documents, and the gate, reach,
+retired, claims, drift and decisions pass on both (`tests/test_facts.py`).
+`proofs/facts_proof.py` plants a hand-edited file, a wrong type in the file
+and in the store, a schema tightened under the store, a store moved without
+a pull, and a pin the store never reached, and requires each to fail. A
+store anywhere but this machine, authentication, and storing anything but
+facts are not built. The design is Stage 3 of `docs/scale.md`.
+
 ## 0.26.0 (2026-11-22)
 
 **Every fact change carries a decision.** Who decided a fact was a quote in

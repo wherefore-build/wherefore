@@ -233,6 +233,13 @@ def _scan(args):
     return scan.main(args)
 
 
+def _facts(args):
+    from . import facts
+    if not args or args[0] in ("-h", "--help"):
+        return facts.main(None, args)
+    return facts.main(cfgmod.load(), args)
+
+
 def _status(args):
     from . import status
     return status.main(args)
@@ -240,7 +247,7 @@ def _status(args):
 
 COMMANDS = {"init": _init, "list": _list, "build": _build, "gate": _gate,
             "graph": _graph, "prove": _prove, "check": _check, "hook": _hook,
-            "scan": _scan, "report": _report, "status": _status}
+            "scan": _scan, "report": _report, "status": _status, "facts": _facts}
 
 
 def commands():
