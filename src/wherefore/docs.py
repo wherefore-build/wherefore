@@ -24,6 +24,7 @@ PAGES = [
     ("configuration", "Configuration", "docs/configuration.md"),
     ("checks", "Checks and proofs", "docs/checks.md"),
     ("reporting", "Reporting", "docs/reporting.md"),
+    ("agents", "With a knowledge factory", "docs/agents.md"),
 ]
 # Every section of wherefore.json the engine reads; tests/test_docs.py holds the
 # configuration page to this list, and this list to config.py by hand.
