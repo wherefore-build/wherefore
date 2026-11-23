@@ -14,7 +14,8 @@ is the default, because it assumes nothing about the source's shape.
 THE INTERFACE, read-only to the engine (docs/scale.md, Stage 3). A source
 answers three questions, whatever stands behind it:
 
-  facts(version)        every fact at a version, in document order (model.Fact)
+  facts(version)        every fact at a version, in document order (model.Fact),
+                        named as the source's adapter names them
   changes(a, b)         every fact whose type or value differs between two
                         versions: [(key, was, now)], a missing side None
   provenance(key, v)    who decided a fact, at which version, and when
@@ -114,7 +115,7 @@ class Files:
         if doc is None:
             return []
         try:
-            return model.decompose(doc, self.name)
+            return model.read(doc, self.name, self.decl.get("adapter", "leaves"))
         except model.ModelError as e:
             raise Unread(str(e))
 

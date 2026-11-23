@@ -106,6 +106,34 @@ class TheModel(unittest.TestCase):
         self.assertIsNone(model.schema_problem({"a.*": ["string", "null"]}))
         self.assertIn("a type is one of", model.schema_problem({"a": "integer"}))
 
+    def test_a_params_source_is_typed_by_the_names_its_adapter_gives(self):
+        d = {"units": "mm", "_meta": {"note": "not a family"},
+             "hardware": {"bearing": {"params": {"bore": {"nominal": 8.0, "tol": [0, 0.01], "value": 9},
+                                                 "count": {"value": 2, "provenance": "drawing 4"}}},
+                          "notes": "a group with no params"},
+             "geometry": {"arm": {"params": {"points": {"value": [[0, 0], [1, 2]]},
+                                             "reach": {"derived": "from points"}}}}}
+        facts = model.read(d, "spec", "params")
+        self.assertEqual([(f.key, f.type, f.value) for f in facts], [
+            ("hardware.bearing.bore", "number", 8.0), ("hardware.bearing.count", "number", 2),
+            ("geometry.arm.points", "array", [[0, 0], [1, 2]]), ("geometry.arm.reach", "null", None)])
+        self.assertEqual([sources.value(d, f.key, "params") for f in facts], [f.value for f in facts],
+                         "a params fact is what sources.value reads by its name")
+        self.assertEqual(facts[0].path, ["hardware", "bearing", "params", "bore", "nominal"])
+        self.assertEqual(model.check(facts, {"hardware.*": "number", "geometry.arm.points": "array",
+                                             "geometry.arm.reach": "number"}, "spec"),
+                         ["spec:geometry.arm.reach is a null (null), and the schema says geometry.arm.reach is number"])
+        self.assertEqual([f.key for f in model.read(d, "spec")], [k for k, _ in sources.leaves(d)],
+                         "leaves is still the default")
+        with self.assertRaisesRegex(model.ModelError, "two parameters would both be called 'a.b.c.d'"):
+            model.params({"a": {"b": {"params": {"c.d": {"value": 1}}}, "b.c": {"params": {"d": {"value": 2}}}}})
+
+    def test_a_file_source_names_its_facts_by_its_adapter(self):
+        root = repo({"spec.json": {"hardware": {"bearing": {"params": {"bore": {"nominal": 8.0}}}}}})
+        src = sources.Files(root, "spec", {"path": "spec.json", "adapter": "params"})
+        self.assertEqual([f.key for f in src.facts()], ["hardware.bearing.bore"])
+        self.assertEqual(src.provenance("hardware.bearing.bore")["decided_by"], "t")
+
 
 # ── the reference store, through the protocol ───────────────────────────────
 
@@ -237,6 +265,13 @@ class TheDeclaration(unittest.TestCase):
         self.refused("`store.version` is the version", store={**ok, "version": 0})
         self.refused("a type is one of", schema={"product.*": "integer"})
 
+    def test_a_store_backed_params_source_takes_no_schema(self):
+        ok = {"protocol": "wherefore-store/1", "at": "facts.db"}
+        with self.assertRaises(ConfigError) as e:
+            Config(tempfile.mkdtemp(), {"wherefore": 1, "generators": [dict(MATERIALIZE)], "sources": {"spec": {
+                "path": "spec.json", "adapter": "params", "store": ok, "schema": {"a.*": "number"}, "why": "x"}}})
+        self.assertIn("one `schema` cannot type both", str(e.exception.code))
+
     def test_a_store_backed_source_needs_its_generator_and_keeps_it_out_of_the_probe(self):
         ok = {"protocol": "wherefore-store/1", "at": "facts.db"}
         self.refused("declare the generator that materializes it", store=ok, gens=[])
@@ -271,6 +306,100 @@ class AFileSource(unittest.TestCase):
         code, out = wherefore(root, "facts", "pull")
         self.assertEqual(code, 1, out)
         self.assertIn("no source is backed by a store", out)
+
+
+# ── a corpus whose own script configures the gate ───────────────────────────
+
+SPEC = {"units": "mm",
+        "hardware": {"bearing": {"params": {"bore": {"nominal": 8.0, "tol": [0, 0.01], "provenance": "drawing 4"},
+                                            "count": {"value": 2, "provenance": "drawing 4"}}}},
+        "geometry": {"arm": {"params": {"points": {"value": [[0, 0], [1, 2]], "provenance": "the sketch"}}}}}
+SITE = {"company": {"name": "Pendulum Works", "since": 2019}}
+ENTRY_INVENTORY = {"authored": {"rules": [["*.py", "code"], ["wherefore.json", "the corpus"],
+                                          ["checks/inventory.json", "the inventory"], ["spec/*.json", "THE SOURCES"],
+                                          [".gitignore", "bytecode"]]},
+                   "captured": {"groups": {}}}
+
+
+def entry_corpus(sources_decl, spec=None, gate_args=""):
+    """The pendulum's shape: `entry` hands the gate to checks/coverage_gate.py,
+    which calls gate.configure() itself - and names no schema - while
+    wherefore.json declares the sources, a `params` one among them."""
+    from _util import scripted
+    tree = {"spec/mk3.params.json": spec or SPEC, "spec/site.json": SITE}
+    root = scripted(ENTRY_INVENTORY, tree)
+    cfg = json.loads((root / "wherefore.json").read_text(encoding="utf-8"))
+    if sources_decl is not None:
+        cfg["sources"] = sources_decl
+    (root / "wherefore.json").write_text(json.dumps(cfg, indent=1) + "\n", encoding="utf-8")
+    if gate_args:
+        script = root / "checks/coverage_gate.py"
+        script.write_text(script.read_text(encoding="utf-8").replace("None, None, gate.COMPARE)",
+                                                                     f"None, None, gate.COMPARE, {gate_args})"),
+                          encoding="utf-8")
+    if git(root, "status", "--porcelain").stdout.strip():
+        commit(root)
+    return root
+
+
+def typed_sources():
+    return {"spec": {"path": "spec/mk3.params.json", "adapter": "params", "why": "the object",
+                     "schema": {"hardware.*": "number", "geometry.arm.points": "array"}},
+            "site": {"path": "spec/site.json", "why": "the company",
+                     "schema": {"company.name": "string", "company.since": "number"}}}
+
+
+class AnEntryCorpusIsHeldToItsSchema(unittest.TestCase):
+    """0.27.0 typed a source's facts only where configure_from() read
+    wherefore.json; a corpus whose own script calls gate.configure() declared
+    its schemas and was never checked against them."""
+
+    def test_a_value_of_the_wrong_type_fails_the_gate_naming_the_fact(self):
+        bad = json.loads(json.dumps(SPEC))
+        bad["hardware"]["bearing"]["params"]["bore"]["nominal"] = "8.0"
+        root = entry_corpus(typed_sources(), spec=bad)
+        code, out = wherefore(root, "gate")
+        self.assertEqual(code, 1, out)
+        self.assertIn('spec:hardware.bearing.bore is a string ("8.0"), and the schema says hardware.* is number', out)
+        self.assertIn("FAIL 5 facts in 2 sources typed by a schema, 1 fault", out)
+        self.assertIn("fix it in spec/mk3.params.json", out)
+        r = __import__("subprocess").run([sys.executable, "checks/coverage_gate.py"], cwd=root, capture_output=True,
+                                         text=True, env=dict(os.environ, PYTHONPATH=str(SRC)))
+        self.assertEqual(r.returncode, 1, "the script run as CI runs it, with no `wherefore` in front")
+        self.assertIn('spec:hardware.bearing.bore is a string ("8.0")', r.stdout)
+
+    def test_a_leaves_source_beside_it_is_checked_too(self):
+        root = entry_corpus(typed_sources())
+        (root / "spec/site.json").write_text(json.dumps({"company": {"name": "Pendulum Works", "since": "2019"}}))
+        code, out = wherefore(root, "gate")
+        self.assertEqual(code, 1, out)
+        self.assertIn('site:company.since is a string ("2019"), and the schema says company.since is number', out)
+
+    def test_the_right_types_pass(self):
+        root = entry_corpus(typed_sources())
+        code, out = wherefore(root, "gate")
+        self.assertEqual(code, 0, out)
+        self.assertIn("ok   5 facts in 2 sources typed by a schema, 0 faults", out)
+
+    def test_a_corpus_with_no_schema_sees_no_change(self):
+        untyped = typed_sources()
+        for s in untyped.values():
+            del s["schema"]
+        said = []
+        for decl in (None, untyped):
+            code, out = wherefore(entry_corpus(decl), "gate")
+            self.assertEqual(code, 0, out)
+            said.append(out)
+        self.assertNotIn("typed by a schema", said[0])
+        self.assertEqual(said[1], said[0], "declaring sources with no schema changes nothing the gate says")
+
+    def test_a_script_may_name_its_schemas_itself(self):
+        root = entry_corpus(None, gate_args="schemas={'site': {'path': 'spec/site.json', "
+                                            "'schema': {'company.since': 'string'}}}")
+        code, out = wherefore(root, "gate")
+        self.assertEqual(code, 1, out)
+        self.assertIn('site:company.since is a number (2019), and the schema says company.since is string', out)
+        self.assertIn("FAIL 1 facts in 1 source typed by a schema, 1 fault", out)
 
 
 # ── the commands, on the fixture company ────────────────────────────────────

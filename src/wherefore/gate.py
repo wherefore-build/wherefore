@@ -158,10 +158,13 @@ DECL_NAME = "wherefore.json"
 SPEC = None             # repo-relative path of the source spec_values read
 ADAPTER = "leaves"
 COMPARE = _C.Comparators()
-# [(source name, repo-relative path, schema, backed by a store)] for every source that declares a
-# `schema`: the facts it holds, as the tree holds them when the gate begins,
-# are typed by it (model.py). Empty for a client that declares none, and for
-# one that configures the gate in code, so neither sees anything new.
+# [(source name, repo-relative path, schema, backed by a store, adapter)] for
+# every source that declares a `schema`: the facts it holds, as the tree holds
+# them when the gate begins, named as its adapter names them, are typed by it
+# (model.py). From wherefore.json `sources` - read at the root by configure()
+# when a client's own script configures the gate and names none, so a corpus
+# that hands its gate to `entry` is held to the schema it declares. Empty for
+# a client that declares none, which sees nothing new.
 SCHEMAS = []
 COMMAND = "wherefore gate"
 RESETTLE_HINT = ("A generator reads a file that a later one writes, so it\n"
@@ -169,12 +172,20 @@ RESETTLE_HINT = ("A generator reads a file that a later one writes, so it\n"
 
 
 def configure(root, decl, write_decl, decl_name, spec, adapter, comparators,
-              command=None, resettle_hint=None):
-    """Say whose corpus this is. configure generators.py first: this runs them."""
+              command=None, resettle_hint=None, schemas=None):
+    """Say whose corpus this is. configure generators.py first: this runs them.
+
+    `schemas` is the sources whose facts are typed, shaped as wherefore.json
+    `sources` is - {name: {"path", "schema", "adapter", "store"}} - and a source
+    with no `schema` is passed over. Left out, they are the `sources` of the
+    wherefore.json at `root`: a client whose own script configures the gate
+    declares its schemas where every other corpus does, and the gate checks
+    them without the script saying so."""
     global ROOT, DECL, WRITE_DECL, DECL_NAME, SPEC, ADAPTER, COMPARE, COMMAND, RESETTLE_HINT
     ROOT = pathlib.Path(root).resolve()
     DECL, WRITE_DECL, DECL_NAME = decl, write_decl, decl_name
     SPEC, ADAPTER, COMPARE = spec, adapter, comparators
+    SCHEMAS[:] = typed_sources(declared_sources(ROOT) if schemas is None else schemas)
     if command is not None:
         COMMAND = command
     if resettle_hint is not None:
@@ -199,12 +210,45 @@ def configure_from(cfg):
     else:
         decl = lambda: _json.loads((cfg.root / "wherefore.json").read_text(
             encoding="utf-8")).get("inventory", {})
-    SCHEMAS[:] = [(n, os.path.normpath(s["path"]), s["schema"], bool(s.get("store")))
-                  for n, s in (cfg.doc.get("sources") or {}).items() if s.get("schema")]
     configure(cfg.root, decl, lambda d: cfg.write_section("inventory", d),
               cfg.where("inventory"), src["path"], src.get("adapter", "leaves"),
               _C.Comparators(cfg.doc.get("compare", [])),
-              msg.get("gate_command"), msg.get("resettle_hint"))
+              msg.get("gate_command"), msg.get("resettle_hint"),
+              schemas=cfg.doc.get("sources") or {})
+
+
+def declared_sources(root):
+    """wherefore.json `sources` at `root`, or {} where there is no wherefore.json."""
+    from .config import NAME, ConfigError
+    path = pathlib.Path(root) / NAME
+    if not path.is_file():
+        return {}
+    try:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as e:
+        raise ConfigError(f"is not JSON ({e}), so the schemas its sources declare cannot be read")
+    return (doc.get("sources") or {}) if isinstance(doc, dict) else {}
+
+
+def typed_sources(sources):
+    """SCHEMAS for `sources`, shaped as wherefore.json `sources`: every one that
+    declares a schema, refused in words where the schema or the adapter is not
+    one - a script configuring the gate has not been through config.py."""
+    from . import model
+    from .config import ConfigError
+    out = []
+    for name, s in (sources or {}).items():
+        if not isinstance(s, dict) or not s.get("schema"):
+            continue
+        bad = model.schema_problem(s["schema"])
+        if bad:
+            raise ConfigError(f"source {name!r}: `schema` {bad}")
+        adapter = s.get("adapter", "leaves")
+        if adapter not in ("leaves", "params") or not isinstance(s.get("path"), str):
+            raise ConfigError(f"source {name!r} declares a schema, and its facts can be read only from a "
+                              f"`path` by an adapter this engine has (leaves, params)")
+        out.append((name, os.path.normpath(s["path"]), s["schema"], bool(s.get("store")), adapter))
+    return out
 
 
 def digest(data):
@@ -364,15 +408,15 @@ def stamp_for(grp, snap):
     return digest("\n".join(parts).encode())
 
 
-def typed_against(name, rel, schema, snapped, stored=False):
+def typed_against(name, rel, schema, snapped, stored=False, adapter="leaves"):
     """(how many facts the schema types, [what is wrong]) for one source, read
-    from its snapshot."""
+    from its snapshot and named as its adapter names them."""
     from . import model
     if snapped is None:
         return 0, [f"{rel}, the source {name!r}, declares a schema and is not in the tree git "
                    f"tracks: a schema is checked on what is committed"]
     try:
-        facts = model.decompose(json.loads(snapped.read_text(encoding="utf-8")), name)
+        facts = model.read(json.loads(snapped.read_text(encoding="utf-8")), name, adapter)
     except (ValueError, model.ModelError) as e:
         return 0, [f"{rel}, the source {name!r}, cannot be read as facts: {e}"]
     typed = sum(1 for f in facts if model.allowed(schema, f.key))
@@ -782,8 +826,8 @@ def main(argv=None):
         # it was typed into a file source or edited into a materialized one.
         if SCHEMAS:
             typed, wrong = 0, []
-            for name, rel, schema, stored in SCHEMAS:
-                problems = typed_against(name, rel, schema, snap.get(rel), stored)
+            for name, rel, schema, stored, adapter in SCHEMAS:
+                problems = typed_against(name, rel, schema, snap.get(rel), stored, adapter)
                 typed += problems[0]
                 wrong += problems[1]
             fails += wrong

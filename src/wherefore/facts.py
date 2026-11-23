@@ -85,6 +85,10 @@ def validate(doc):
         st = src.get("store")
         if st is None:
             continue
+        if "schema" in src and src.get("adapter", "leaves") == "params":
+            raise ConfigError(f"{where}: a store holds a source's facts as leaves, and the `params` adapter "
+                              f"names them by parameter, so one `schema` cannot type both: type a store-backed "
+                              f"source read as leaves, or keep a params source a file")
         if not isinstance(st, dict):
             raise ConfigError(f"{where}: `store` is an object - {{\"protocol\": \"wherefore-store/1\", "
                               f"\"at\": \"facts.db\"}} - saying which store the file is materialized from")

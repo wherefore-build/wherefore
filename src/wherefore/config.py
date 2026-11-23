@@ -198,6 +198,9 @@ def validate(cfg):
         if src.get("adapter", "leaves") not in ("leaves", "params"):
             raise ConfigError(f"source {name!r}: adapter {src.get('adapter')!r} is not "
                               f"one this engine has (leaves, params)")
+        if not isinstance(src.get("drift", True), bool):
+            raise ConfigError(f"source {name!r}: `drift` is false, for a source whose values do not "
+                              f"count as held when `wherefore check drift` reads, and nothing else")
     if any(isinstance(s, dict) and ("store" in s or "schema" in s) for s in d.get("sources", {}).values()):
         from . import facts
         facts.validate(d)
