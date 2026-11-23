@@ -10,7 +10,11 @@ prove one.
   gate's own run, authored under a rule with a reason, or captured and
   stamped with what it was made from; every generated file is what is
   committed; the corpus settles on a second run. It fails naming the file
-  nobody wrote and nobody claimed, or the generated file that differs.
+  nobody wrote and nobody claimed, or the generated file that differs. With
+  `--since REF` it runs only the generators a change since REF can reach, by
+  the map the full gate keeps, so it holds less than the full gate: a read
+  the map cannot see is skipped. The full gate on main and on a schedule is
+  what holds the rest.
 - **Reach** (`wherefore check reach`): every fact, moved one at a time,
   changes something a visitor receives. It fails naming the fact that moved
   nothing - dead, or copied by hand into a generator - and the probe that

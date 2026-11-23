@@ -30,6 +30,15 @@
    "details": "On every push, each tracked file must be generated during the gate's own run, authored under a rule with a reason, or captured and stamped with what it was made from. A file nobody wrote and nobody claimed stops the change and is named; so does a generated file that differs from what is committed, and a corpus that does not settle on a second run."
   },
   {
+   "id": "since",
+   "name": "A gate for the change",
+   "since": "0.25.0",
+   "commands": [
+    "wherefore gate --since REF [--keep]"
+   ],
+   "details": "The full gate runs every generator on every change, so its cost grows with the whole corpus however small the change. With --since REF it runs only the generators the change can reach - its script, a file it reads or a file it writes changed since REF - and takes the rest at the bytes committed, by the map the full gate itself keeps, the output of wherefore graph --json declared as a generator. When the map cannot say, every generator runs, and the run says why. It names each generator it ran, skipped or composed, and the reason. A read the map cannot see - through a shell - is skipped, so the full gate stays the backstop on main and on a schedule."
+  },
+  {
    "id": "build",
    "name": "The build",
    "since": "0.1.0",

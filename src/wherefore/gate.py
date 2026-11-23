@@ -106,8 +106,21 @@ WHAT IT CANNOT SEE.
     where to look when something is stale and this check is quiet.
   - A write that does not go through Python's open(). Nothing here does one.
 
+AND --since REF, WHERE IT TRUSTS A RECORD. Given a commit the full gate
+passed, the gate runs only the generators a change since then can reach, and
+takes each other generator's files as generated at the bytes committed. That
+is the one place it trusts a record instead of a run, so the record is the
+gate's own output - the map `wherefore graph --json` writes, declared as a
+generator and held current by the full gate like any other file - and never
+a list a person keeps. Generated is still derived: from the run the map
+records. When the map cannot say, every generator runs. What a skipped
+generator reads that the map cannot see, it cannot catch; the full gate on
+main is the backstop, and since.py says what runs and why.
+
 Usage:  python3 checks/coverage_gate.py             the gate
         python3 checks/coverage_gate.py --keep      leave what it regenerated
+        python3 checks/coverage_gate.py --since REF only what a change since
+                                                    REF can reach
         python3 checks/coverage_gate.py --restamp <group>   after re-shooting
                                                     or re-baking one of them
 """
@@ -406,11 +419,13 @@ def restamp(decl, snap, only=None):
 
 
 USAGE = ("usage: wherefore gate [--keep]\n"
+         "       wherefore gate --since REF [--keep]\n"
          "       wherefore gate --restamp GROUP")
 
 
 def parse(argv):
-    """(keep, restamp group or None), or an exit code for a line that means nothing.
+    """(keep, restamp group or None, since REF or None), or an exit code for a
+    line that means nothing.
 
     A flag the gate does not know is refused rather than ignored: `--kep` used to
     run the whole gate without --keep and pass, and `--help` ran it too.
@@ -427,12 +442,20 @@ def parse(argv):
             print("::error::--restamp takes exactly one GROUP, and nothing else. Re-stamping "
                   "every group at once would certify captures nobody re-made.\n" + USAGE)
             return 2
-        return False, group
+        return False, group, None
+    since = None
+    if "--since" in args:
+        i = args.index("--since")
+        since = args[i + 1] if len(args) > i + 1 and not args[i + 1].startswith("-") else None
+        if since is None or args.count("--since") > 1:
+            print(f"::error::--since takes one REF: the commit the change is judged against\n{USAGE}")
+            return 2
+        args = args[:i] + args[i + 2:]
     unknown = [a for a in args if a != "--keep"]
     if unknown:
         print(f"::error::the gate does not take {' '.join(unknown)}\n{USAGE}")
         return 2
-    return "--keep" in args, None
+    return "--keep" in args, None, since
 
 
 def _palette_notice(made):
@@ -456,7 +479,7 @@ def main(argv=None):
     parsed = parse(argv)
     if isinstance(parsed, int):
         return parsed
-    keep, only = parsed
+    keep, only, since_ref = parsed
     doing_restamp = only is not None
 
     decl = DECL()
@@ -477,8 +500,33 @@ def main(argv=None):
             restamp(decl, snap, only)
             return 0
 
-        print(f"{len(names)} tracked files; {len(G.GENERATORS)} generators\n")
-        wrote, failures = G.run_all(quiet=True)
+        # --since REF: only what a change since REF can reach (since.py). The
+        # plan is made before anything runs; the decisions are made at each
+        # generator's turn, so one whose input an earlier one rewrote runs too.
+        plan = None
+        if since_ref is not None:
+            from . import since as _since
+            plan = _since.plan(ROOT, since_ref)
+            plan.snap = snap
+            if plan.full:
+                print(f"{len(names)} tracked files; {len(G.GENERATORS)} generators")
+                print(f"since {since_ref}: every generator runs - {plan.full}\n")
+                plan = None
+        if plan is None:
+            if since_ref is None:
+                print(f"{len(names)} tracked files; {len(G.GENERATORS)} generators\n")
+            wrote, failures = G.run_all(quiet=True)
+        else:
+            from . import graph as _graph
+            print(f"{len(names)} tracked files; {len(G.GENERATORS)} generators")
+            reads = {}
+            wrote, failures = G.run_all(quiet=True, reads=reads,
+                                        select=_since.first_pass(plan, _graph.read_theme))
+            _since.credit(plan, wrote)
+            failures += _since.compose(plan, None, wrote, reads, failures)
+            for line in _since.said(plan):
+                print(line)
+            print()
         tracked_now = G.tracked()
         written = {tracked_now[p] for p in wrote if p in tracked_now}
 
@@ -505,11 +553,16 @@ def main(argv=None):
                 unclassified.append(rel)
         loose = untracked_writes(wrote, tracked_now)
 
-        print(f"  generated   {len(generated):4}   written by a generator during this run")
+        print(f"  generated   {len(generated):4}   written by a generator during this run"
+              + (", or by one it skipped" if plan is not None else ""))
         print(f"  authored    {len(authored):4}   declared a source in {DECL_NAME}")
         print(f"  captured    {len(capt):4}   declared hand-made, and stamped")
         print(f"  UNKNOWN     {len(unclassified):4}")
         print(f"  UNTRACKED   {len(loose):4}   written by a generator, and neither tracked nor ignored\n")
+        if plan is not None:
+            taken = sorted(rel for rel, by in generated.items() if set(by) <= plan.skipped)
+            print(f"  of the generated, {len(taken)} are as committed: written by a generator this run "
+                  f"skipped,\n  as the map at {plan.ref} records\n")
 
         fails = []
         for rel in missing:
@@ -564,7 +617,10 @@ def main(argv=None):
         # second pass - choking on something the first pass wrote, which is
         # what this pass exists to expose - wrote nothing, and "nothing moved"
         # would read its crash as settled.
-        _again, failed_again = G.run_all(only_resettle=True)
+        _again, failed_again = G.run_all(
+            only_resettle=True, select=_since.second_pass(plan) if plan is not None else None)
+        for name, why in (plan.again if plan is not None else []):
+            print(f"  again    {name} - {why}")
         failed_once = {script for script, _err in failures}
         for script, err in failed_again:
             if script not in failed_once:
@@ -704,6 +760,10 @@ def main(argv=None):
             print("\nA file nobody wrote and nobody claimed is a file nobody is")
             print("keeping current. That is what this gate is for.")
             return 1
+        if plan is not None:
+            print(f"\nevery tracked file is classified, and every generated one a change since "
+                  f"{plan.ref}\ncan reach was written during this run and matches what is committed")
+            return 0
         print("\nevery tracked file is classified, and every generated one was "
               "written\nduring this run and matches what is committed")
         return 0

@@ -232,7 +232,7 @@ def watching(g):
         seen.extend(sorted(p for p, s in _picture().items() if before.get(p) != s))
 
 
-def run_all(quiet=True, only_resettle=False, reads=None):
+def run_all(quiet=True, only_resettle=False, reads=None, select=None):
     """Run every generator in order, watching what each one writes.
 
     Returns (wrote, failures):
@@ -249,6 +249,13 @@ def run_all(quiet=True, only_resettle=False, reads=None):
     A file written by two generators is not an error here - the last one wins
     and the gate compares bytes - but it is worth seeing, so the list keeps
     every writer rather than the last.
+
+    With `select`, a function of a generator, a generator runs only when it
+    says so. It is asked just before that generator's turn, after every one
+    before it has run, so it can look at the tree they left: that is how
+    `wherefore gate --since` runs a generator whose input an earlier one has
+    just rewritten (since.py). A generator it passes over writes nothing,
+    reads nothing and is in neither list.
     """
     wrote, failures = {}, []
     env = dict(os.environ)
@@ -263,6 +270,8 @@ def run_all(quiet=True, only_resettle=False, reads=None):
     try:
         for i, g in enumerate(GENERATORS):
             if only_resettle and not g.resettle:
+                continue
+            if select is not None and not select(g):
                 continue
             # Named outside the f-string: a backslash inside one is a syntax
             # error before Python 3.12, and the engine runs on 3.10.
